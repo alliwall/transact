@@ -225,7 +225,7 @@ form.addEventListener("submit", async (event) => {
 
       // Create result card
       const resultCard = document.createElement("div");
-      resultCard.className = "card mb-4 result-card";
+      resultCard.className = "card mb-4 result-card animate-success";
       resultCard.innerHTML = `
         <div class="card-header bg-success text-white">
           <div class="d-flex justify-content-between align-items-center">
@@ -238,7 +238,7 @@ form.addEventListener("submit", async (event) => {
           </div>
         </div>
         <div class="card-body">
-          <div class="mb-4">
+          <div class="mb-section">
             <label class="form-label fw-bold">Payment Link:</label>
             <div class="position-relative">
               <div class="copy-link-container">
@@ -249,35 +249,39 @@ form.addEventListener("submit", async (event) => {
                 </button>
               </div>
             </div>
-            <small class="text-muted">Send this link to your customer to process the payment</small>
+            <small class="text-muted d-block mt-2">Send this link to your customer to process the payment</small>
           </div>
           
-          <div class="mb-3">
-            <label class="form-label fw-bold">Tracking Number:</label>
-            <div class="position-relative">
-              <div class="copy-link-container">
-                <input type="text" class="copy-link-input" value="${addressIn}" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
-                <button class="copy-link-button" id="copy-tracking-number">
-                  <i class="fas fa-copy"></i>
-                  <span class="copy-feedback">Copied!</span>
-                </button>
+          <div class="tracking-section">
+            <h6 class="tracking-section-title mb-3">Transaction Tracking</h6>
+            
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Tracking Number:</label>
+              <div class="position-relative">
+                <div class="copy-link-container">
+                  <input type="text" class="copy-link-input" value="${addressIn}" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
+                  <button class="copy-link-button" id="copy-tracking-number">
+                    <i class="fas fa-copy"></i>
+                    <span class="copy-feedback">Copied!</span>
+                  </button>
+                </div>
               </div>
+              <small class="text-muted d-block mt-2">Use this number to track your payment</small>
             </div>
-            <small class="text-muted">Use this number to track your payment</small>
-          </div>
-          
-          <div class="mb-4">
-            <label class="form-label fw-bold">Tracking URL:</label>
-            <div class="position-relative">
-              <div class="copy-link-container">
-                <input type="text" class="copy-link-input" value="https://api.transact.st/control/track.php?address=${addressIn}" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
-                <button class="copy-link-button" id="copy-tracking-url">
-                  <i class="fas fa-copy"></i>
-                  <span class="copy-feedback">Copied!</span>
-                </button>
+            
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Tracking URL:</label>
+              <div class="position-relative">
+                <div class="copy-link-container">
+                  <input type="text" class="copy-link-input" value="https://payment.transact.st/control/track.php?address=${addressIn}" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
+                  <button class="copy-link-button" id="copy-tracking-url">
+                    <i class="fas fa-copy"></i>
+                    <span class="copy-feedback">Copied!</span>
+                  </button>
+                </div>
               </div>
+              <small class="text-muted d-block mt-2">Share this link to monitor the transaction status</small>
             </div>
-            <small class="text-muted">Share this link to monitor the transaction status</small>
           </div>
 
           <div class="alert alert-info mt-4">
@@ -286,7 +290,7 @@ form.addEventListener("submit", async (event) => {
                 <i class="fas fa-info-circle fs-4"></i>
               </div>
               <div>
-                <h6 class="mb-1">What happens next?</h6>
+                <h6 class="mb-1 fw-bold">What happens next?</h6>
                 <p class="mb-0">Funds will be automatically transferred to your wallet once the payment is completed. The transaction typically takes 2-5 minutes to be confirmed on the blockchain.</p>
               </div>
             </div>
@@ -315,7 +319,7 @@ form.addEventListener("submit", async (event) => {
       document
         .getElementById("copy-tracking-url")
         .addEventListener("click", function () {
-          copyToClipboard(`https://api.transact.st/control/track.php?address=${addressIn}`, this);
+          copyToClipboard(`https://payment.transact.st/control/track.php?address=${addressIn}`, this);
         });
 
       document

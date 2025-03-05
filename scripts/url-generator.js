@@ -343,74 +343,96 @@ async function generatePaymentLink(walletData) {
   };
 }
 
-function displayResult(
-  walletAddress,
-  paymentLink,
-  trackingUrl,
-  trackingNumber
-) {
+function displayResult(walletAddress, paymentLink) {
   const resultContainer = document.getElementById(RESULT_CONTAINER_ID);
+  
+  // Extract the data from the payment link
+  const urlData = new URL(paymentLink);
+  const encryptedData = urlData.searchParams.get('data');
 
   resultContainer.innerHTML = `
-    <div class="card success-card">
+    <div class="card success-card animate-success">
       <div class="card-header text-white">
         <i class="fas fa-check-circle me-2"></i> Payment Page Generated Successfully
       </div>
       <div class="card-body">
         <div class="row">
           <div class="col-md-12">
-            <p class="mb-3">
-              <strong>Wallet Address:</strong> ${walletAddress}
-            </p>
-            <p class="mb-3">
-              <strong>Your business payment page is ready!</strong> Share this link with your business clients and they'll be able to create payment links for their customers with your wallet address locked.
-            </p>
-            <div class="input-group mb-3">
-              <input type="text" class="form-control" value="${paymentLink}" id="payment-link" readonly>
-              <button class="btn btn-outline-secondary" type="button" id="copy-link" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
-                <i class="fas fa-copy"></i>
-              </button>
+            <div class="mb-section">
+              <div class="mb-3">
+                <span class="text-muted d-block">Wallet Address:</span>
+                <span class="fw-bold">${walletAddress}</span>
+              </div>
+              
+              <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Your business payment page is ready!</strong> Share this link with your business clients and they'll be able to create payment links for their customers with your wallet address locked.
+              </div>
+              
+              <label class="form-label fw-bold">Business Payment URL:</label>
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" value="${paymentLink}" id="payment-link" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
+                <button class="btn btn-outline-secondary" type="button" id="copy-link" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              <small class="text-muted d-block mb-3">Share this URL with business clients who need to create payment links</small>
             </div>
             
-            <h6 class="mb-2 mt-4">Link Tracking</h6>
-            <div class="input-group mb-3">
-              <input type="text" class="form-control" value="${trackingNumber}" id="tracking-number" readonly>
-              <button class="btn btn-outline-secondary" type="button" id="copy-tracking-number" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
-                <i class="fas fa-copy"></i>
-              </button>
+            <div class="tracking-section">
+              <h6 class="tracking-section-title">Link Tracking</h6>
+              
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Reference Code:</label>
+                <div class="input-group mb-2">
+                  <input type="text" class="form-control" value="${encryptedData}" id="tracking-number" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
+                  <button class="btn btn-outline-secondary" type="button" id="copy-tracking-number" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </div>
+                <small class="text-muted d-block">Reference code for this business payment page</small>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Tracking URL:</label>
+                <div class="input-group mb-2">
+                  <input type="text" class="form-control" value="https://payment.transact.st/control/page-status.php?ref=${encryptedData}" id="tracking-url" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
+                  <button class="btn btn-outline-secondary" type="button" id="copy-tracking-url" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </div>
+                <small class="text-muted d-block">Use this link to monitor the page activity</small>
+              </div>
             </div>
-            <small class="text-muted mb-3 d-block">Reference code for this link</small>
             
-            <div class="input-group mb-3">
-              <input type="text" class="form-control" value="https://api.transact.st/control/track.php?address=${trackingNumber}" id="tracking-url" readonly>
-              <button class="btn btn-outline-secondary" type="button" id="copy-tracking-url" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
-                <i class="fas fa-copy"></i>
-              </button>
-            </div>
-            <small class="text-muted mb-4 d-block">Use this link to monitor the page activity</small>
-            
-            <div class="share-buttons mb-3">
-              <a href="https://wa.me/?text=${encodeURIComponent(
-                `Use this payment link to process your customer payments: ${paymentLink}`
-              )}" target="_blank" class="btn btn-success btn-sm" aria-label="Share on WhatsApp">
-                <i class="fab fa-whatsapp"></i> WhatsApp
-              </a>
-              <a href="https://t.me/share/url?url=${encodeURIComponent(
-                paymentLink
-              )}&text=${encodeURIComponent(
+            <div class="share-buttons mt-4 mb-3">
+              <h6 class="mb-2 fw-semibold">Share Payment Page</h6>
+              <div class="d-flex flex-wrap gap-2">
+                <a href="https://wa.me/?text=${encodeURIComponent(
+                  `Use this payment link to process your customer payments: ${paymentLink}`
+                )}" target="_blank" class="btn btn-success btn-sm" aria-label="Share on WhatsApp">
+                  <i class="fab fa-whatsapp me-1"></i> WhatsApp
+                </a>
+                <a href="https://t.me/share/url?url=${encodeURIComponent(
+                  paymentLink
+                )}&text=${encodeURIComponent(
     "Use this payment link to process your customer payments:"
   )}" target="_blank" class="btn btn-primary btn-sm" aria-label="Share on Telegram">
-                <i class="fab fa-telegram"></i> Telegram
-              </a>
-              <a href="mailto:?subject=Payment%20Link&body=${encodeURIComponent(
-                `Use this payment link to process your customer payments: ${paymentLink}`
-              )}" class="btn btn-secondary btn-sm" aria-label="Share by Email">
-                <i class="fas fa-envelope"></i> Email
+                  <i class="fab fa-telegram me-1"></i> Telegram
+                </a>
+                <a href="mailto:?subject=Payment%20Link&body=${encodeURIComponent(
+                  `Use this payment link to process your customer payments: ${paymentLink}`
+                )}" class="btn btn-secondary btn-sm" aria-label="Share by Email">
+                  <i class="fas fa-envelope me-1"></i> Email
+                </a>
+              </div>
+            </div>
+            
+            <div class="d-grid mt-4">
+              <a href="${paymentLink}" class="btn btn-primary" target="_blank">
+                <i class="fas fa-external-link-alt me-2"></i> Open Payment Page
               </a>
             </div>
-            <a href="${paymentLink}" class="btn btn-primary" target="_blank">
-              <i class="fas fa-external-link-alt me-2"></i> Open Payment Page
-            </a>
           </div>
         </div>
       </div>
@@ -528,7 +550,7 @@ async function handleFormSubmission(event) {
     const paymentLink = await generatePaymentLink(encryptedWallet);
 
     // Display result with success card
-    await displayResult(walletAddress, paymentLink.paymentLink, paymentLink.trackingUrl, paymentLink.addressIn);
+    await displayResult(walletAddress, paymentLink.paymentLink);
 
     // Scroll to result
     const resultElement = document.getElementById(RESULT_CONTAINER_ID);

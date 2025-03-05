@@ -1465,3 +1465,295 @@ html[data-bs-theme="dark"] .card-header button.btn-sm {
   background-color: #1e293b !important;
   color: #f8fafc !important;
 }
+
+/* Enhanced design for result and success cards */
+.result-card,
+.success-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.result-card:hover,
+.success-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+}
+
+.result-card .card-header,
+.success-card .card-header {
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+}
+
+[data-theme="dark"] .result-card .card-header,
+[data-theme="dark"] .success-card .card-header,
+[data-bs-theme="dark"] .result-card .card-header,
+[data-bs-theme="dark"] .success-card .card-header {
+  background: linear-gradient(135deg, #065f46, #047857);
+}
+
+.result-card .card-body,
+.success-card .card-body {
+  padding: 1.5rem;
+}
+
+/* Enhanced input styles */
+.copy-link-container {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+.copy-link-container:focus-within {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.copy-link-input {
+  flex-grow: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-right: none;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  background-color: var(--input-background);
+  color: var(--input-text-color);
+}
+
+.copy-link-button {
+  padding: 0.75rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  font-weight: 500;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.copy-link-button:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Tracking section styling */
+h6.tracking-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Better spacing and organization */
+.mb-section {
+  margin-bottom: 2rem;
+}
+
+/* Improved buttons */
+.btn {
+  padding: 0.625rem 1.25rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-outline-secondary {
+  border-color: var(--border-color);
+  background-color: transparent;
+}
+
+.btn-outline-secondary:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.input-group {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.input-group .form-control {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.input-group .btn {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Tracking URL section improvements */
+.tracking-section {
+  background-color: rgba(16, 185, 129, 0.05);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+  border: 1px solid rgba(16, 185, 129, 0.1);
+}
+
+[data-theme="dark"] .tracking-section {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.tracking-section .small {
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+/* Improved alerts */
+.alert-info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.2);
+  color: var(--text-color);
+  border-radius: 8px;
+}
+
+[data-theme="dark"] .alert-info {
+  background-color: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.alert-info .fas {
+  color: rgba(59, 130, 246, 0.9);
+}
+
+/* Animation for feedback */
+@keyframes successPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.animate-success {
+  animation: successPulse 0.5s ease-in-out;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .tracking-section {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+  
+  .card-body {
+    padding: 1.25rem;
+  }
+  
+  .d-flex.flex-wrap.justify-content-between.mb-3 > div {
+    min-width: 100%;
+    margin-bottom: 0.75rem;
+  }
+  
+  .copy-link-input {
+    font-size: 0.85rem;
+    padding: 0.625rem 0.75rem;
+  }
+  
+  .copy-link-button {
+    padding: 0.625rem 0.75rem;
+  }
+  
+  .result-card, .success-card {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Improved focus states for accessibility */
+.form-control:focus, 
+.btn:focus,
+.copy-link-input:focus,
+input:focus,
+a:focus,
+button:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Better field group spacing */
+.mb-section {
+  margin-bottom: 2.5rem;
+}
+
+/* Badge styling for provider badges */
+.provider-badge.all {
+  padding: 0.25em 0.75em;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+/* Smoother transitions */
+.copy-link-container,
+.input-group,
+.btn,
+.provider-card,
+.form-control,
+.alert,
+.card {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Hover effects for cards */
+.provider-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Small screen adjustments for provider cards */
+@media (max-width: 992px) {
+  .provider-item {
+    width: 50%;
+  }
+}
+
+@media (max-width: 576px) {
+  .provider-item {
+    width: 100%;
+  }
+  
+  .share-buttons .btn-sm {
+    width: 100%;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .d-flex.flex-wrap.gap-2 {
+    flex-direction: column;
+  }
+}
+
+/* Better heading hierarchy */
+h6.tracking-section-title {
+  color: var(--primary-color);
+}
+
+[data-theme="dark"] h6.tracking-section-title {
+  color: var(--primary-light);
+}

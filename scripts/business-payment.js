@@ -257,79 +257,110 @@ async function displayResult(
   amount,
   email,
   provider,
-  paymentLink,
-  trackingUrl,
-  trackingNumber
+  paymentLink
 ) {
   const resultContainer = document.getElementById(RESULT_CONTAINER_ID);
 
   try {
     const formattedAmount = parseFloat(amount).toFixed(2);
+    
+    // Extract the transaction ID (addressIn) from the payment link
+    const addressIn = new URL(paymentLink).searchParams.get('address');
 
     resultContainer.innerHTML = `
-      <div class="card success-card">
+      <div class="card success-card animate-success">
         <div class="card-header text-white">
           <i class="fas fa-check-circle me-2"></i> Payment Link Generated Successfully
         </div>
         <div class="card-body">
           <div class="row">
             <div class="col-md-12">
-              <p class="mb-2">
-                <strong>Amount:</strong> ${formattedAmount} USDC
-              </p>
-              <p class="mb-2">
-                <strong>Customer Email:</strong> ${email}
-              </p>
-              <p class="mb-3">
-                <strong>Payment Provider:</strong> ${provider}
-              </p>
-              
-              <div class="input-group mb-3">
-                <input type="text" class="form-control" value="${paymentLink}" id="payment-link" readonly>
-                <button class="btn btn-outline-secondary" type="button" id="copy-link" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
-                  <i class="fas fa-copy"></i>
-                </button>
+              <div class="mb-section">
+                <div class="d-flex flex-wrap justify-content-between mb-3">
+                  <div class="mb-2 me-4">
+                    <span class="text-muted d-block">Amount:</span>
+                    <span class="fw-bold fs-5">${formattedAmount} USDC</span>
+                  </div>
+                  <div class="mb-2 me-4">
+                    <span class="text-muted d-block">Customer Email:</span>
+                    <span class="fw-bold">${email}</span>
+                  </div>
+                  <div class="mb-2">
+                    <span class="text-muted d-block">Payment Provider:</span>
+                    <span class="fw-bold">${provider}</span>
+                  </div>
+                </div>
+                
+                <label class="form-label fw-bold">Payment Link:</label>
+                <div class="input-group mb-3">
+                  <input type="text" class="form-control" value="${paymentLink}" id="payment-link" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
+                  <button class="btn btn-outline-secondary" type="button" id="copy-link" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </div>
+                <small class="text-muted d-block mb-3">Send this link to your customer to process the payment</small>
               </div>
               
-              <h6 class="mb-2 mt-4">Transaction Tracking</h6>
-              <div class="input-group mb-3">
-                <input type="text" class="form-control" value="${trackingNumber}" id="tracking-number" readonly>
-                <button class="btn btn-outline-secondary" type="button" id="copy-tracking-number" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
-                  <i class="fas fa-copy"></i>
-                </button>
+              <div class="tracking-section">
+                <h6 class="tracking-section-title">Transaction Tracking</h6>
+                
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Tracking Number:</label>
+                  <div class="input-group mb-2">
+                    <input type="text" class="form-control" value="${addressIn}" id="tracking-number" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
+                    <button class="btn btn-outline-secondary" type="button" id="copy-tracking-number" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </div>
+                  <small class="text-muted d-block">Transaction ID for tracking the payment</small>
+                </div>
+                
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Tracking URL:</label>
+                  <div class="input-group mb-2">
+                    <input type="text" class="form-control" value="https://payment.transact.st/control/track.php?address=${addressIn}" id="tracking-url" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
+                    <button class="btn btn-outline-secondary" type="button" id="copy-tracking-url" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </div>
+                  <small class="text-muted d-block">Share this link to monitor the transaction status</small>
+                </div>
               </div>
-              <small class="text-muted mb-3 d-block">Transaction ID for tracking the payment</small>
               
-              <div class="input-group mb-3">
-                <input type="text" class="form-control" value="${trackingUrl}" id="tracking-url" readonly>
-                <button class="btn btn-outline-secondary" type="button" id="copy-tracking-url" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
-                  <i class="fas fa-copy"></i>
-                </button>
-              </div>
-              <small class="text-muted mb-4 d-block">Share this link to monitor the transaction status</small>
-              
-              <div class="share-buttons mb-3">
-                <a href="https://wa.me/?text=${encodeURIComponent(
-                  `Complete your payment of ${formattedAmount} USDC here: ${paymentLink}`
-                )}" target="_blank" class="btn btn-success btn-sm" aria-label="Share on WhatsApp">
-                  <i class="fab fa-whatsapp"></i> WhatsApp
-                </a>
-                <a href="https://t.me/share/url?url=${encodeURIComponent(
-                  paymentLink
-                )}&text=${encodeURIComponent(
+              <div class="share-buttons mt-4 mb-3">
+                <h6 class="mb-2 fw-semibold">Share Payment Link</h6>
+                <div class="d-flex flex-wrap gap-2">
+                  <a href="https://wa.me/?text=${encodeURIComponent(
+                    `Complete your payment of ${formattedAmount} USDC here: ${paymentLink}`
+                  )}" target="_blank" class="btn btn-success btn-sm" aria-label="Share on WhatsApp">
+                    <i class="fab fa-whatsapp me-1"></i> WhatsApp
+                  </a>
+                  <a href="https://t.me/share/url?url=${encodeURIComponent(
+                    paymentLink
+                  )}&text=${encodeURIComponent(
       `Complete your payment of ${formattedAmount} USDC here:`
     )}" target="_blank" class="btn btn-primary btn-sm" aria-label="Share on Telegram">
-                  <i class="fab fa-telegram"></i> Telegram
-                </a>
-                <a href="mailto:${email}?subject=Payment%20Link&body=${encodeURIComponent(
+                    <i class="fab fa-telegram me-1"></i> Telegram
+                  </a>
+                  <a href="mailto:${email}?subject=Payment%20Link&body=${encodeURIComponent(
       `Complete your payment of ${formattedAmount} USDC here: ${paymentLink}`
     )}" class="btn btn-secondary btn-sm" aria-label="Share by Email">
-                  <i class="fas fa-envelope"></i> Email
-                </a>
+                    <i class="fas fa-envelope me-1"></i> Email
+                  </a>
+                </div>
               </div>
-              <a href="${paymentLink}" class="btn btn-primary" target="_blank">
-                <i class="fas fa-external-link-alt me-2"></i> Open Payment Page
-              </a>
+              
+              <div class="alert alert-info mt-4">
+                <div class="d-flex">
+                  <div class="me-3">
+                    <i class="fas fa-info-circle fs-4"></i>
+                  </div>
+                  <div>
+                    <h6 class="mb-1 fw-bold">What happens next?</h6>
+                    <p class="mb-0">Funds will be automatically transferred to your wallet once the payment is completed. The transaction typically takes 2-5 minutes to be confirmed on the blockchain.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -480,7 +511,7 @@ async function handleFormSubmission(event) {
     );
 
     // Display result
-    await displayResult(walletAddress, amount, email, provider, paymentLink.paymentLink, paymentLink.trackingUrl, paymentLink.addressIn);
+    await displayResult(walletAddress, amount, email, provider, paymentLink);
 
     // Scroll to result
     const resultElement = document.getElementById(RESULT_CONTAINER_ID);
