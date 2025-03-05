@@ -1,0 +1,1233 @@
+/* ===== VARIABLES ===== */
+:root {
+  --primary-color: #3a86ff;
+  --primary-dark: #2667cc;
+  --primary-light: #72a9ff;
+  --secondary-color: #4361ee;
+  --accent-color: #4cc9f0;
+  --success-color: #4ade80;
+  --warning-color: #fbbf24;
+  --danger-color: #f87171;
+  --info-color: #60a5fa;
+
+  --bg-color: #f8fafc;
+  --card-bg: #ffffff;
+  --text-color: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --input-text-color: #1e293b;
+  --input-background: #ffffff;
+  --input-placeholder: #94a3b8;
+  --select-background: #ffffff;
+  --select-text-color: #1e293b;
+  --navbar-text-color: #ffffff;
+  --navbar-hover-color: #ffffff;
+  --navbar-gradient-start: #2563eb;
+  --navbar-gradient-end: #3b82f6;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --border-radius: 0.5rem;
+  --transition: all 0.3s ease;
+
+  --navbar-text-color-light: #1e293b;
+  --navbar-text-color-dark: #ffffff;
+}
+
+/* ===== DARK THEME ===== */
+[data-theme="dark"] {
+  --primary-color: #60a5fa;
+  --primary-dark: #3b82f6;
+  --primary-light: #93c5fd;
+  --secondary-color: #818cf8;
+  --accent-color: #38bdf8;
+  --success-color: #4ade80;
+  --warning-color: #fbbf24;
+  --danger-color: #f87171;
+  --info-color: #60a5fa;
+
+  --bg-color: #0f172a;
+  --card-bg: #1e293b;
+  --text-color: #f1f5f9;
+  --text-muted: #cbd5e1;
+  --border-color: #334155;
+  --input-text-color: #f1f5f9;
+  --input-background: #1e293b;
+  --input-placeholder: #94a3b8;
+  --select-background: #1e293b;
+  --select-text-color: #f1f5f9;
+  --navbar-text-color: #ffffff;
+  --navbar-hover-color: #ffffff;
+  --navbar-gradient-start: #1e40af;
+  --navbar-gradient-end: #3b82f6;
+}
+
+/* ===== BASE STYLES ===== */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: var(--transition);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== HEADER ===== */
+header {
+  background: linear-gradient(
+    135deg,
+    var(--navbar-gradient-start),
+    var(--navbar-gradient-end)
+  );
+  color: var(--navbar-text-color);
+  box-shadow: var(--shadow);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 1rem 0;
+}
+
+.logo-link {
+  text-decoration: none;
+  color: var(--navbar-text-color-light);
+  text-shadow: none;
+}
+
+.logo-link h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.theme-switcher button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-color: rgba(0, 0, 0, 0.2);
+  color: var(--navbar-text-color-light);
+  transition: var(--transition);
+  text-shadow: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.theme-switcher button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: var(--navbar-text-color-light);
+}
+
+/* ===== CARDS ===== */
+.main-card {
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  overflow: hidden;
+}
+
+.main-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-header {
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.25rem 1.5rem;
+}
+
+.accent-icon {
+  color: var(--primary-color);
+}
+
+.feature-badge {
+  background-color: var(--primary-color);
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  padding: 0.5em 0.75em;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+}
+
+.lead {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+/* ===== ALERTS ===== */
+.alert-box {
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.alert-box.warning {
+  background-color: rgba(251, 191, 36, 0.1);
+  border-left: 4px solid var(--warning-color);
+}
+
+.alert-box.warning i {
+  color: var(--warning-color);
+  font-size: 1.25rem;
+}
+
+/* ===== FORMS ===== */
+.form-label {
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.form-control,
+.form-select,
+.btn {
+  border-radius: 0.375rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.95rem;
+  transition: var(--transition);
+}
+
+.form-control,
+.form-select {
+  background-color: var(--input-background);
+  border-color: var(--border-color);
+  color: var(--input-text-color);
+}
+
+.form-control::placeholder {
+  color: var(--input-placeholder);
+  opacity: 0.7;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+}
+
+.input-group-text {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+/* ===== PROVIDER SECTION ===== */
+.provider-section {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .provider-section {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: var(--border-color);
+}
+
+.provider-filter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.search-box {
+  max-width: 200px;
+}
+
+.provider-group {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+  /* Custom scrollbar styles */
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-light) transparent;
+}
+
+.provider-group::-webkit-scrollbar {
+  width: 6px;
+}
+
+.provider-group::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.provider-group::-webkit-scrollbar-thumb {
+  background-color: var(--primary-light);
+  border-radius: 20px;
+}
+
+.provider-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  transition: var(--transition);
+  cursor: pointer;
+  height: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.provider-card:hover,
+.provider-card:focus-within {
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+}
+
+.provider-card input {
+  margin-right: 0.75rem;
+}
+
+.provider-card .form-check-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+.provider-name {
+  font-weight: 500;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.provider-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2em 0.5em;
+  border-radius: 0.25rem;
+  text-transform: uppercase;
+}
+
+.provider-badge.usd {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.provider-badge.eur {
+  background-color: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.provider-badge.cad {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.provider-badge.inr {
+  background-color: rgba(236, 72, 153, 0.1);
+  color: #ec4899;
+}
+
+.provider-tag {
+  font-size: 0.7rem;
+  background-color: rgba(100, 116, 139, 0.1);
+  color: var(--text-muted);
+  padding: 0.2em 0.5em;
+  border-radius: 0.25rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.btn-outline-secondary {
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+
+.btn-outline-secondary:hover {
+  background-color: rgba(100, 116, 139, 0.1);
+  color: var(--text-color);
+}
+
+.loader {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.payment-result {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.payment-result.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.copy-link-container {
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.copy-link-input {
+  flex-grow: 1;
+  padding: 0.625rem 0.75rem;
+  border: none;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  outline: none;
+}
+
+.copy-link-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  position: relative;
+  transition: var(--transition);
+}
+
+.copy-link-button:hover {
+  background-color: var(--primary-dark);
+}
+
+.copy-feedback {
+  position: absolute;
+  top: -30px;
+  right: 0;
+  background-color: var(--text-color);
+  color: var(--card-bg);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+}
+
+.copy-feedback:after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  right: 8px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--text-color);
+}
+
+.show-feedback {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-container {
+  z-index: 1050;
+}
+
+.toast {
+  backdrop-filter: blur(4px);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+footer {
+  margin-top: auto;
+  padding: 3rem 0 1.5rem;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-top: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] footer {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+footer h4,
+footer h5 {
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
+footer a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+footer a:hover {
+  color: var(--primary-color);
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+@media (max-width: 992px) {
+  .lead {
+    font-size: 1rem;
+  }
+  
+  .provider-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-box {
+    max-width: 100%;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo-link h1 {
+    font-size: 1.5rem;
+  }
+  
+  .provider-group {
+    max-height: 200px;
+  }
+  
+  .form-actions {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-actions .btn {
+    width: 100%;
+  }
+  
+  .copy-link-container {
+    flex-direction: column;
+  }
+  
+  .copy-link-button {
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-header {
+    padding: 1rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .btn-group-sm {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.25rem;
+  }
+  
+  .btn-group-sm .btn:first-child:not(:last-child),
+  .btn-group-sm .btn:last-child:not(:first-child),
+  .btn-group-sm .btn:not(:first-child):not(:last-child) {
+    border-radius: 0.25rem;
+  }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loader {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* High contrast focus for keyboard navigation */
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* Provider card selection styling */
+.provider-card.selected {
+  border-color: var(--primary-color);
+  background-color: rgba(58, 134, 255, 0.05);
+  box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+[data-theme="dark"] .provider-card.selected {
+  background-color: rgba(96, 165, 250, 0.1);
+}
+
+/* Button groups in filter */
+.btn-group {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.btn-group .btn {
+  border-radius: 0;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.65rem;
+}
+
+/* Search box styling */
+.search-box {
+  position: relative;
+}
+
+.search-box input {
+  padding-left: 2rem;
+  background-color: var(--input-background);
+  border: 1px solid var(--border-color);
+  color: var(--input-text-color);
+}
+
+.search-box:before {
+  content: "\f002";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  z-index: 10;
+}
+
+/* Result card styling */
+.result-card {
+  border-color: var(--success-color);
+  transition: var(--transition);
+}
+
+.result-card .card-header {
+  background-color: var(--success-color) !important;
+}
+
+.result-card .btn-light {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: transparent;
+}
+
+.result-card .btn-light:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Alert info box styling */
+.alert-info {
+  background-color: rgba(96, 165, 250, 0.1);
+  border-left: 4px solid var(--info-color);
+  border-radius: var(--border-radius);
+  color: var(--text-color);
+}
+
+.alert-info .fas {
+  color: var(--info-color);
+}
+
+.alert-danger {
+  background-color: rgba(248, 113, 113, 0.1);
+  border-left: 4px solid var(--danger-color);
+  border-radius: var(--border-radius);
+  color: var(--text-color);
+}
+
+.alert-danger .fas {
+  color: var(--danger-color);
+}
+
+/* Animation styles */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* Better focus styles for accessibility */
+a:focus,
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--primary-light);
+  outline-offset: 2px;
+}
+
+/* Improved hover states */
+.provider-card:hover .provider-name {
+  color: var(--primary-color);
+}
+
+/* Tooltip styling */
+.tooltip {
+  --bs-tooltip-bg: var(--text-color);
+  --bs-tooltip-color: var(--card-bg);
+  font-size: 0.75rem;
+  opacity: 0.95 !important;
+}
+
+/* Active states for filter buttons */
+.btn-group .btn.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* Loading overlay for async operations */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.loading-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+/* Share button styling */
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.share-btn:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+/* Tablet specific styles */
+@media (min-width: 769px) and (max-width: 992px) {
+  .provider-item {
+    width: 50%;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background-color: white;
+    color: black;
+  }
+
+  header,
+  footer,
+  .form-actions,
+  .provider-section {
+    display: none;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #ddd;
+  }
+
+  .copy-link-button {
+    display: none;
+  }
+
+  .result-card {
+    page-break-inside: avoid;
+  }
+}
+
+/* Specific improvements for dark theme */
+[data-theme="dark"] .card-header {
+  border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .form-label {
+  color: var(--text-color);
+}
+
+[data-theme="dark"] .input-group-text {
+  background-color: #2d3748;
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+/* Text color improvements for better readability */
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5,
+.card-header h6 {
+  color: var(--text-color);
+}
+
+/* Contrast improvements for titles and text in dark theme */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .text-muted {
+  color: #cbd5e1 !important;
+}
+
+/* Specific fixes for provider-section in dark theme */
+[data-theme="dark"] .provider-section {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .provider-name {
+  color: #f1f5f9;
+}
+
+/* Adjust badge colors in dark theme for better visibility */
+[data-theme="dark"] .provider-badge.usd {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #bfdbfe;
+}
+
+[data-theme="dark"] .provider-badge.eur {
+  background-color: rgba(99, 102, 241, 0.2);
+  color: #c7d2fe;
+}
+
+[data-theme="dark"] .provider-badge.cad {
+  background-color: rgba(139, 92, 246, 0.2);
+  color: #ddd6fe;
+}
+
+[data-theme="dark"] .provider-badge.inr {
+  background-color: rgba(236, 72, 153, 0.2);
+  color: #fbcfe8;
+}
+
+[data-theme="dark"] .provider-tag {
+  background-color: rgba(100, 116, 139, 0.2);
+  color: #e2e8f0;
+}
+
+/* Contrast improvement for filter buttons in dark theme */
+[data-theme="dark"] .btn-outline-secondary {
+  border-color: #4b5563;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .btn-outline-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .btn-group .btn.active {
+  background-color: var(--primary-color);
+  color: #ffffff;
+  border-color: var(--primary-color);
+}
+
+/* Fix for provider card in dark theme */
+[data-theme="dark"] .provider-card {
+  background-color: #263445;
+}
+
+[data-theme="dark"] .provider-card:hover {
+  background-color: #2d3e53;
+}
+
+/* Solutions for specific issues */
+.form-check-input {
+  background-color: var(--bg-color);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .form-check-input {
+  background-color: #2d3748;
+  border-color: #4b5563;
+}
+
+/* Improved visibility of radio button in dark theme */
+[data-theme="dark"] .form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Improvements for select option in dark theme */
+[data-theme="dark"] option {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+/* Better focus effect for dark theme */
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+  background-color: #0f172a;
+  color: #ffffff;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(96, 165, 250, 0.25);
+}
+
+/* Ensure text color remains white even when typing */
+[data-theme="dark"] .form-control::selection {
+  background-color: var(--primary-color);
+  color: #ffffff;
+}
+
+/* Adjust select in dark theme when focused */
+[data-theme="dark"] .form-select:focus {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* More visible placeholder when input is focused */
+[data-theme="dark"] .form-control:focus::placeholder {
+  color: #94a3b8;
+  opacity: 0.5;
+}
+
+/* Adjust focus behavior for all inputs */
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+/* Adjust input group when focused */
+[data-theme="dark"] .input-group .form-control:focus + .input-group-text,
+[data-theme="dark"] .input-group-text + .form-control:focus {
+  border-color: var(--primary-color);
+}
+
+/* Icons in inputs when focused */
+[data-theme="dark"] .input-group .form-control:focus ~ .input-group-text {
+  color: var(--primary-light);
+}
+
+/* Improved button visibility in dark theme */
+[data-theme="dark"] .btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+[data-theme="dark"] .btn-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+/* Fix for toast in dark theme */
+[data-theme="dark"] .toast {
+  background-color: #2d3748;
+  color: #f1f5f9;
+}
+
+/* Fix alert colors for better readability in dark theme */
+[data-theme="dark"] .alert-box.warning {
+  background-color: rgba(251, 191, 36, 0.2);
+  border-left: 4px solid var(--warning-color);
+}
+
+[data-theme="dark"] .alert-box.warning i,
+[data-theme="dark"] .alert-box.warning strong {
+  color: #fcd34d;
+}
+
+[data-theme="dark"] .alert-info {
+  background-color: rgba(96, 165, 250, 0.2);
+  border-left: 4px solid var(--info-color);
+}
+
+[data-theme="dark"] .alert-info .fas {
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .alert-danger {
+  background-color: rgba(248, 113, 113, 0.2);
+  border-left: 4px solid var(--danger-color);
+}
+
+[data-theme="dark"] .alert-danger .fas {
+  color: #fca5a5;
+}
+
+/* Ensure more visible text in alerts in dark theme */
+[data-theme="dark"] .alert-box span,
+[data-theme="dark"] .alert span,
+[data-theme="dark"] .alert p {
+  color: #f1f5f9;
+}
+
+/* Improve usability for clickable cards */
+.provider-card {
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.provider-card input[type="radio"] {
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+
+/* Maintain card style when input is focused */
+.provider-card:has(input:focus) {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Visual feedback improvement on hover/focus for accessibility */
+.provider-card:hover,
+.provider-card:focus-within {
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+}
+
+/* Fix text and icon color in navbar for light theme */
+[data-theme="light"] .logo-link,
+body:not([data-theme="dark"]) .logo-link {
+  color: var(--navbar-text-color-light);
+  text-shadow: none;
+}
+
+[data-theme="dark"] .logo-link {
+  color: var(--navbar-text-color-dark);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] .theme-switcher button,
+body:not([data-theme="dark"]) .theme-switcher button {
+  color: var(--navbar-text-color-light);
+  text-shadow: none;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .theme-switcher button {
+  color: var(--navbar-text-color-dark);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Fix for success card in dark theme */
+[data-theme="dark"] .result-card .card-header {
+  background-color: #15803d !important; /* More appropriate dark green */
+  color: white;
+}
+
+[data-theme="dark"] .result-card {
+  border-color: #15803d;
+}
+
+[data-theme="dark"] .result-card .card-body {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+/* Uniform size for provider cards */
+.provider-card {
+  height: 3.5rem !important; /* Fixed height for all cards */
+  min-height: unset;
+  display: flex;
+  align-items: center;
+}
+
+.provider-card .form-check-label {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+/* Ensure provider text fits in one line with ellipsis if necessary */
+.provider-name {
+  font-weight: 500;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Adjust item to better fill the space */
+.provider-item {
+  margin-bottom: 0.5rem;
+  display: flex;
+}
+
+/* Improve result card for dark theme */
+[data-theme="dark"] .copy-link-input {
+  background-color: #1a2b40;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .copy-link-container {
+  border-color: #334155;
+}
+
+[data-theme="dark"] .result-card h5,
+[data-theme="dark"] .result-card h6,
+[data-theme="dark"] .result-card .fw-bold {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .result-card .text-muted {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .result-card .alert-info {
+  background-color: rgba(96, 165, 250, 0.2);
+}
+
+[data-theme="dark"] .result-card .alert-info h6 {
+  color: #bfdbfe;
+}
+
+/* Ensure all provider cards have exactly the same size */
+.provider-item {
+  margin-bottom: 0.5rem;
+  height: auto;
+}
+
+.provider-card {
+  width: 100%;
+}
+
+/* Improve layout inside the card to accommodate all elements */
+.provider-card .form-check-label {
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Ensure all rows in the provider grid have the same height */
+.provider-group .row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.provider-group .row > div {
+  display: flex;
+  margin-bottom: 0.75rem;
+}
+
+/* Remove extra margin from form after removing the button */
+.form-actions {
+  justify-content: flex-end;
+}

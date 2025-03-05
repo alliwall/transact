@@ -1,0 +1,43 @@
+{
+  "name": "transact",
+  "version": "1.0.0",
+  "description": "Generate payment links to receive funds instantly in USDC without a bank or merchant account.",
+  "main": "server.js",
+  "scripts": {
+    "minify": "node scripts/minify.js",
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alliwall/transact.git"
+  },
+  "keywords": [
+    "payment",
+    "link",
+    "USDC",
+    "crypto",
+    "payments",
+    "transaction",
+    "polygon",
+    "freelancers",
+    "merchants",
+    "payment",
+    "gateway"
+  ],
+  "author": "https://github.com/rsoaresdev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alliwall/transact/issues"
+  },
+  "homepage": "https://github.com/alliwall/transact#readme",
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "clean-css": "^5.3.3",
+    "express": "^4.21.2",
+    "uglify-js": "^3.19.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
