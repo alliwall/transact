@@ -394,7 +394,7 @@ header {
 }
 
 .payment-result {
-  opacity: 0;
+  opacity: 100;
   transform: translateY(20px);
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
@@ -1125,77 +1125,58 @@ body:not([data-theme="dark"]) .theme-switcher button {
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+/* Fix for the moon icon - it turns white in dark theme */
+[data-bs-theme="dark"] .theme-switcher button i.fa-moon,
+[data-bs-theme="dark"] .theme-switcher button i.fa-sun,
+[data-theme="dark"] .theme-switcher button i.fa-moon,
+[data-theme="dark"] .theme-switcher button i.fa-sun {
+  color: #ffffff !important;
+}
+
 /* Fix for success card in dark theme */
-[data-theme="dark"] .result-card .card-header {
+[data-theme="dark"] .result-card .card-header,
+[data-bs-theme="dark"] .result-card .card-header {
   background-color: #15803d !important; /* More appropriate dark green */
   color: white;
 }
 
-[data-theme="dark"] .result-card {
+/* Fix for payment card in dark theme */
+[data-bs-theme="dark"] .success-card,
+[data-theme="dark"] .success-card {
+  background-color: var(--card-bg) !important;
   border-color: #15803d;
+  color: var(--text-color) !important;
 }
 
-[data-theme="dark"] .result-card .card-body {
-  background-color: var(--card-bg);
+[data-bs-theme="dark"] .success-card .card-body,
+[data-theme="dark"] .success-card .card-body {
+  background-color: var(--card-bg) !important;
+  color: var(--text-color) !important;
+}
+
+[data-bs-theme="dark"] .success-card .card-header,
+[data-theme="dark"] .success-card .card-header {
+  background-color: #15803d !important;
+  color: white !important;
+}
+
+/* Additional fixes for inputs in dark mode */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .input-group-text {
+  background-color: var(--input-background);
+  color: var(--input-text-color);
+  border-color: var(--border-color);
+}
+
+/* Ensure buttons in dark theme cards have correct colors */
+[data-bs-theme="dark"] .success-card .btn-outline-secondary {
+  border-color: var(--border-color);
   color: var(--text-color);
 }
 
-/* Uniform size for provider cards */
-.provider-card {
-  height: 3.5rem !important; /* Fixed height for all cards */
-  min-height: unset;
-  display: flex;
-  align-items: center;
-}
-
-.provider-card .form-check-label {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  padding: 0.25rem 0;
-}
-
-/* Ensure provider text fits in one line with ellipsis if necessary */
-.provider-name {
-  font-weight: 500;
-  max-width: 120px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Adjust item to better fill the space */
-.provider-item {
-  margin-bottom: 0.5rem;
-  display: flex;
-}
-
-/* Improve result card for dark theme */
-[data-theme="dark"] .copy-link-input {
-  background-color: #1a2b40;
-  color: #f1f5f9;
-}
-
-[data-theme="dark"] .copy-link-container {
-  border-color: #334155;
-}
-
-[data-theme="dark"] .result-card h5,
-[data-theme="dark"] .result-card h6,
-[data-theme="dark"] .result-card .fw-bold {
-  color: #f8fafc;
-}
-
-[data-theme="dark"] .result-card .text-muted {
-  color: #cbd5e1 !important;
-}
-
-[data-theme="dark"] .result-card .alert-info {
-  background-color: rgba(96, 165, 250, 0.2);
-}
-
-[data-theme="dark"] .result-card .alert-info h6 {
-  color: #bfdbfe;
+[data-bs-theme="dark"] .success-card .btn-outline-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 /* Ensure all provider cards have exactly the same size */
@@ -1230,4 +1211,114 @@ body:not([data-theme="dark"]) .theme-switcher button {
 /* Remove extra margin from form after removing the button */
 .form-actions {
   justify-content: flex-end;
+}
+
+/* Fix for payment card in dark theme */
+[data-bs-theme="dark"] .success-card,
+[data-theme="dark"] .success-card {
+  background-color: var(--card-bg) !important;
+  border-color: #15803d;
+  color: var(--text-color) !important;
+}
+
+[data-bs-theme="dark"] .success-card .card-body,
+[data-theme="dark"] .success-card .card-body {
+  background-color: var(--card-bg) !important;
+  color: var(--text-color) !important;
+}
+
+[data-bs-theme="dark"] .success-card .card-header,
+[data-theme="dark"] .success-card .card-header {
+  background-color: #15803d !important;
+  color: white !important;
+}
+
+[data-theme="dark"] .result-card,
+[data-bs-theme="dark"] .result-card {
+  border-color: #15803d;
+}
+
+/* Additional fixes for inputs in dark mode */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .input-group-text {
+  background-color: var(--input-background);
+  color: var(--input-text-color);
+  border-color: var(--border-color);
+}
+
+/* Ensure buttons in dark theme cards have correct colors */
+[data-bs-theme="dark"] .success-card .btn-outline-secondary {
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+[data-bs-theme="dark"] .success-card .btn-outline-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Uniform size for provider cards */
+.provider-card {
+  height: 3.5rem !important; /* Fixed height for all cards */
+  min-height: unset;
+  display: flex;
+  align-items: center;
+}
+
+.provider-card .form-check-label {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+/* Ensure provider text fits in one line with ellipsis if necessary */
+.provider-name {
+  font-weight: 500;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Adjust item to better fill the space */
+.provider-item {
+  margin-bottom: 0.5rem;
+  display: flex;
+}
+
+/* Improve result card for dark theme */
+[data-theme="dark"] .copy-link-input,
+[data-bs-theme="dark"] .copy-link-input {
+  background-color: #1a2b40;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .copy-link-container,
+[data-bs-theme="dark"] .copy-link-container {
+  border-color: #334155;
+}
+
+[data-theme="dark"] .result-card h5,
+[data-theme="dark"] .result-card h6,
+[data-theme="dark"] .result-card .fw-bold,
+[data-bs-theme="dark"] .result-card h5,
+[data-bs-theme="dark"] .result-card h6,
+[data-bs-theme="dark"] .result-card .fw-bold {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .result-card .text-muted,
+[data-bs-theme="dark"] .result-card .text-muted {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .result-card .alert-info,
+[data-bs-theme="dark"] .result-card .alert-info {
+  background-color: rgba(96, 165, 250, 0.2);
+}
+
+[data-theme="dark"] .result-card .alert-info h6,
+[data-bs-theme="dark"] .result-card .alert-info h6 {
+  color: #bfdbfe;
 }

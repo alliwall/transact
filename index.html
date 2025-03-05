@@ -5,20 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Generate payment links to receive funds instantly in USDC without a bank or merchant account. Perfect for freelancers and merchants without a website."
+      content="Transact.st - Receive payments in USDC without a bank or merchant account. Perfect for freelancers and merchants without a website."
     />
-    <meta name="keywords" content="payment link, USDC, crypto payments, transaction, polygon, freelancers, merchants, payment gateway" />
+    <meta
+      name="keywords"
+      content="payment link, USDC, crypto payments, transaction, polygon, freelancers, merchants, payment gateway"
+    />
     <meta name="author" content="Transact.st" />
     <meta name="robots" content="index, follow" />
-    
-    <meta property="og:title" content="Transact | Generate Payment Link" />
-    <meta property="og:description" content="Generate payment links to receive funds instantly in USDC without a bank or merchant account." />
+
+    <meta property="og:title" content="Transact | Payment Services" />
+    <meta
+      property="og:description"
+      content="Generate payment links and receive funds instantly in USDC without a bank or merchant account."
+    />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://transact.st/" />
     <meta property="og:image" content="https://transact.st/og-image.jpg" />
-    
+
     <link rel="icon" href="images/favicon.ico" />
-    <title>Transact | Generate Payment Link</title>
+    <title>Transact | Payment Services</title>
     <link rel="canonical" href="https://transact.st/" />
     <link
       rel="stylesheet"
@@ -43,620 +49,216 @@
               <i class="fas fa-exchange-alt me-2"></i>Transact.st
             </h1>
           </a>
-          <div class="theme-switcher">
-            <button id="theme-toggle" class="btn btn-sm btn-outline-light">
-              <i class="fas fa-moon"></i>
-            </button>
+          <div class="d-flex align-items-center">
+            <div class="theme-switcher">
+              <button id="theme-toggle" class="btn btn-sm btn-outline-light">
+                <i class="fas fa-moon"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </header>
 
     <div class="container py-5">
-      <div class="card main-card mb-4">
-        <div class="card-header bg-transparent">
-          <div class="d-flex justify-content-between align-items-center">
-            <h2 class="mb-0 h3">
-              <i class="fas fa-link me-2 accent-icon"></i>Generate Payment Link
-            </h2>
-            <span class="badge feature-badge">No KYC Required</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <p class="mb-4 lead">
-            Create payment links to receive funds instantly in USDC without a
-            bank or merchant account. Perfect for freelancers and merchants
-            without a website.
-          </p>
-
-          <div class="alert-box warning mb-4">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span
-              ><strong>Warning:</strong> Your wallet must be USDC (Polygon)
-              compatible to receive payments successfully.</span
-            >
-          </div>
-
-          <form id="transaction-form" class="needs-validation" novalidate>
-            <div class="row g-4">
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <label for="wallet_address" class="form-label"
-                    >Wallet Address (Receiver):</label
-                  >
-                  <div class="input-group">
-                    <span class="input-group-text"
-                      ><i class="fas fa-wallet"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="wallet_address"
-                      name="wallet_address"
-                      placeholder="0x..."
-                      required
-                    />
-                    <div class="invalid-feedback">
-                      Please enter a valid wallet address.
-                    </div>
-                  </div>
-                  <small class="text-muted"
-                    >Must be compatible with USDC on Polygon network</small
-                  >
-                </div>
-
-                <div class="mb-3">
-                  <label for="email_address" class="form-label"
-                    >Customer Email (Payer):</label
-                  >
-                  <div class="input-group">
-                    <span class="input-group-text"
-                      ><i class="fas fa-envelope"></i
-                    ></span>
-                    <input
-                      type="email"
-                      class="form-control"
-                      id="email_address"
-                      name="email_address"
-                      placeholder="customer@example.com"
-                      required
-                    />
-                    <div class="invalid-feedback">
-                      Please enter a valid email.
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <label for="amount" class="form-label">Amount to Pay:</label>
-                  <div class="input-group">
-                    <span class="input-group-text"
-                      ><i class="fas fa-dollar-sign"></i
-                    ></span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      class="form-control"
-                      id="amount"
-                      name="amount"
-                      placeholder="100.00"
-                      required
-                    />
-                    <div class="invalid-feedback">
-                      Please enter a valid amount.
-                    </div>
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <label for="currency" class="form-label">Currency:</label>
-                  <div class="input-group">
-                    <span class="input-group-text"
-                      ><i class="fas fa-coins"></i
-                    ></span>
-                    <select
-                      class="form-select"
-                      id="currency"
-                      name="currency"
-                      required
-                    >
-                      <option value="USD">USD - United States Dollar</option>
-                      <option value="EUR">EUR - Euro</option>
-                      <option value="CAD">CAD - Canadian Dollar</option>
-                      <option value="INR">INR - Indian Rupee</option>
-                    </select>
-                    <div class="invalid-feedback">
-                      Please select a currency.
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="mb-4">
-              <label for="provider" class="form-label">Payment Provider:</label>
-              <div class="provider-section">
-                <div class="provider-filter mb-2">
-                  <div class="btn-group btn-group-sm" role="group">
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary active"
-                      data-filter="all"
-                    >
-                      All
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      data-filter="usd"
-                    >
-                      USD
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      data-filter="eur"
-                    >
-                      EUR
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      data-filter="cad"
-                    >
-                      CAD
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      data-filter="inr"
-                    >
-                      INR
-                    </button>
-                  </div>
-                  <div class="search-box">
-                    <input
-                      type="text"
-                      class="form-control form-control-sm"
-                      id="provider-search"
-                      placeholder="Search providers..."
-                    />
-                  </div>
-                </div>
-                <div class="provider-group">
-                  <div class="row g-2">
-                    <div class="col-md-4 provider-item" data-currency="usd">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-wert"
-                          value="wert"
-                          checked
-                        />
-                        <div class="form-check-label" for="provider-wert">
-                          <span class="provider-name">wert.io</span>
-                          <span class="provider-badge usd">USD</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="eur">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-werteur"
-                          value="werteur"
-                        />
-                        <label class="form-check-label" for="provider-werteur">
-                          <span class="provider-name">wert.io</span>
-                          <span class="provider-badge eur">EUR</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="usd">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-stripe"
-                          value="stripe"
-                        />
-                        <label class="form-check-label" for="provider-stripe">
-                          <span class="provider-name">Stripe</span>
-                          <span class="provider-badge usd">USD</span>
-                          <span class="provider-tag">USA Only</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-sardine"
-                          value="sardine"
-                        />
-                        <label class="form-check-label" for="provider-sardine">
-                          <span class="provider-name">Sardine.ai</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-guardarian"
-                          value="guardarian"
-                        />
-                        <label
-                          class="form-check-label"
-                          for="provider-guardarian"
-                        >
-                          <span class="provider-name">Guardarian</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-particle"
-                          value="particle"
-                        />
-                        <label class="form-check-label" for="provider-particle">
-                          <span class="provider-name">particle.network</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-transak"
-                          value="transak"
-                        />
-                        <label class="form-check-label" for="provider-transak">
-                          <span class="provider-name">Transak</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-banxa"
-                          value="banxa"
-                        />
-                        <label class="form-check-label" for="provider-banxa">
-                          <span class="provider-name">Banxa</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-simplex"
-                          value="simplex"
-                        />
-                        <label class="form-check-label" for="provider-simplex">
-                          <span class="provider-name">Simplex</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-changenow"
-                          value="changenow"
-                        />
-                        <label
-                          class="form-check-label"
-                          for="provider-changenow"
-                        >
-                          <span class="provider-name">ChangeNOW</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-mercuryo"
-                          value="mercuryo"
-                        />
-                        <label class="form-check-label" for="provider-mercuryo">
-                          <span class="provider-name">mercuryo.io</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="usd">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-rampnetwork"
-                          value="rampnetwork"
-                        />
-                        <label
-                          class="form-check-label"
-                          for="provider-rampnetwork"
-                        >
-                          <span class="provider-name">ramp.network</span>
-                          <span class="provider-badge usd">USD</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-moonpay"
-                          value="moonpay"
-                        />
-                        <label class="form-check-label" for="provider-moonpay">
-                          <span class="provider-name">MoonPay</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-alchemypay"
-                          value="alchemypay"
-                        />
-                        <label
-                          class="form-check-label"
-                          for="provider-alchemypay"
-                        >
-                          <span class="provider-name">Alchemy Pay</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="usd">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-robinhood"
-                          value="robinhood"
-                        />
-                        <label
-                          class="form-check-label"
-                          for="provider-robinhood"
-                        >
-                          <span class="provider-name">Robinhood</span>
-                          <span class="provider-badge usd">USD</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-coinbase"
-                          value="coinbase"
-                        />
-                        <label class="form-check-label" for="provider-coinbase">
-                          <span class="provider-name">Coinbase PAY</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-utorg"
-                          value="utorg"
-                        />
-                        <label class="form-check-label" for="provider-utorg">
-                          <span class="provider-name">UTORG</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-unlimit"
-                          value="unlimit"
-                        />
-                        <label class="form-check-label" for="provider-unlimit">
-                          <span class="provider-name">Unlimit</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-bitnovo"
-                          value="bitnovo"
-                        />
-                        <label class="form-check-label" for="provider-bitnovo">
-                          <span class="provider-name">Bitnovo</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-simpleswap"
-                          value="simpleswap"
-                        />
-                        <label
-                          class="form-check-label"
-                          for="provider-simpleswap"
-                        >
-                          <span class="provider-name">SimpleSwap</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-topper"
-                          value="topper"
-                        />
-                        <label class="form-check-label" for="provider-topper">
-                          <span class="provider-name">Topper</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-swipelux"
-                          value="swipelux"
-                        />
-                        <label class="form-check-label" for="provider-swipelux">
-                          <span class="provider-name">Swipelux</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-kado"
-                          value="kado"
-                        />
-                        <label class="form-check-label" for="provider-kado">
-                          <span class="provider-name">Kado.money</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="all">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-itez"
-                          value="itez"
-                        />
-                        <label class="form-check-label" for="provider-itez">
-                          <span class="provider-name">Itez</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="usd">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-transfi"
-                          value="transfi"
-                        />
-                        <label class="form-check-label" for="provider-transfi">
-                          <span class="provider-name">Transfi</span>
-                          <span class="provider-badge usd">USD</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="cad">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-interac"
-                          value="interac"
-                        />
-                        <label class="form-check-label" for="provider-interac">
-                          <span class="provider-name">Interac</span>
-                          <span class="provider-badge cad">CAD</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-md-4 provider-item" data-currency="inr">
-                      <div class="provider-card">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="provider"
-                          id="provider-upi"
-                          value="upi"
-                        />
-                        <label class="form-check-label" for="provider-upi">
-                          <span class="provider-name">UPI/IMPS</span>
-                          <span class="provider-badge inr">INR</span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button type="submit" class="btn btn-primary" id="submit-btn">
-                <span id="submit-text">Generate Payment Link</span>
-                <span id="loading-spinner" class="loader d-none"></span>
-              </button>
-            </div>
-          </form>
+      <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3">Digital Payment Solutions</h2>
+        <p class="lead mb-4">
+          Transact.st offers simple solutions to receive payments in USDC
+          without the need for a bank or merchant account. Choose the option
+          that best suits your needs.
+        </p>
+        <div class="alert-box warning mb-4 d-inline-block text-start">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span
+            ><strong>Warning:</strong> Your wallet must be compatible with USDC
+            (Polygon) to receive payments successfully.</span
+          >
         </div>
       </div>
 
-      <div id="payment-result" class="payment-result">
-        <!-- Payment result will be inserted here -->
+      <div class="row g-4 justify-content-center">
+        <!-- Payment URL Generator Card -->
+        <div class="col-md-6">
+          <div class="card main-card h-100 shadow-sm">
+            <div class="card-header bg-transparent">
+              <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 h4">
+                  <i class="fas fa-link me-2 accent-icon"></i>Generate Payment
+                  URL
+                </h3>
+                <span class="badge feature-badge">For Merchants</span>
+              </div>
+            </div>
+            <div class="card-body d-flex flex-column">
+              <p class="mb-4">
+                Create encrypted URLs to share with your customers. Perfect for
+                businesses that need to generate pre-configured payment links
+                for their customers.
+              </p>
+              <ul class="mb-4">
+                <li>Encrypted and secure URLs</li>
+                <li>Pre-configured wallet</li>
+                <li>Customizable for your customers</li>
+                <li>Complete control over your payments</li>
+              </ul>
+              <div class="mt-auto">
+                <a href="/payment-url-gen" class="btn btn-primary w-100">
+                  <i class="fas fa-code me-2"></i>Generate Payment URL
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Link Card -->
+        <div class="col-md-6">
+          <div class="card main-card h-100 shadow-sm">
+            <div class="card-header bg-transparent">
+              <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 h4">
+                  <i class="fas fa-money-bill-wave me-2 accent-icon"></i
+                  >Generate Payment Link
+                </h3>
+                <span class="badge feature-badge">For Freelancers</span>
+              </div>
+            </div>
+            <div class="card-body d-flex flex-column">
+              <p class="mb-4">
+                Create direct payment links to receive funds instantly. Ideal
+                for freelancers and small merchants who need to receive quick
+                payments.
+              </p>
+              <ul class="mb-4">
+                <li>Simple and quick setup</li>
+                <li>No KYC required</li>
+                <li>Multiple payment providers</li>
+                <li>Compatible with various currencies</li>
+              </ul>
+              <div class="mt-auto">
+                <a href="/payment-link" class="btn btn-primary w-100">
+                  <i class="fas fa-credit-card me-2"></i>Generate Payment Link
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features section -->
+      <div class="row mt-5 pt-4 g-4">
+        <div class="col-12 text-center mb-4">
+          <h3 class="h4">Why choose Transact.st?</h3>
+        </div>
+
+        <div class="col-md-4">
+          <div class="d-flex align-items-start">
+            <div class="me-3 text-primary">
+              <i class="fas fa-shield-alt fa-2x"></i>
+            </div>
+            <div>
+              <h4 class="h5 mb-2">Secure & Encrypted</h4>
+              <p class="text-muted">
+                All transactions are secure and wallet information is encrypted.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="d-flex align-items-start">
+            <div class="me-3 text-primary">
+              <i class="fas fa-bolt fa-2x"></i>
+            </div>
+            <div>
+              <h4 class="h5 mb-2">Fast & Hassle-Free</h4>
+              <p class="text-muted">
+                Receive payments in minutes, without complex registrations or
+                KYC.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="d-flex align-items-start">
+            <div class="me-3 text-primary">
+              <i class="fas fa-globe fa-2x"></i>
+            </div>
+            <div>
+              <h4 class="h5 mb-2">Global & Accessible</h4>
+              <p class="text-muted">
+                Accept payments from anywhere in the world with multiple
+                currency options.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+
+    <footer class="mt-5">
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <h4>Transact.st</h4>
+            <p class="text-muted">
+              Simple solutions for digital payments in USDC.
+            </p>
+          </div>
+
+          <div class="col-12 mt-4 text-center text-muted">
+            <p class="mb-0">&copy; <script>document.write(new Date().getFullYear())</script> Transact.st. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    </footer>
 
     <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="scripts/script.js"></script>
+    <script>
+      // Theme toggle script
+      document.addEventListener("DOMContentLoaded", () => {
+        const themeToggle = document.getElementById("theme-toggle");
+        if (themeToggle) {
+          const storedTheme = localStorage.getItem("theme") || "light";
+          document.body.setAttribute("data-bs-theme", storedTheme);
+          document.body.setAttribute("data-theme", storedTheme);
+
+          // Update button icon
+          if (storedTheme === "dark") {
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            themeToggle.classList.add("btn-outline-light");
+            themeToggle.classList.remove("btn-outline-dark");
+          } else {
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            themeToggle.classList.add("btn-outline-dark");
+            themeToggle.classList.remove("btn-outline-light");
+          }
+
+          themeToggle.addEventListener("click", () => {
+            const currentTheme = document.body.getAttribute("data-bs-theme");
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+            // Update theme
+            document.body.setAttribute("data-bs-theme", newTheme);
+            document.body.setAttribute("data-theme", newTheme);
+            localStorage.setItem("theme", newTheme);
+
+            // Update button icon
+            if (newTheme === "dark") {
+              themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+              themeToggle.classList.add("btn-outline-light");
+              themeToggle.classList.remove("btn-outline-dark");
+            } else {
+              themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+              themeToggle.classList.add("btn-outline-dark");
+              themeToggle.classList.remove("btn-outline-light");
+            }
+          });
+        }
+      });
+    </script>
   </body>
 </html>

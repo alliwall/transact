@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Business Payment Link Generator - Receive funds instantly in USDC without a bank or merchant account."
+    />
+    <meta name="keywords" content="payment link generator, USDC, crypto payments, transaction, polygon, business, payment gateway" />
+    <meta name="author" content="Transact.st" />
+    <meta name="robots" content="index, follow" />
+    
+    <meta property="og:title" content="Transact | Business Payment Link Generator" />
+    <meta property="og:description" content="Generate payment links to receive funds instantly in USDC without a bank or merchant account." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://transact.st/payment-url-gen" />
+    <meta property="og:image" content="https://transact.st/og-image.jpg" />
+    
+    <link rel="icon" href="images/favicon.ico" />
+    <title>Transact | Business Payment Link Generator</title>
+    <link rel="canonical" href="https://transact.st/payment-url-gen" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <header class="py-4 bg-gradient">
+      <div class="container">
+        <div class="d-flex align-items-center justify-content-between">
+          <a href="/" class="logo-link">
+            <h1 class="mb-0">
+              <i class="fas fa-exchange-alt me-2"></i>Transact.st
+            </h1>
+          </a>
+          <div class="theme-switcher">
+            <button id="theme-toggle" class="btn btn-sm btn-outline-light">
+              <i class="fas fa-moon"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="container py-5">
+      <div class="card main-card mb-4">
+        <div class="card-header bg-transparent">
+          <div class="d-flex justify-content-between align-items-center">
+            <h2 class="mb-0 h3">
+              <i class="fas fa-link me-2 accent-icon"></i>Business Payment Link Generator
+            </h2>
+            <span class="badge feature-badge">For Business</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <p class="mb-4 lead">
+            Configure your USDC wallet address and create custom payment links for your customers.
+            Your wallet address will be securely locked for all generated links.
+          </p>
+
+          <div class="alert-box warning mb-4">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span
+              ><strong>Warning:</strong> Your wallet must be USDC (Polygon)
+              compatible to receive payments successfully.</span
+            >
+          </div>
+
+          <form id="generator-form" class="needs-validation" novalidate>
+            <div class="row g-4">
+              <div class="col-12">
+                <div class="mb-3">
+                  <label for="business_wallet_address" class="form-label"
+                    >Wallet Address (Receiver):</label
+                  >
+                  <div class="input-group">
+                    <span class="input-group-text"
+                      ><i class="fas fa-wallet"></i
+                    ></span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="business_wallet_address"
+                      name="business_wallet_address"
+                      placeholder="0x..."
+                      required
+                    />
+                    <div class="invalid-feedback">
+                      Please enter a valid wallet address.
+                    </div>
+                  </div>
+                  <small class="text-muted"
+                    >Must be compatible with USDC on Polygon network</small
+                  >
+                </div>
+
+                <div class="mb-4">
+                  <button type="submit" class="btn btn-primary" id="submit-btn">
+                    <span id="submit-text">Generate Payment Page</span>
+                    <span id="loading-spinner" class="loader d-none"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="generator-result" class="generator-result">
+        <!-- Payment link generator result will be inserted here -->
+      </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="scripts/url-generator.js"></script>
+  </body>
+</html> 
