@@ -37,6 +37,8 @@
 
   --navbar-text-color-light: #1e293b;
   --navbar-text-color-dark: #ffffff;
+
+  --primary-color-rgb: 58, 134, 255;
 }
 
 /* ===== DARK THEME ===== */
@@ -65,6 +67,8 @@
   --navbar-hover-color: #ffffff;
   --navbar-gradient-start: #1e40af;
   --navbar-gradient-end: #3b82f6;
+
+  --primary-color-rgb: 96, 165, 250;
 }
 
 /* ===== BASE STYLES ===== */
@@ -128,31 +132,131 @@ header {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow);
-  transition: var(--transition);
+  transition: all 0.4s ease;
   overflow: hidden;
+  position: relative;
 }
 
 .main-card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+  border-color: var(--primary-light);
+}
+
+.main-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.main-card:hover::before {
+  opacity: 1;
 }
 
 .card-header {
   background-color: var(--card-bg);
   border-bottom: 1px solid var(--border-color);
-  padding: 1.25rem 1.5rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+  position: relative;
+}
+
+.card-header h3 {
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.main-card:hover .card-header h3 {
+  color: var(--primary-color);
 }
 
 .accent-icon {
   color: var(--primary-color);
+  font-size: 1.2em;
+  transition: transform 0.3s ease;
+}
+
+.main-card:hover .accent-icon {
+  transform: scale(1.2);
 }
 
 .feature-badge {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
   font-weight: 500;
   letter-spacing: 0.025em;
   padding: 0.5em 0.75em;
   border-radius: 9999px;
   font-size: 0.75rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+}
+
+.feature-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.feature-list li:hover {
+  background-color: rgba(var(--primary-color-rgb), 0.05);
+}
+
+.feature-list li i {
+  color: var(--primary-color);
+  font-size: 1.1rem;
+  transition: transform 0.2s ease;
+}
+
+.feature-list li:hover i {
+  transform: scale(1.2);
+}
+
+.card-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-card .btn-primary {
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.main-card .btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.5s, opacity 0.3s;
+}
+
+.main-card .btn-primary:hover::after {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
 }
 
 .lead {
@@ -1189,84 +1293,6 @@ body:not([data-theme="dark"]) .theme-switcher button {
   color: white;
 }
 
-/* Ensure all provider cards have exactly the same size */
-.provider-item {
-  margin-bottom: 0.5rem;
-  height: auto;
-}
-
-.provider-card {
-  width: 100%;
-}
-
-/* Improve layout inside the card to accommodate all elements */
-.provider-card .form-check-label {
-  width: 100%;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Ensure all rows in the provider grid have the same height */
-.provider-group .row {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.provider-group .row > div {
-  display: flex;
-  margin-bottom: 0.75rem;
-}
-
-/* Remove extra margin from form after removing the button */
-.form-actions {
-  justify-content: flex-end;
-}
-
-/* Fix for payment card in dark theme */
-[data-bs-theme="dark"] .success-card,
-[data-theme="dark"] .success-card {
-  background-color: var(--card-bg) !important;
-  border-color: #15803d;
-  color: var(--text-color) !important;
-}
-
-[data-bs-theme="dark"] .success-card .card-body,
-[data-theme="dark"] .success-card .card-body {
-  background-color: var(--card-bg) !important;
-  color: var(--text-color) !important;
-}
-
-[data-bs-theme="dark"] .success-card .card-header,
-[data-theme="dark"] .success-card .card-header {
-  background-color: #15803d !important;
-  color: white !important;
-}
-
-[data-theme="dark"] .result-card,
-[data-bs-theme="dark"] .result-card {
-  border-color: #15803d;
-}
-
-/* Additional fixes for inputs in dark mode */
-[data-bs-theme="dark"] .form-control,
-[data-bs-theme="dark"] .input-group-text {
-  background-color: var(--input-background);
-  color: var(--input-text-color);
-  border-color: var(--border-color);
-}
-
-/* Ensure buttons in dark theme cards have correct colors */
-[data-bs-theme="dark"] .success-card .btn-outline-secondary {
-  border-color: var(--border-color);
-  color: var(--text-color);
-}
-
-[data-bs-theme="dark"] .success-card .btn-outline-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
 /* Uniform size for provider cards */
 .provider-card {
   height: 3.5rem !important; /* Fixed height for all cards */
@@ -1756,4 +1782,455 @@ h6.tracking-section-title {
 
 [data-theme="dark"] h6.tracking-section-title {
   color: var(--primary-light);
+}
+
+/* ===== HEADER AND NAVIGATION ===== */
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links a {
+  color: var(--navbar-text-color-light);
+  text-decoration: none;
+  font-weight: 500;
+  position: relative;
+  padding-bottom: 0.25rem;
+  transition: var(--transition);
+}
+
+.nav-links a:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: white;
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+/* ===== HERO SECTION ===== */
+.hero-section {
+  position: relative;
+  background: linear-gradient(135deg, var(--navbar-gradient-start), var(--navbar-gradient-end));
+  color: white;
+  padding: 5rem 0 8rem;
+  overflow: hidden;
+}
+
+.hero-section .lead {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-section h1,
+.hero-section p {
+  color: white;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  padding: 2rem 0;
+}
+
+.hero-image-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  z-index: 1;
+}
+
+.hero-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  box-shadow: var(--shadow-md);
+  transform: perspective(1000px) rotateY(-5deg);
+  transition: transform 0.5s ease;
+}
+
+.hero-image:hover {
+  transform: perspective(1000px) rotateY(0deg);
+}
+
+.placeholder-img {
+  object-fit: cover;
+  max-height: 400px;
+}
+
+.hero-shape {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  line-height: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.hero-badge {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hero-badge i {
+  color: var(--success-color);
+}
+
+/* ===== SECTION STYLES ===== */
+.section-subtitle {
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  color: var(--text-muted);
+}
+
+.services-section, 
+.features-section,
+.cta-section {
+  padding: 4rem 0;
+}
+
+/* ===== FEATURE CARDS ===== */
+.feature-list {
+  list-style: none;
+  padding: 0;
+}
+
+.feature-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.feature-card {
+  display: flex;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  height: 100%;
+  border: 1px solid var(--border-color);
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--primary-color);
+  border-radius: 12px;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.feature-content {
+  flex: 1;
+}
+
+/* ===== CTA SECTION ===== */
+.cta-card {
+  background: linear-gradient(135deg, var(--navbar-gradient-start), var(--navbar-gradient-end));
+  color: white;
+  border-radius: var(--border-radius);
+  padding: 3rem;
+  box-shadow: var(--shadow-md);
+}
+
+.cta-card h2, .cta-card p {
+  color: white;
+}
+
+/* ===== ANIMATION ON SCROLL ===== */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.animate-on-scroll.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== FOOTER STYLES ===== */
+.footer-section {
+  background-color: var(--card-bg);
+  border-top: 1px solid var(--border-color);
+  margin-top: 2rem;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.footer-links a:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+.social-icons {
+  display: flex;
+  gap: 1rem;
+}
+
+.social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--primary-color);
+  transition: var(--transition);
+}
+
+.social-icon:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-3px);
+}
+
+.footer-form .input-group {
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.footer-bottom {
+  padding: 1.5rem 0;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+@media (max-width: 992px) {
+  .hero-section {
+    padding: 3rem 0 6rem;
+  }
+  
+  .hero-content {
+    padding-bottom: 3rem;
+  }
+  
+  .cta-card {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2rem 0 4rem;
+  }
+  
+  .footer-section .col-lg-2 {
+    margin-bottom: 1.5rem;
+  }
+  
+  .feature-card {
+    padding: 1.25rem;
+  }
+  
+  .feature-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+  
+  .cta-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-badges {
+    justify-content: center;
+  }
+  
+  .section-subtitle {
+    font-size: 1rem;
+  }
+  
+  .cta-card {
+    padding: 1.5rem;
+    text-align: center;
+  }
+}
+
+/* ===== DARK THEME SPECIFIC STYLES ===== */
+[data-theme="dark"] .feature-icon {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="dark"] .social-icon {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="dark"] .hero-badge {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .nav-links a {
+  color: var(--navbar-text-color-dark);
+}
+
+[data-theme="dark"] .nav-links a:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] .hero-image {
+  filter: brightness(0.9);
+}
+
+[data-theme="dark"] .feature-list li i {
+  filter: brightness(1.2);
+}
+
+[data-theme="dark"] .feature-card:hover,
+[data-theme="dark"] .main-card:hover {
+  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3);
+}
+
+/* Adaptação da imagem hero para dark mode */
+[data-theme="dark"] .hero-image[src$=".svg"] {
+  filter: invert(0.1) hue-rotate(180deg) brightness(0.8);
+}
+
+/* Additional fixes for inputs in dark mode */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .input-group-text {
+  background-color: var(--input-background);
+  color: var(--input-text-color);
+  border-color: var(--border-color);
+}
+
+/* Ensure buttons in dark theme cards have correct colors */
+[data-bs-theme="dark"] .success-card .btn-outline-secondary {
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+[data-bs-theme="dark"] .success-card .btn-outline-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Ensure all provider cards have exactly the same size */
+.provider-item {
+  margin-bottom: 0.5rem;
+  height: auto;
+}
+
+.provider-card {
+  width: 100%;
+}
+
+/* Improve layout inside the card to accommodate all elements */
+.provider-card .form-check-label {
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Ensure all rows in the provider grid have the same height */
+.provider-group .row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.provider-group .row > div {
+  display: flex;
+  margin-bottom: 0.75rem;
+}
+
+/* Remove extra margin from form after removing the button */
+.form-actions {
+  justify-content: flex-end;
+}
+
+/* Fix for payment card in dark theme */
+[data-bs-theme="dark"] .success-card,
+[data-theme="dark"] .success-card {
+  background-color: var(--card-bg) !important;
+  border-color: #15803d;
+  color: var(--text-color) !important;
+}
+
+[data-bs-theme="dark"] .success-card .card-body,
+[data-theme="dark"] .success-card .card-body {
+  background-color: var(--card-bg) !important;
+  color: var(--text-color) !important;
+}
+
+[data-bs-theme="dark"] .success-card .card-header,
+[data-theme="dark"] .success-card .card-header {
+  background-color: #15803d !important;
+  color: white !important;
+}
+
+[data-theme="dark"] .result-card,
+[data-bs-theme="dark"] .result-card {
+  border-color: #15803d;
+}
+
+.hero-content .btn {
+  position: relative;
+  z-index: 2;
 }

@@ -401,7 +401,7 @@ function displayResult(walletAddress, paymentLink) {
                     <i class="fas fa-copy"></i>
                   </button>
                 </div>
-                <small class="text-muted d-block">Use this link to monitor the page activity</small>
+                <small class="text-muted d-block">Click here to monitor the page activity.</small>
               </div>
             </div>
             
