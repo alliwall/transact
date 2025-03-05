@@ -14,6 +14,150 @@ function validateWalletAddress(address) {
   return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
 
+// Advanced decryption function to match new encryption methods
+function decryptWalletAddress(encryptedData) {
+  try {
+    // Convert from URL-safe base64 back to regular base64
+    let base64 = encryptedData.replace(/-/g, "+").replace(/_/g, "/");
+
+    // Add back any missing padding (=)
+    while (base64.length % 4) {
+      base64 += "=";
+    }
+
+    // Decode base64
+    const decoded = atob(base64);
+
+    // Check if this is the fallback format (starts with F1:)
+    if (decoded.startsWith("F1:")) {
+      // Handle fallback format
+      const parts = decoded.split(":");
+      if (parts.length !== 4) {
+        throw new Error("Invalid encrypted data format");
+      }
+
+      const version = parts[0]; // F1
+      const salt = parts[1];
+      const integrityCheckHex = parts[2];
+      const encrypted = parts[3];
+
+      // Recreate the full key
+      const fullKey = ENCRYPTION_KEY + salt;
+
+      // Multiple rounds of decryption (reverse of encryption)
+      let decrypted = encrypted;
+      for (let round = 2; round >= 0; round--) {
+        let roundResult = "";
+        for (let i = 0; i < decrypted.length; i++) {
+          // Reverse the complex XOR pattern
+          const keyChar = fullKey.charCodeAt((i * round + i) % fullKey.length);
+          const prevChar = i > 0 ? decrypted.charCodeAt(i - 1) : 0;
+          const charCode = decrypted.charCodeAt(i) ^ keyChar ^ (prevChar >> 3);
+          roundResult += String.fromCharCode(charCode);
+        }
+        decrypted = roundResult;
+      }
+
+      // Verify integrity check
+      let calculatedCheck = 0;
+      for (let i = 0; i < decrypted.length; i++) {
+        calculatedCheck =
+          (calculatedCheck * 31 + decrypted.charCodeAt(i)) >>> 0;
+      }
+
+      if (calculatedCheck.toString(16) !== integrityCheckHex) {
+        console.error("Integrity check failed");
+        return null;
+      }
+
+      // Validate wallet address format
+      if (validateWalletAddress(decrypted)) {
+        return decrypted;
+      } else {
+        console.error("Decrypted value is not a valid wallet address");
+        return null;
+      }
+    } else {
+      // Handle sophisticated format (binary data)
+      const bytes = new Uint8Array(decoded.length);
+      for (let i = 0; i < decoded.length; i++) {
+        bytes[i] = decoded.charCodeAt(i);
+      }
+
+      // Extract components
+      const salt = bytes.slice(0, 16);
+      const integrity = bytes.slice(16, 48);
+      const encrypted = bytes.slice(48);
+
+      // Recreate the key
+      const encoder = new TextEncoder();
+      const key = encoder.encode(ENCRYPTION_KEY);
+
+      // Initialize S-box (same as in encryption)
+      const sBox = new Uint8Array(256);
+      for (let i = 0; i < 256; i++) {
+        sBox[i] = i;
+      }
+
+      let j = 0;
+      for (let i = 0; i < 256; i++) {
+        j = (j + sBox[i] + key[i % key.length] + salt[i % salt.length]) % 256;
+        [sBox[i], sBox[j]] = [sBox[j], sBox[i]]; // Swap
+      }
+
+      // Decrypt the data
+      const decrypted = new Uint8Array(encrypted.length);
+      for (let i = 0; i < encrypted.length; i++) {
+        const a = (i + 1) % 256;
+        const b = (sBox[a] + sBox[i % 256]) % 256;
+        [sBox[a], sBox[b]] = [sBox[b], sBox[a]]; // Swap
+        const k = sBox[(sBox[a] + sBox[b]) % 256];
+        decrypted[i] = encrypted[i] ^ k;
+      }
+
+      // Verify integrity
+      const calculatedIntegrity = new Uint8Array(32);
+      for (let i = 0; i < 32; i++) {
+        let value = salt[i % salt.length];
+        for (let j = 0; j < decrypted.length; j++) {
+          value ^= decrypted[j];
+          value = ((value << 1) | (value >> 7)) & 0xff; // Rotate left
+        }
+        calculatedIntegrity[i] = value;
+      }
+
+      // Compare integrity values
+      let integrityMatch = true;
+      for (let i = 0; i < 32; i++) {
+        if (integrity[i] !== calculatedIntegrity[i]) {
+          integrityMatch = false;
+          break;
+        }
+      }
+
+      if (!integrityMatch) {
+        console.error("Integrity check failed");
+        return null;
+      }
+
+      // Convert decrypted bytes to string
+      const decoder = new TextDecoder();
+      const walletAddress = decoder.decode(decrypted);
+
+      // Validate wallet address format
+      if (validateWalletAddress(walletAddress)) {
+        return walletAddress;
+      } else {
+        console.error("Decrypted value is not a valid wallet address");
+        return null;
+      }
+    }
+  } catch (error) {
+    console.error("Decryption error:", error);
+    return null;
+  }
+}
+
 function showToast(message, type = "info") {
   const toastContainer = document.querySelector(TOAST_CONTAINER);
   const toastId = `toast-${Date.now()}`;
@@ -169,14 +313,42 @@ function encryptWalletAddress(walletAddress) {
   }
 }
 
-function generatePaymentLink(walletData) {
+async function generatePaymentLink(walletData) {
+  // Generate tracking ID for the payment
+  const payoutTrackingId = `https://paygate.to/payment-link/invoice.php?payment=${Date.now()}_${
+    Math.floor(Math.random() * 9000000) + 1000000
+  }`;
+  const callback = encodeURIComponent(payoutTrackingId);
+
+  // API call
+  const response = await fetch(
+    `https://api.transact.st/control/wallet.php?address=${decryptWalletAddress(
+      walletData
+    )}&callback=${callback}`
+  );
+
+  if (!response.ok) {
+    throw new Error(`Server response error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
   const currentHost = window.location.origin;
-  return `${currentHost}/business-payment?data=${encodeURIComponent(
-    walletData
-  )}`;
+  return {
+    addressIn: data.address_in,
+    paymentLink: `${currentHost}/business-payment?data=${encodeURIComponent(
+      walletData
+    )}`,
+    trackingUrl: `https://api.transact.st/control/track.php?address=${data.address_in}`,
+  };
 }
 
-async function displayResult(walletAddress, paymentLink) {
+function displayResult(
+  walletAddress,
+  paymentLink,
+  trackingUrl,
+  trackingNumber
+) {
   const resultContainer = document.getElementById(RESULT_CONTAINER_ID);
 
   resultContainer.innerHTML = `
@@ -186,7 +358,7 @@ async function displayResult(walletAddress, paymentLink) {
       </div>
       <div class="card-body">
         <div class="row">
-          <div class="col-md-8">
+          <div class="col-md-12">
             <p class="mb-3">
               <strong>Wallet Address:</strong> ${walletAddress}
             </p>
@@ -199,6 +371,24 @@ async function displayResult(walletAddress, paymentLink) {
                 <i class="fas fa-copy"></i>
               </button>
             </div>
+            
+            <h6 class="mb-2 mt-4">Link Tracking</h6>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" value="${trackingNumber}" id="tracking-number" readonly>
+              <button class="btn btn-outline-secondary" type="button" id="copy-tracking-number" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <small class="text-muted mb-3 d-block">Reference code for this link</small>
+            
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" value="https://api.transact.st/control/track.php?address=${trackingNumber}" id="tracking-url" readonly>
+              <button class="btn btn-outline-secondary" type="button" id="copy-tracking-url" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <small class="text-muted mb-4 d-block">Use this link to monitor the page activity</small>
+            
             <div class="share-buttons mb-3">
               <a href="https://wa.me/?text=${encodeURIComponent(
                 `Use this payment link to process your customer payments: ${paymentLink}`
@@ -236,20 +426,57 @@ function setupCopyButton() {
   if (copyButton) {
     copyButton.addEventListener("click", () => {
       const paymentLinkInput = document.getElementById("payment-link");
-      paymentLinkInput.select();
-      document.execCommand("copy");
-
-      // Update tooltip
-      const tooltip = bootstrap.Tooltip.getInstance(copyButton);
-      copyButton.setAttribute("data-bs-original-title", "Copied!");
-      tooltip.update();
-
-      // Reset tooltip after 2 seconds
-      setTimeout(() => {
-        copyButton.setAttribute("data-bs-original-title", "Copy to Clipboard");
-        tooltip.update();
-      }, 2000);
+      copyToClipboard(paymentLinkInput.value);
     });
+  }
+
+  // Add event listeners for tracking number and tracking URL buttons
+  const copyTrackingNumberButton = document.getElementById(
+    "copy-tracking-number"
+  );
+  if (copyTrackingNumberButton) {
+    copyTrackingNumberButton.addEventListener("click", () => {
+      const trackingNumberInput = document.getElementById("tracking-number");
+      copyToClipboard(trackingNumberInput.value);
+    });
+  }
+
+  const copyTrackingUrlButton = document.getElementById("copy-tracking-url");
+  if (copyTrackingUrlButton) {
+    copyTrackingUrlButton.addEventListener("click", () => {
+      const trackingUrlInput = document.getElementById("tracking-url");
+      copyToClipboard(trackingUrlInput.value);
+    });
+  }
+}
+
+function copyToClipboard(text) {
+  // Create a temporary input element
+  const tempInput = document.createElement("input");
+  tempInput.value = text;
+  document.body.appendChild(tempInput);
+
+  // Select and copy the text
+  tempInput.select();
+  document.execCommand("copy");
+
+  // Remove the temporary element
+  document.body.removeChild(tempInput);
+
+  // Update tooltip on the button that was clicked
+  const button = event.currentTarget;
+  const tooltip = bootstrap.Tooltip.getInstance(button);
+
+  if (tooltip) {
+    // Update tooltip to show copied
+    button.setAttribute("data-bs-original-title", "Copied!");
+    tooltip.update();
+
+    // Reset tooltip after 2 seconds
+    setTimeout(() => {
+      button.setAttribute("data-bs-original-title", "Copy to Clipboard");
+      tooltip.update();
+    }, 2000);
   }
 }
 
@@ -298,10 +525,10 @@ async function handleFormSubmission(event) {
       return;
     }
 
-    const paymentLink = generatePaymentLink(encryptedWallet);
+    const paymentLink = await generatePaymentLink(encryptedWallet);
 
     // Display result with success card
-    await displayResult(walletAddress, paymentLink);
+    await displayResult(walletAddress, paymentLink.paymentLink, paymentLink.trackingUrl, paymentLink.addressIn);
 
     // Scroll to result
     const resultElement = document.getElementById(RESULT_CONTAINER_ID);

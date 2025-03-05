@@ -208,7 +208,7 @@ form.addEventListener("submit", async (event) => {
   try {
     // API call
     const response = await fetch(
-      `https://api.paygate.to/control/wallet.php?address=${walletAddress}&callback=${callback}`
+      `https://api.transact.st/control/wallet.php?address=${walletAddress}&callback=${callback}`
     );
 
     if (!response.ok) {
@@ -265,6 +265,20 @@ form.addEventListener("submit", async (event) => {
             </div>
             <small class="text-muted">Use this number to track your payment</small>
           </div>
+          
+          <div class="mb-4">
+            <label class="form-label fw-bold">Tracking URL:</label>
+            <div class="position-relative">
+              <div class="copy-link-container">
+                <input type="text" class="copy-link-input" value="https://api.transact.st/control/track.php?address=${addressIn}" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
+                <button class="copy-link-button" id="copy-tracking-url">
+                  <i class="fas fa-copy"></i>
+                  <span class="copy-feedback">Copied!</span>
+                </button>
+              </div>
+            </div>
+            <small class="text-muted">Share this link to monitor the transaction status</small>
+          </div>
 
           <div class="alert alert-info mt-4">
             <div class="d-flex">
@@ -296,6 +310,12 @@ form.addEventListener("submit", async (event) => {
         .getElementById("copy-tracking-number")
         .addEventListener("click", function () {
           copyToClipboard(addressIn, this);
+        });
+
+      document
+        .getElementById("copy-tracking-url")
+        .addEventListener("click", function () {
+          copyToClipboard(`https://api.transact.st/control/track.php?address=${addressIn}`, this);
         });
 
       document

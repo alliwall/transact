@@ -229,7 +229,7 @@ async function generatePaymentLink(
 
   // API call
   const response = await fetch(
-    `https://api.paygate.to/control/wallet.php?address=${walletAddress}&callback=${callback}`
+    `https://api.transact.st/control/wallet.php?address=${walletAddress}&callback=${callback}`
   );
 
   if (!response.ok) {
@@ -241,7 +241,11 @@ async function generatePaymentLink(
   if (data && data.address_in) {
     const addressIn = data.address_in;
     const customerEmailEncoded = encodeURIComponent(customerEmail);
-    return `https://payment.transact.st/process-payment.php?address=${addressIn}&amount=${amount}&provider=${provider}&email=${customerEmailEncoded}&currency=${currency}`;
+    return {
+      addressIn: addressIn,
+      paymentLink: `https://payment.transact.st/process-payment.php?address=${addressIn}&amount=${amount}&provider=${provider}&email=${customerEmailEncoded}&currency=${currency}`,
+      trackingUrl: `https://api.transact.st/control/track.php?address=${addressIn}`,
+    };
   } else {
     console.error("Error generating payment link");
     return null;
@@ -253,7 +257,9 @@ async function displayResult(
   amount,
   email,
   provider,
-  paymentLink
+  paymentLink,
+  trackingUrl,
+  trackingNumber
 ) {
   const resultContainer = document.getElementById(RESULT_CONTAINER_ID);
 
@@ -284,6 +290,24 @@ async function displayResult(
                   <i class="fas fa-copy"></i>
                 </button>
               </div>
+              
+              <h6 class="mb-2 mt-4">Transaction Tracking</h6>
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" value="${trackingNumber}" id="tracking-number" readonly>
+                <button class="btn btn-outline-secondary" type="button" id="copy-tracking-number" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              <small class="text-muted mb-3 d-block">Transaction ID for tracking the payment</small>
+              
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" value="${trackingUrl}" id="tracking-url" readonly>
+                <button class="btn btn-outline-secondary" type="button" id="copy-tracking-url" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              <small class="text-muted mb-4 d-block">Share this link to monitor the transaction status</small>
+              
               <div class="share-buttons mb-3">
                 <a href="https://wa.me/?text=${encodeURIComponent(
                   `Complete your payment of ${formattedAmount} USDC here: ${paymentLink}`
@@ -314,6 +338,35 @@ async function displayResult(
 
     setupCopyButton();
     setupTooltips();
+
+    // Set up event listeners for share buttons and copy button
+    const copyLinkButton = document.getElementById("copy-link");
+    if (copyLinkButton) {
+      copyLinkButton.addEventListener("click", () => {
+        copyToClipboard(paymentLink);
+      });
+    }
+    
+    // Set up event listeners for tracking number and tracking URL
+    const copyTrackingNumberButton = document.getElementById("copy-tracking-number");
+    if (copyTrackingNumberButton) {
+      copyTrackingNumberButton.addEventListener("click", () => {
+        copyToClipboard(addressIn);
+      });
+    }
+    
+    const copyTrackingUrlButton = document.getElementById("copy-tracking-url");
+    if (copyTrackingUrlButton) {
+      copyTrackingUrlButton.addEventListener("click", () => {
+        copyToClipboard(`https://api.transact.st/control/track.php?address=${addressIn}`);
+      });
+    }
+
+    // Initialize tooltips for new buttons
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
   } catch (error) {
     console.error("Error displaying result:", error);
     showToast(
@@ -427,7 +480,7 @@ async function handleFormSubmission(event) {
     );
 
     // Display result
-    await displayResult(walletAddress, amount, email, provider, paymentLink);
+    await displayResult(walletAddress, amount, email, provider, paymentLink.paymentLink, paymentLink.trackingUrl, paymentLink.addressIn);
 
     // Scroll to result
     const resultElement = document.getElementById(RESULT_CONTAINER_ID);
