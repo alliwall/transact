@@ -338,6 +338,11 @@ header {
   color: #ec4899;
 }
 
+.provider-badge.all {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
 .provider-tag {
   font-size: 0.7rem;
   background-color: rgba(100, 116, 139, 0.1);
@@ -921,6 +926,11 @@ textarea:focus {
   color: #fbcfe8;
 }
 
+[data-theme="dark"] .provider-badge.all {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #a7f3d0;
+}
+
 [data-theme="dark"] .provider-tag {
   background-color: rgba(100, 116, 139, 0.2);
   color: #e2e8f0;
@@ -1321,4 +1331,137 @@ body:not([data-theme="dark"]) .theme-switcher button {
 [data-theme="dark"] .result-card .alert-info h6,
 [data-bs-theme="dark"] .result-card .alert-info h6 {
   color: #bfdbfe;
+}
+
+/* Ensure payment link input has dark background in dark mode */
+[data-theme="dark"] .result-card .copy-link-input,
+[data-bs-theme="dark"] .result-card .copy-link-input {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .result-card .copy-link-container,
+[data-bs-theme="dark"] .result-card .copy-link-container {
+  border-color: #334155;
+  background-color: #1e293b;
+}
+
+[data-theme="dark"] .result-card .btn-light,
+[data-bs-theme="dark"] .result-card .btn-light {
+  background-color: #334155;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+[data-theme="dark"] .result-card .btn-light:hover,
+[data-bs-theme="dark"] .result-card .btn-light:hover {
+  background-color: #475569;
+  color: #f8fafc;
+}
+
+/* More specific fixes for payment links in dark mode */
+[data-theme="dark"] input.copy-link-input,
+[data-bs-theme="dark"] input.copy-link-input,
+[data-theme="dark"] #payment-link,
+[data-bs-theme="dark"] #payment-link {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+[data-theme="dark"] .success-card input.form-control,
+[data-bs-theme="dark"] .success-card input.form-control {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .card-success,
+[data-bs-theme="dark"] .card-success,
+[data-theme="dark"] .success-card,
+[data-bs-theme="dark"] .success-card {
+  background-color: #1e293b;
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .input-group,
+[data-bs-theme="dark"] .input-group {
+  background-color: transparent;
+}
+
+/* Fix for button in payment results */
+[data-theme="dark"] .btn-sm.btn-light,
+[data-bs-theme="dark"] .btn-sm.btn-light {
+  background-color: #334155;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+/* Force dark styles for payment inputs - extremely specific selectors */
+html[data-theme="dark"] .copy-link-input,
+html[data-theme="dark"] input.copy-link-input,
+html[data-theme="dark"] .result-card .copy-link-input,
+html[data-theme="dark"] .card input.copy-link-input,
+html[data-theme="dark"] .card-body input.copy-link-input,
+html[data-theme="dark"] div.card div.card-body div.position-relative div.copy-link-container input.copy-link-input,
+html[data-bs-theme="dark"] .copy-link-input,
+html[data-bs-theme="dark"] input.copy-link-input,
+html[data-bs-theme="dark"] .result-card .copy-link-input,
+html[data-bs-theme="dark"] .card input.copy-link-input,
+html[data-bs-theme="dark"] .card-body input.copy-link-input,
+html[data-bs-theme="dark"] div.card div.card-body div.position-relative div.copy-link-container input.copy-link-input {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+  border: 1px solid #334155 !important;
+}
+
+/* Force dark styles for all form controls in result and success cards */
+html[data-theme="dark"] .card .form-control,
+html[data-theme="dark"] .success-card .form-control,
+html[data-theme="dark"] .result-card .form-control,
+html[data-theme="dark"] #payment-link,
+html[data-bs-theme="dark"] .card .form-control,
+html[data-bs-theme="dark"] .success-card .form-control,
+html[data-bs-theme="dark"] .result-card .form-control,
+html[data-bs-theme="dark"] #payment-link {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+/* Override Bootstrap's bg-success on dark theme */
+html[data-theme="dark"] .bg-success,
+html[data-bs-theme="dark"] .bg-success {
+  background-color: #065f46 !important;
+}
+
+/* Ensure containers also have dark background */
+html[data-theme="dark"] .copy-link-container,
+html[data-bs-theme="dark"] .copy-link-container {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Override all possible button styles in the result area */
+html[data-theme="dark"] .result-card button.btn-light,
+html[data-theme="dark"] .card-header button.btn-light,
+html[data-theme="dark"] .card-header button.btn-sm,
+html[data-bs-theme="dark"] .result-card button.btn-light,
+html[data-bs-theme="dark"] .card-header button.btn-light,
+html[data-bs-theme="dark"] .card-header button.btn-sm {
+  background-color: #334155 !important;
+  color: #f8fafc !important;
+  border-color: #475569 !important;
+}
+
+/* Additional Bootstrap overrides for inputs */
+.dark .form-control,
+.dark input[type="text"],
+[data-theme="dark"] .form-control,
+[data-theme="dark"] input[type="text"],
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] input[type="text"] {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
 }

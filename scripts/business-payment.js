@@ -385,7 +385,6 @@ async function handleFormSubmission(event) {
     );
     const provider = providerInput.value;
     const minAmount = parseFloat(providerInput.getAttribute("data-min-amount") || "0");
-    const supportedCurrency = providerInput.getAttribute("data-supported-currency");
 
     // Validate inputs
     if (!validateWalletAddress(walletAddress)) {
@@ -416,12 +415,7 @@ async function handleFormSubmission(event) {
       return;
     }
 
-    // Validate currency compatibility with provider
-    if (supportedCurrency !== "ALL" && currency !== supportedCurrency) {
-      showToast(`${provider} only supports ${supportedCurrency} payments`, "danger");
-      toggleLoading(false);
-      return;
-    }
+    // Currency validation removed as it's now automatically set based on provider
 
     // Generate payment link
     const paymentLink = await generatePaymentLink(
@@ -535,36 +529,49 @@ document.addEventListener("DOMContentLoaded", async function () {
       
       amountInput.setAttribute("min", minAmount);
       
-      // Check currency compatibility
-      const currencySelect = document.getElementById(CURRENCY_ID);
-      const currency = currencySelect.value;
-      
-      if (supportedCurrency !== "ALL" && currency !== supportedCurrency) {
-        showToast(`${this.value} only supports ${supportedCurrency} payments`, "warning");
+      // Set currency based on provider
+      const currencyInput = document.getElementById(CURRENCY_ID);
+      if (supportedCurrency !== "ALL") {
+        currencyInput.value = supportedCurrency;
+      } else {
+        currencyInput.value = "USD"; // Default to USD for providers that support all currencies
       }
     });
   });
   
-  // Update provider compatibility when currency changes
-  document.getElementById(CURRENCY_ID).addEventListener("change", function() {
-    const currency = this.value;
-    const selectedProvider = document.querySelector('input[name="provider"]:checked');
-    
-    if (selectedProvider) {
-      const provider = selectedProvider.value;
-      const supportedCurrency = selectedProvider.getAttribute("data-supported-currency");
-      
-      if (supportedCurrency !== "ALL" && currency !== supportedCurrency) {
-        showToast(`${provider} only supports ${supportedCurrency} payments`, "warning");
-      }
-    }
-  });
+  // Remove currency change listener as we no longer have a select
 
   // Initialize tooltips
   const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
   tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl);
   });
+
+  // Show all providers regardless of currency
+  document.querySelectorAll(".provider-item").forEach((item) => {
+    item.style.display = "block";
+  });
+  
+  // Add provider search functionality
+  const providerSearch = document.getElementById("provider-search");
+  if (providerSearch) {
+    providerSearch.addEventListener("input", () => {
+      const searchTerm = providerSearch.value.toLowerCase();
+      const providerItems = document.querySelectorAll(".provider-item");
+  
+      providerItems.forEach((item) => {
+        const providerName = item
+          .querySelector(".provider-name")
+          .textContent.toLowerCase();
+  
+        if (providerName.includes(searchTerm)) {
+          item.style.display = "block";
+        } else {
+          item.style.display = "none";
+        }
+      });
+    });
+  }
 
   // Add theme toggle functionality
   const themeToggle = document.getElementById("theme-toggle");

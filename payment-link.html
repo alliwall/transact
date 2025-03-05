@@ -153,28 +153,8 @@
                   </div>
                 </div>
 
-                <div class="mb-3">
-                  <label for="currency" class="form-label">Currency:</label>
-                  <div class="input-group">
-                    <span class="input-group-text"
-                      ><i class="fas fa-coins"></i
-                    ></span>
-                    <select
-                      class="form-select"
-                      id="currency"
-                      name="currency"
-                      required
-                    >
-                      <option value="USD">USD - United States Dollar</option>
-                      <option value="EUR">EUR - Euro</option>
-                      <option value="CAD">CAD - Canadian Dollar</option>
-                      <option value="INR">INR - Indian Rupee</option>
-                    </select>
-                    <div class="invalid-feedback">
-                      Please select a currency.
-                    </div>
-                  </div>
-                </div>
+                <!-- Currency hidden input will be set based on selected provider -->
+                <input type="hidden" id="currency" name="currency" value="USD">
               </div>
             </div>
 
@@ -182,44 +162,7 @@
               <label for="provider" class="form-label">Payment Provider:</label>
               <div class="provider-section">
                 <div class="provider-filter mb-2">
-                  <div class="btn-group btn-group-sm" role="group">
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary active"
-                      data-filter="all"
-                    >
-                      All
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      data-filter="usd"
-                    >
-                      USD
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      data-filter="eur"
-                    >
-                      EUR
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      data-filter="cad"
-                    >
-                      CAD
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      data-filter="inr"
-                    >
-                      INR
-                    </button>
-                  </div>
-                  <div class="search-box">
+                  <div class="search-box w-100">
                     <input
                       type="text"
                       class="form-control form-control-sm"
@@ -288,6 +231,7 @@
                         />
                         <label class="form-check-label" for="provider-sardine">
                           <span class="provider-name">Sardine.ai</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -305,6 +249,7 @@
                           for="provider-guardarian"
                         >
                           <span class="provider-name">Guardarian</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -319,6 +264,7 @@
                         />
                         <label class="form-check-label" for="provider-particle">
                           <span class="provider-name">particle.network</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -333,6 +279,7 @@
                         />
                         <label class="form-check-label" for="provider-transak">
                           <span class="provider-name">Transak</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -347,6 +294,7 @@
                         />
                         <label class="form-check-label" for="provider-banxa">
                           <span class="provider-name">Banxa</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -361,6 +309,7 @@
                         />
                         <label class="form-check-label" for="provider-simplex">
                           <span class="provider-name">Simplex</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -378,6 +327,7 @@
                           for="provider-changenow"
                         >
                           <span class="provider-name">ChangeNOW</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -392,6 +342,7 @@
                         />
                         <label class="form-check-label" for="provider-mercuryo">
                           <span class="provider-name">mercuryo.io</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -424,6 +375,7 @@
                         />
                         <label class="form-check-label" for="provider-moonpay">
                           <span class="provider-name">MoonPay</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -441,6 +393,7 @@
                           for="provider-alchemypay"
                         >
                           <span class="provider-name">Alchemy Pay</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -473,6 +426,7 @@
                         />
                         <label class="form-check-label" for="provider-coinbase">
                           <span class="provider-name">Coinbase PAY</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -487,6 +441,7 @@
                         />
                         <label class="form-check-label" for="provider-utorg">
                           <span class="provider-name">UTORG</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -501,6 +456,7 @@
                         />
                         <label class="form-check-label" for="provider-unlimit">
                           <span class="provider-name">Unlimit</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -515,6 +471,7 @@
                         />
                         <label class="form-check-label" for="provider-bitnovo">
                           <span class="provider-name">Bitnovo</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -532,6 +489,7 @@
                           for="provider-simpleswap"
                         >
                           <span class="provider-name">SimpleSwap</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -546,6 +504,7 @@
                         />
                         <label class="form-check-label" for="provider-topper">
                           <span class="provider-name">Topper</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -560,6 +519,7 @@
                         />
                         <label class="form-check-label" for="provider-swipelux">
                           <span class="provider-name">Swipelux</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -574,6 +534,7 @@
                         />
                         <label class="form-check-label" for="provider-kado">
                           <span class="provider-name">Kado.money</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>
@@ -588,6 +549,7 @@
                         />
                         <label class="form-check-label" for="provider-itez">
                           <span class="provider-name">Itez</span>
+                          <span class="provider-badge all">ALL</span>
                         </label>
                       </div>
                     </div>

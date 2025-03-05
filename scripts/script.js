@@ -41,6 +41,7 @@ const minAmounts = {
 const savedTheme = localStorage.getItem("theme") || "light";
 if (savedTheme === "dark") {
   document.body.setAttribute("data-theme", "dark");
+  document.body.setAttribute("data-bs-theme", "dark");
   themeToggleIcon.classList.remove("fa-moon");
   themeToggleIcon.classList.add("fa-sun");
 }
@@ -51,6 +52,7 @@ themeToggle.addEventListener("click", () => {
   const newTheme = currentTheme === "light" ? "dark" : "light";
 
   document.body.setAttribute("data-theme", newTheme);
+  document.body.setAttribute("data-bs-theme", newTheme);
   localStorage.setItem("theme", newTheme);
 
   if (newTheme === "dark") {
@@ -60,34 +62,15 @@ themeToggle.addEventListener("click", () => {
     themeToggleIcon.classList.remove("fa-sun");
     themeToggleIcon.classList.add("fa-moon");
   }
+  
+  document.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: newTheme } }));
+  
+  if (typeof fixDarkModeStyles === 'function') {
+    fixDarkModeStyles();
+  }
 });
 
-// Provider filtering functionality
-const filterButtons = document.querySelectorAll(".provider-filter button");
-filterButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    // Remove active class from all buttons
-    filterButtons.forEach((btn) => btn.classList.remove("active"));
-
-    // Add active class to clicked button
-    button.classList.add("active");
-
-    const filter = button.getAttribute("data-filter");
-    const providerItems = document.querySelectorAll(".provider-item");
-
-    providerItems.forEach((item) => {
-      if (
-        filter === "all" ||
-        item.getAttribute("data-currency") === filter ||
-        item.getAttribute("data-currency") === "all"
-      ) {
-        item.style.display = "block";
-      } else {
-        item.style.display = "none";
-      }
-    });
-  });
-});
+// Provider filtering removed as we no longer have the filter buttons
 
 // Provider search functionality
 const providerSearch = document.getElementById("provider-search");
@@ -106,6 +89,11 @@ providerSearch.addEventListener("input", () => {
       item.style.display = "none";
     }
   });
+});
+
+// Show all providers by default
+document.querySelectorAll(".provider-item").forEach((item) => {
+  item.style.display = "block";
 });
 
 // Function to show validation errors
@@ -174,8 +162,8 @@ form.addEventListener("submit", async (event) => {
   const walletAddress = document.getElementById("wallet_address").value.trim();
   const emailAddress = document.getElementById("email_address").value.trim();
   const amount = parseFloat(document.getElementById("amount").value);
-  const currencySelect = document.getElementById("currency");
-  const currency = currencySelect.value;
+  const currencyInput = document.getElementById("currency");
+  const currency = currencyInput.value;
   const provider = document.querySelector(
     'input[name="provider"]:checked'
   ).value;
@@ -199,40 +187,14 @@ form.addEventListener("submit", async (event) => {
   // Validate minimum amount
   if (amount < minAmounts[provider]) {
     showValidationError(
-      `Minimum amount for ${provider} is ${minAmounts[provider]} ${currency}`
+      `Minimum amount for ${provider} is ${minAmounts[provider]}`
     );
     return;
   }
 
-  // Validate currency compatibility with provider
-  if (
-    currency !== "USD" &&
-    (provider === "wert" ||
-      provider === "stripe" ||
-      provider === "transfi" ||
-      provider === "robinhood" ||
-      provider === "rampnetwork")
-  ) {
-    showValidationError(`${provider} only supports USD payments`);
-    return;
-  }
+  // No need to validate currency as it's now automatically set based on provider
 
-  if (currency !== "INR" && provider === "upi") {
-    showValidationError(`${provider} only supports INR payments`);
-    return;
-  }
-
-  if (currency !== "CAD" && provider === "interac") {
-    showValidationError(`${provider} only supports CAD payments`);
-    return;
-  }
-
-  if (currency !== "EUR" && provider === "werteur") {
-    showValidationError(`${provider} only supports EUR payments`);
-    return;
-  }
-
-  // Start loading process
+  // Start loading state
   startLoading();
   paymentResult.innerHTML = "";
   paymentResult.classList.remove("show");
@@ -280,7 +242,7 @@ form.addEventListener("submit", async (event) => {
             <label class="form-label fw-bold">Payment Link:</label>
             <div class="position-relative">
               <div class="copy-link-container">
-                <input type="text" class="copy-link-input" value="${paymentLink}" readonly>
+                <input type="text" class="copy-link-input" value="${paymentLink}" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
                 <button class="copy-link-button" id="copy-payment-link">
                   <i class="fas fa-copy"></i>
                   <span class="copy-feedback">Copied!</span>
@@ -294,7 +256,7 @@ form.addEventListener("submit", async (event) => {
             <label class="form-label fw-bold">Tracking Number:</label>
             <div class="position-relative">
               <div class="copy-link-container">
-                <input type="text" class="copy-link-input" value="${addressIn}" readonly>
+                <input type="text" class="copy-link-input" value="${addressIn}" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
                 <button class="copy-link-button" id="copy-tracking-number">
                   <i class="fas fa-copy"></i>
                   <span class="copy-feedback">Copied!</span>
@@ -323,7 +285,7 @@ form.addEventListener("submit", async (event) => {
       paymentResult.appendChild(resultCard);
       paymentResult.classList.add("show");
 
-      // Add copy event listeners
+      // Attach event listeners
       document
         .getElementById("copy-payment-link")
         .addEventListener("click", function () {
@@ -336,12 +298,14 @@ form.addEventListener("submit", async (event) => {
           copyToClipboard(addressIn, this);
         });
 
-      // Add share functionality
       document
         .getElementById("share-payment-link")
         .addEventListener("click", function () {
           sharePaymentLink(paymentLink);
         });
+        
+      // Force dark mode styles on payment input if needed
+      fixDarkModeStyles();
 
       // Scroll to the result
       setTimeout(() => {
@@ -381,9 +345,9 @@ providerInputs.forEach((input) => {
 document.querySelectorAll('input[name="provider"]').forEach((input) => {
   input.addEventListener("change", function () {
     const provider = this.value;
-    const currencySelect = document.getElementById("currency");
+    const currencyInput = document.getElementById("currency");
 
-    // Check provider and currency compatibility
+    // Set currency based on provider
     if (
       provider === "wert" ||
       provider === "stripe" ||
@@ -391,25 +355,15 @@ document.querySelectorAll('input[name="provider"]').forEach((input) => {
       provider === "robinhood" ||
       provider === "rampnetwork"
     ) {
-      if (currencySelect.value !== "USD") {
-        currencySelect.value = "USD";
-        showToast("This provider only accepts USD as currency", "warning");
-      }
+      currencyInput.value = "USD";
     } else if (provider === "werteur") {
-      if (currencySelect.value !== "EUR") {
-        currencySelect.value = "EUR";
-        showToast("This provider only accepts EUR as currency", "warning");
-      }
+      currencyInput.value = "EUR";
     } else if (provider === "upi") {
-      if (currencySelect.value !== "INR") {
-        currencySelect.value = "INR";
-        showToast("This provider only accepts INR as currency", "warning");
-      }
+      currencyInput.value = "INR";
     } else if (provider === "interac") {
-      if (currencySelect.value !== "CAD") {
-        currencySelect.value = "CAD";
-        showToast("This provider only accepts CAD as currency", "warning");
-      }
+      currencyInput.value = "CAD";
+    } else {
+      currencyInput.value = "USD"; // Default
     }
 
     // Update minimum amount information
@@ -481,78 +435,6 @@ document.getElementById("amount").addEventListener("change", function () {
   } else {
     this.setCustomValidity("");
   }
-});
-
-// Update validation rules when changing currency
-document.getElementById("currency").addEventListener("change", function () {
-  const currency = this.value;
-  const provider = document.querySelector(
-    'input[name="provider"]:checked'
-  ).value;
-
-  // Check compatibility
-  let isCompatible = true;
-  let errorMessage = "";
-
-  if (
-    currency !== "USD" &&
-    (provider === "wert" ||
-      provider === "stripe" ||
-      provider === "transfi" ||
-      provider === "robinhood" ||
-      provider === "rampnetwork")
-  ) {
-    isCompatible = false;
-    errorMessage = `${provider} only supports USD payments`;
-  } else if (currency !== "INR" && provider === "upi") {
-    isCompatible = false;
-    errorMessage = `${provider} only supports INR payments`;
-  } else if (currency !== "CAD" && provider === "interac") {
-    isCompatible = false;
-    errorMessage = `${provider} only supports CAD payments`;
-  } else if (currency !== "EUR" && provider === "werteur") {
-    isCompatible = false;
-    errorMessage = `${provider} only supports EUR payments`;
-  }
-
-  if (!isCompatible) {
-    showToast(errorMessage, "warning");
-
-    // Suggest a compatible provider
-    let suggestedProvider = "";
-    if (currency === "USD") {
-      suggestedProvider = "wert";
-    } else if (currency === "EUR") {
-      suggestedProvider = "werteur";
-    } else if (currency === "INR") {
-      suggestedProvider = "upi";
-    } else if (currency === "CAD") {
-      suggestedProvider = "interac";
-    }
-
-    if (suggestedProvider) {
-      document.getElementById(`provider-${suggestedProvider}`).checked = true;
-
-      // Trigger the change event manually
-      const event = new Event("change");
-      document
-        .getElementById(`provider-${suggestedProvider}`)
-        .dispatchEvent(event);
-
-      showToast(`Provider changed to ${suggestedProvider}`, "info");
-    }
-  }
-
-  // Update the currency filter button as active
-  document.querySelectorAll(".provider-filter button").forEach((btn) => {
-    btn.classList.remove("active");
-    if (
-      btn.getAttribute("data-filter") === currency.toLowerCase() ||
-      btn.getAttribute("data-filter") === "all"
-    ) {
-      btn.classList.add("active");
-    }
-  });
 });
 
 // Validate wallet address in real-time
@@ -645,4 +527,37 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
+
+  // Quando o DOM estiver completamente carregado, aplica os estilos do tema
+  if (typeof fixDarkModeStyles === 'function') {
+    setTimeout(fixDarkModeStyles, 100); // Pequeno delay para garantir que todos os elementos estejam renderizados
+  }
 });
+
+// Function to enforce correct styles in dark mode
+function fixDarkModeStyles() {
+  if (document.body.getAttribute('data-theme') === 'dark' || document.body.getAttribute('data-bs-theme') === 'dark') {
+    const inputs = document.querySelectorAll('.copy-link-input, #payment-link');
+    inputs.forEach(input => {
+      input.style.backgroundColor = '#1e293b';
+      input.style.color = '#f8fafc';
+      input.style.borderColor = '#334155';
+    });
+    
+    const containers = document.querySelectorAll('.copy-link-container');
+    containers.forEach(container => {
+      container.style.backgroundColor = '#1e293b';
+      container.style.borderColor = '#334155';
+    });
+    
+    const buttons = document.querySelectorAll('.card-header .btn-light, .card-header .btn-sm');
+    buttons.forEach(button => {
+      button.style.backgroundColor = '#334155';
+      button.style.color = '#f8fafc';
+      button.style.borderColor = '#475569';
+    });
+  }
+}
+
+// Also run this function when theme changes
+document.addEventListener('themeChanged', fixDarkModeStyles);
