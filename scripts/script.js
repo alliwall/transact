@@ -585,3 +585,84 @@ function fixDarkModeStyles() {
 
 // Also run this function when theme changes
 document.addEventListener('themeChanged', fixDarkModeStyles);
+
+// Add new function to filter providers by currency
+function filterProvidersByCurrency(currency) {
+  const providerItems = document.querySelectorAll('.provider-item');
+  let foundProvider = false;
+
+  providerItems.forEach(item => {
+    const provider = item.querySelector('input[name="provider"]');
+    const supportedCurrency = provider.getAttribute('data-supported-currency');
+    
+    if (supportedCurrency === 'ALL' || supportedCurrency === currency) {
+      item.style.display = 'block';
+      if (!foundProvider) {
+        provider.checked = true;
+        foundProvider = true;
+      }
+    } else {
+      item.style.display = 'none';
+      provider.checked = false;
+    }
+  });
+}
+
+// Update currency dropdown handler
+document.getElementById('currency').addEventListener('change', function() {
+  const selectedCurrency = this.value;
+  filterProvidersByCurrency(selectedCurrency);
+});
+
+// Update provider radio buttons to include data attributes
+document.querySelectorAll('input[name="provider"]').forEach(input => {
+  const provider = input.value;
+  let supportedCurrency;
+  
+  switch(provider) {
+    case 'wert':
+    case 'stripe':
+    case 'robinhood':
+    case 'transfi':
+    case 'rampnetwork':
+      supportedCurrency = 'USD';
+      break;
+    case 'werteur':
+      supportedCurrency = 'EUR';
+      break;
+    case 'interac':
+      supportedCurrency = 'CAD';
+      break;
+    case 'upi':
+      supportedCurrency = 'INR';
+      break;
+    default:
+      supportedCurrency = 'ALL';
+  }
+  
+  input.setAttribute('data-supported-currency', supportedCurrency);
+});
+
+// Remove the currency setting from provider change event
+document.querySelectorAll('input[name="provider"]').forEach(input => {
+  input.addEventListener('change', function() {
+    const provider = this.value;
+    const minAmount = minAmounts[provider] || 0;
+    const amountInput = document.getElementById('amount');
+    
+    amountInput.setAttribute('min', minAmount);
+    amountInput.setAttribute('placeholder', `Min: ${minAmount}`);
+
+    // Highlight the selected provider card
+    document.querySelectorAll('.provider-card').forEach(card => {
+      card.classList.remove('selected');
+    });
+    this.closest('.provider-card').classList.add('selected');
+  });
+});
+
+// Initialize providers based on default currency
+document.addEventListener('DOMContentLoaded', function() {
+  const currencySelect = document.getElementById('currency');
+  filterProvidersByCurrency(currencySelect.value);
+});
