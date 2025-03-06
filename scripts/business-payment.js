@@ -70,6 +70,36 @@ function toggleLoading(isLoading = true) {
   }
 }
 
+function copyToClipboard(text) {
+  // Create a temporary input element
+  const tempInput = document.createElement("input");
+  tempInput.value = text;
+  document.body.appendChild(tempInput);
+
+  // Select and copy the text
+  tempInput.select();
+  document.execCommand("copy");
+
+  // Remove the temporary element
+  document.body.removeChild(tempInput);
+
+  // Update tooltip on the button that was clicked
+  const button = event.currentTarget;
+  const tooltip = bootstrap.Tooltip.getInstance(button);
+
+  if (tooltip) {
+    // Update tooltip to show copied
+    button.setAttribute("data-bs-original-title", "Copied!");
+    tooltip.update();
+
+    // Reset tooltip after 2 seconds
+    setTimeout(() => {
+      button.setAttribute("data-bs-original-title", "Copy to Clipboard");
+      tooltip.update();
+    }, 2000);
+  }
+}
+
 // Advanced decryption function to match new encryption methods
 function decryptWalletAddress(encryptedData) {
   try {
@@ -257,15 +287,17 @@ async function displayResult(
   amount,
   email,
   provider,
-  paymentLink
+  paymentLink,
+  trackingNumber,
+  trackingUrl
 ) {
   const resultContainer = document.getElementById(RESULT_CONTAINER_ID);
 
   try {
     const formattedAmount = parseFloat(amount).toFixed(2);
-    
+
     // Extract the transaction ID (addressIn) from the payment link
-    const addressIn = new URL(paymentLink).searchParams.get('address');
+    const addressIn = new URL(paymentLink).searchParams.get("address");
 
     resultContainer.innerHTML = `
       <div class="card success-card animate-success">
@@ -307,7 +339,7 @@ async function displayResult(
                 <div class="mb-3">
                   <label class="form-label fw-semibold">Tracking Number:</label>
                   <div class="input-group mb-2">
-                    <input type="text" class="form-control" value="${addressIn}" id="tracking-number" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
+                    <input type="text" class="form-control" value="${trackingNumber}" id="tracking-number" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
                     <button class="btn btn-outline-secondary" type="button" id="copy-tracking-number" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
                       <i class="fas fa-copy"></i>
                     </button>
@@ -318,7 +350,7 @@ async function displayResult(
                 <div class="mb-3">
                   <label class="form-label fw-semibold">Tracking URL:</label>
                   <div class="input-group mb-2">
-                    <input type="text" class="form-control" value="https://payment.transact.st/control/track.php?address=${addressIn}" id="tracking-url" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
+                    <input type="text" class="form-control" value="${trackingUrl}" id="tracking-url" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
                     <button class="btn btn-outline-secondary" type="button" id="copy-tracking-url" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
                       <i class="fas fa-copy"></i>
                     </button>
@@ -377,31 +409,35 @@ async function displayResult(
         copyToClipboard(paymentLink);
       });
     }
-    
+
     // Set up event listeners for tracking number and tracking URL
-    const copyTrackingNumberButton = document.getElementById("copy-tracking-number");
+    const copyTrackingNumberButton = document.getElementById(
+      "copy-tracking-number"
+    );
     if (copyTrackingNumberButton) {
       copyTrackingNumberButton.addEventListener("click", () => {
-        copyToClipboard(addressIn);
+        copyToClipboard(trackingNumber);
       });
     }
-    
+
     const copyTrackingUrlButton = document.getElementById("copy-tracking-url");
     if (copyTrackingUrlButton) {
       copyTrackingUrlButton.addEventListener("click", () => {
-        copyToClipboard(`https://api.transact.st/control/track.php?address=${addressIn}`);
+        copyToClipboard(trackingUrl);
       });
     }
 
     // Initialize tooltips for new buttons
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
     tooltipTriggerList.map(function (tooltipTriggerEl) {
       return new bootstrap.Tooltip(tooltipTriggerEl);
     });
   } catch (error) {
     console.error("Error displaying result:", error);
     showToast(
-      "Erro ao exibir o resultado. Por favor, tente novamente mais tarde.",
+      "Error showing the result. Please try again later.",
       "error"
     );
   }
@@ -468,7 +504,9 @@ async function handleFormSubmission(event) {
       'input[name="provider"]:checked'
     );
     const provider = providerInput.value;
-    const minAmount = parseFloat(providerInput.getAttribute("data-min-amount") || "0");
+    const minAmount = parseFloat(
+      providerInput.getAttribute("data-min-amount") || "0"
+    );
 
     // Validate inputs
     if (!validateWalletAddress(walletAddress)) {
@@ -488,7 +526,7 @@ async function handleFormSubmission(event) {
       toggleLoading(false);
       return;
     }
-    
+
     // Validate minimum amount
     if (amount < minAmount) {
       showToast(
@@ -511,7 +549,15 @@ async function handleFormSubmission(event) {
     );
 
     // Display result
-    await displayResult(walletAddress, amount, email, provider, paymentLink);
+    await displayResult(
+      walletAddress,
+      amount,
+      email,
+      provider,
+      paymentLink.paymentLink,
+      paymentLink.addressIn,
+      paymentLink.trackingUrl
+    );
 
     // Scroll to result
     const resultElement = document.getElementById(RESULT_CONTAINER_ID);
@@ -596,9 +642,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   const providerInputs = document.querySelectorAll('input[name="provider"]');
   providerInputs.forEach((input) => {
     const minAmount = input.getAttribute("data-min-amount") || "N/A";
-    const supportedCurrency = input.getAttribute("data-supported-currency") || "ALL";
+    const supportedCurrency =
+      input.getAttribute("data-supported-currency") || "ALL";
 
-    const tooltip = `Minimum amount: ${minAmount}${supportedCurrency !== "ALL" ? ` (${supportedCurrency} only)` : ""}`;
+    const tooltip = `Minimum amount: ${minAmount}${
+      supportedCurrency !== "ALL" ? ` (${supportedCurrency} only)` : ""
+    }`;
     input.parentElement.setAttribute("title", tooltip);
     input.parentElement.setAttribute("data-bs-toggle", "tooltip");
     input.parentElement.setAttribute("data-bs-placement", "top");
@@ -610,9 +659,9 @@ document.addEventListener("DOMContentLoaded", async function () {
       const minAmount = parseFloat(this.getAttribute("data-min-amount") || "0");
       const supportedCurrency = this.getAttribute("data-supported-currency");
       const amountInput = document.getElementById(AMOUNT_ID);
-      
+
       amountInput.setAttribute("min", minAmount);
-      
+
       // Set currency based on provider
       const currencyInput = document.getElementById(CURRENCY_ID);
       if (supportedCurrency !== "ALL") {
@@ -622,11 +671,13 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
     });
   });
-  
+
   // Remove currency change listener as we no longer have a select
 
   // Initialize tooltips
-  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  const tooltipTriggerList = [].slice.call(
+    document.querySelectorAll('[data-bs-toggle="tooltip"]')
+  );
   tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl);
   });
@@ -635,19 +686,19 @@ document.addEventListener("DOMContentLoaded", async function () {
   document.querySelectorAll(".provider-item").forEach((item) => {
     item.style.display = "block";
   });
-  
+
   // Add provider search functionality
   const providerSearch = document.getElementById("provider-search");
   if (providerSearch) {
     providerSearch.addEventListener("input", () => {
       const searchTerm = providerSearch.value.toLowerCase();
       const providerItems = document.querySelectorAll(".provider-item");
-  
+
       providerItems.forEach((item) => {
         const providerName = item
           .querySelector(".provider-name")
           .textContent.toLowerCase();
-  
+
         if (providerName.includes(searchTerm)) {
           item.style.display = "block";
         } else {
