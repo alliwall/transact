@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transact - Invitation</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link rel="stylesheet" href="css/invitation.css" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg mb-4">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+          <img src="/images/favicon.ico" alt="Transact" class="logo" />
+          Transact
+        </a>
+        <div class="d-flex align-items-center">
+          <div class="theme-switch" role="button" tabindex="0">
+            <i class="bi bi-moon-fill"></i>
+            <i class="bi bi-sun-fill"></i>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+          <div class="card shadow animate__animated animate__fadeIn">
+            <div class="card-body">
+              <div class="text-center mb-4">
+                <img
+                  src="/images/favicon.ico"
+                  alt="Transact"
+                  class="logo mb-3"
+                />
+                <h2>Transact</h2>
+              </div>
+
+              <div
+                id="invitation-code-section"
+                class="animate__animated animate__fadeIn"
+              >
+                <h4 class="text-center mb-4">Enter Invitation Code</h4>
+                <form id="invitation-form">
+                  <div class="mb-4">
+                    <input
+                      type="text"
+                      class="form-control form-control-lg"
+                      id="invitation-code"
+                      placeholder="Enter your invitation code"
+                      required
+                    />
+                  </div>
+                  <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                      Submit
+                    </button>
+                  </div>
+                </form>
+
+                <div class="text-center mt-4">
+                  <p class="text-secondary mb-0">
+                    Don't have an invitation code?
+                  </p>
+                  <button id="request-invitation-btn" class="btn btn-link">
+                    Request an Invitation Code
+                  </button>
+                </div>
+              </div>
+
+              <div
+                id="request-form-section"
+                style="display: none"
+                class="animate__animated animate__fadeIn"
+              >
+                <h4 class="text-center mb-4">Request an Invitation Code</h4>
+                <form id="request-form">
+                  <div class="form-section">
+                    <div class="form-section-title">Contact Information</div>
+                    <div class="form-group">
+                      <label for="email" class="form-label required-field"
+                        >Email Address</label
+                      >
+                      <input
+                        type="email"
+                        class="form-control"
+                        id="email"
+                        required
+                      />
+                      <small class="form-text"
+                        >We'll use this to contact you about your request</small
+                      >
+                    </div>
+                    <div class="form-group">
+                      <label for="telegram" class="form-label required-field"
+                        >Telegram Handle</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="telegram"
+                        required
+                      />
+                      <small class="form-text"
+                        >For quick communication and updates</small
+                      >
+                    </div>
+                    <div class="form-group">
+                      <label for="name" class="form-label">Full Name</label>
+                      <input type="text" class="form-control" id="name" />
+                    </div>
+                  </div>
+
+                  <div class="form-section">
+                    <div class="form-section-title">Business Information</div>
+                    <div class="form-group">
+                      <label for="country" class="form-label"
+                        >Country of Operation</label
+                      >
+                      <input type="text" class="form-control" id="country" />
+                    </div>
+                    <div class="form-group">
+                      <label for="daily-volume" class="form-label"
+                        >Expected Daily Volume</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="daily-volume"
+                      />
+                      <small class="form-text"
+                        >Approximate transaction volume you expect to process
+                        daily</small
+                      >
+                    </div>
+                    <div class="form-group">
+                      <label for="referral" class="form-label"
+                        >How did you hear about Transact?</label
+                      >
+                      <input type="text" class="form-control" id="referral" />
+                    </div>
+                  </div>
+
+                  <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    While Transact doesn't require KYC or KYB from our
+                    merchants, your customers might need to complete KYC
+                    procedures.
+                  </div>
+
+                  <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                      Submit Request
+                    </button>
+                    <button
+                      type="button"
+                      id="back-to-invitation"
+                      class="btn btn-outline-secondary"
+                    >
+                      Back to Invitation
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <div
+                id="success-message"
+                class="alert alert-success mt-3 animate__animated animate__fadeIn"
+                style="display: none"
+              ></div>
+              <div
+                id="error-message"
+                class="alert alert-danger mt-3 animate__animated animate__fadeIn"
+                style="display: none"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/invitation.js"></script>
+  </body>
+</html>

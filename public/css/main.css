@@ -144,7 +144,7 @@ header {
 }
 
 .main-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -186,7 +186,11 @@ header {
 }
 
 .feature-badge {
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--accent-color)
+  );
   font-weight: 500;
   letter-spacing: 0.025em;
   padding: 0.5em 0.75em;
@@ -241,7 +245,7 @@ header {
 }
 
 .main-card .btn-primary::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -616,12 +620,12 @@ footer a:hover {
   .lead {
     font-size: 1rem;
   }
-  
+
   .provider-filter {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .search-box {
     max-width: 100%;
     margin-top: 0.5rem;
@@ -632,24 +636,24 @@ footer a:hover {
   .logo-link h1 {
     font-size: 1.5rem;
   }
-  
+
   .provider-group {
     max-height: 200px;
   }
-  
+
   .form-actions {
     display: flex;
     flex-direction: column;
   }
-  
+
   .form-actions .btn {
     width: 100%;
   }
-  
+
   .copy-link-container {
     flex-direction: column;
   }
-  
+
   .copy-link-button {
     margin-top: 0.5rem;
     width: 100%;
@@ -660,17 +664,17 @@ footer a:hover {
   .card-header {
     padding: 1rem;
   }
-  
+
   .card-body {
     padding: 1rem;
   }
-  
+
   .btn-group-sm {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0.25rem;
   }
-  
+
   .btn-group-sm .btn:first-child:not(:last-child),
   .btn-group-sm .btn:last-child:not(:first-child),
   .btn-group-sm .btn:not(:first-child):not(:last-child) {
@@ -1429,13 +1433,23 @@ html[data-theme="dark"] input.copy-link-input,
 html[data-theme="dark"] .result-card .copy-link-input,
 html[data-theme="dark"] .card input.copy-link-input,
 html[data-theme="dark"] .card-body input.copy-link-input,
-html[data-theme="dark"] div.card div.card-body div.position-relative div.copy-link-container input.copy-link-input,
+html[data-theme="dark"]
+  div.card
+  div.card-body
+  div.position-relative
+  div.copy-link-container
+  input.copy-link-input,
 html[data-bs-theme="dark"] .copy-link-input,
 html[data-bs-theme="dark"] input.copy-link-input,
 html[data-bs-theme="dark"] .result-card .copy-link-input,
 html[data-bs-theme="dark"] .card input.copy-link-input,
 html[data-bs-theme="dark"] .card-body input.copy-link-input,
-html[data-bs-theme="dark"] div.card div.card-body div.position-relative div.copy-link-container input.copy-link-input {
+html[data-bs-theme="dark"]
+  div.card
+  div.card-body
+  div.position-relative
+  div.copy-link-container
+  input.copy-link-input {
   background-color: #1e293b !important;
   color: #f8fafc !important;
   border-color: #334155 !important;
@@ -1596,13 +1610,21 @@ h6.tracking-section-title {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--primary-dark)
+  );
   border: none;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+  background: linear-gradient(
+    135deg,
+    var(--primary-dark),
+    var(--primary-color)
+  );
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
@@ -1671,9 +1693,15 @@ h6.tracking-section-title {
 
 /* Animation for feedback */
 @keyframes successPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .animate-success {
@@ -1686,32 +1714,33 @@ h6.tracking-section-title {
     padding: 1rem;
     margin: 1rem 0;
   }
-  
+
   .card-body {
     padding: 1.25rem;
   }
-  
+
   .d-flex.flex-wrap.justify-content-between.mb-3 > div {
     min-width: 100%;
     margin-bottom: 0.75rem;
   }
-  
+
   .copy-link-input {
     font-size: 0.85rem;
     padding: 0.625rem 0.75rem;
   }
-  
+
   .copy-link-button {
     padding: 0.625rem 0.75rem;
   }
-  
-  .result-card, .success-card {
+
+  .result-card,
+  .success-card {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
   }
 }
 
 /* Improved focus states for accessibility */
-.form-control:focus, 
+.form-control:focus,
 .btn:focus,
 .copy-link-input:focus,
 input:focus,
@@ -1761,7 +1790,7 @@ button:focus {
   .provider-item {
     width: 100%;
   }
-  
+
   .share-buttons .btn-sm {
     width: 100%;
     margin-bottom: 0.5rem;
@@ -1769,7 +1798,7 @@ button:focus {
     justify-content: center;
     align-items: center;
   }
-  
+
   .d-flex.flex-wrap.gap-2 {
     flex-direction: column;
   }
@@ -1813,7 +1842,7 @@ h6.tracking-section-title {
 }
 
 .nav-links a::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -1830,7 +1859,11 @@ h6.tracking-section-title {
 /* ===== HERO SECTION ===== */
 .hero-section {
   position: relative;
-  background: linear-gradient(135deg, var(--navbar-gradient-start), var(--navbar-gradient-end));
+  background: linear-gradient(
+    135deg,
+    var(--navbar-gradient-start),
+    var(--navbar-gradient-end)
+  );
   color: white;
   padding: 5rem 0 8rem;
   overflow: hidden;
@@ -1918,7 +1951,7 @@ h6.tracking-section-title {
   color: var(--text-muted);
 }
 
-.services-section, 
+.services-section,
 .features-section,
 .cta-section {
   padding: 4rem 0;
@@ -1973,14 +2006,19 @@ h6.tracking-section-title {
 
 /* ===== CTA SECTION ===== */
 .cta-card {
-  background: linear-gradient(135deg, var(--navbar-gradient-start), var(--navbar-gradient-end));
+  background: linear-gradient(
+    135deg,
+    var(--navbar-gradient-start),
+    var(--navbar-gradient-end)
+  );
   color: white;
   border-radius: var(--border-radius);
   padding: 3rem;
   box-shadow: var(--shadow-md);
 }
 
-.cta-card h2, .cta-card p {
+.cta-card h2,
+.cta-card p {
   color: white;
 }
 
@@ -2064,11 +2102,11 @@ h6.tracking-section-title {
   .hero-section {
     padding: 3rem 0 6rem;
   }
-  
+
   .hero-content {
     padding-bottom: 3rem;
   }
-  
+
   .cta-card {
     padding: 2rem;
   }
@@ -2078,21 +2116,21 @@ h6.tracking-section-title {
   .hero-section {
     padding: 2rem 0 4rem;
   }
-  
+
   .footer-section .col-lg-2 {
     margin-bottom: 1.5rem;
   }
-  
+
   .feature-card {
     padding: 1.25rem;
   }
-  
+
   .feature-icon {
     width: 40px;
     height: 40px;
     font-size: 1.25rem;
   }
-  
+
   .cta-card {
     padding: 1.5rem;
   }
@@ -2102,11 +2140,11 @@ h6.tracking-section-title {
   .hero-badges {
     justify-content: center;
   }
-  
+
   .section-subtitle {
     font-size: 1rem;
   }
-  
+
   .cta-card {
     padding: 1.5rem;
     text-align: center;

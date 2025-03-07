@@ -436,10 +436,7 @@ async function displayResult(
     });
   } catch (error) {
     console.error("Error displaying result:", error);
-    showToast(
-      "Error showing the result. Please try again later.",
-      "error"
-    );
+    showToast("Error showing the result. Please try again later.", "error");
   }
 }
 
@@ -618,84 +615,84 @@ async function processUrlParams() {
 
 // Add new function to filter providers by currency
 function filterProvidersByCurrency(currency) {
-  const providerItems = document.querySelectorAll('.provider-item');
+  const providerItems = document.querySelectorAll(".provider-item");
   let foundProvider = false;
 
-  providerItems.forEach(item => {
+  providerItems.forEach((item) => {
     const provider = item.querySelector('input[name="provider"]');
-    const supportedCurrency = provider.getAttribute('data-supported-currency');
-    
-    if (supportedCurrency === 'ALL' || supportedCurrency === currency) {
-      item.style.display = 'block';
+    const supportedCurrency = provider.getAttribute("data-supported-currency");
+
+    if (supportedCurrency === "ALL" || supportedCurrency === currency) {
+      item.style.display = "block";
       if (!foundProvider) {
         provider.checked = true;
         foundProvider = true;
       }
     } else {
-      item.style.display = 'none';
+      item.style.display = "none";
       provider.checked = false;
     }
   });
 }
 
 // Update currency dropdown handler
-document.getElementById('currency').addEventListener('change', function() {
+document.getElementById("currency").addEventListener("change", function () {
   const selectedCurrency = this.value;
   filterProvidersByCurrency(selectedCurrency);
 });
 
 // Update provider radio buttons to include data attributes
-document.querySelectorAll('input[name="provider"]').forEach(input => {
+document.querySelectorAll('input[name="provider"]').forEach((input) => {
   const provider = input.value;
   let supportedCurrency;
-  
-  switch(provider) {
-    case 'wert':
-    case 'stripe':
-    case 'robinhood':
-    case 'transfi':
-    case 'rampnetwork':
-      supportedCurrency = 'USD';
+
+  switch (provider) {
+    case "wert":
+    case "stripe":
+    case "robinhood":
+    case "transfi":
+    case "rampnetwork":
+      supportedCurrency = "USD";
       break;
-    case 'werteur':
-      supportedCurrency = 'EUR';
+    case "werteur":
+      supportedCurrency = "EUR";
       break;
-    case 'interac':
-      supportedCurrency = 'CAD';
+    case "interac":
+      supportedCurrency = "CAD";
       break;
-    case 'upi':
-      supportedCurrency = 'INR';
+    case "upi":
+      supportedCurrency = "INR";
       break;
     default:
-      supportedCurrency = 'ALL';
+      supportedCurrency = "ALL";
   }
-  
-  input.setAttribute('data-supported-currency', supportedCurrency);
+
+  input.setAttribute("data-supported-currency", supportedCurrency);
 });
 
 // Remove the currency setting from provider change event
-document.querySelectorAll('input[name="provider"]').forEach(input => {
-  input.addEventListener('change', function() {
+document.querySelectorAll('input[name="provider"]').forEach((input) => {
+  input.addEventListener("change", function () {
     const provider = this.value;
     const minAmount = minAmounts[provider] || 0;
-    const amountInput = document.getElementById('amount');
-    
-    amountInput.setAttribute('min', minAmount);
-    amountInput.setAttribute('placeholder', `Min: ${minAmount}`);
+    const amountInput = document.getElementById("amount");
+
+    amountInput.setAttribute("min", minAmount);
+    amountInput.setAttribute("placeholder", `Min: ${minAmount}`);
 
     // Highlight the selected provider card
-    document.querySelectorAll('.provider-card').forEach(card => {
-      card.classList.remove('selected');
+    document.querySelectorAll(".provider-card").forEach((card) => {
+      card.classList.remove("selected");
     });
-    this.closest('.provider-card').classList.add('selected');
+    this.closest(".provider-card").classList.add("selected");
   });
 });
 
 // Initialize providers based on default currency
-document.addEventListener('DOMContentLoaded', function() {
-  const currencySelect = document.getElementById('currency');
+document.addEventListener("DOMContentLoaded", function () {
+  const currencySelect = document.getElementById("currency");
   filterProvidersByCurrency(currencySelect.value);
-  
+
   // Initialize Bootstrap tooltips
   const tooltipTriggerList = [].slice.call(
     document.querySelectorAll('[data-bs-toggle="tooltip"]')
@@ -708,40 +705,40 @@ document.addEventListener('DOMContentLoaded', function() {
   const initialProvider = document.querySelector(
     'input[name="provider"]:checked'
   ).value;
-  const amountInput = document.getElementById('amount');
-  amountInput.setAttribute('min', minAmounts[initialProvider]);
+  const amountInput = document.getElementById("amount");
+  amountInput.setAttribute("min", minAmounts[initialProvider]);
   amountInput.setAttribute(
-    'placeholder',
+    "placeholder",
     `Min: ${minAmounts[initialProvider]}`
   );
 
   // Add selected class to the initial provider
   const selectedProviderCard = document
     .querySelector('input[name="provider"]:checked')
-    .closest('.provider-card');
-  selectedProviderCard.classList.add('selected');
+    .closest(".provider-card");
+  selectedProviderCard.classList.add("selected");
 
   // Allow the entire provider card to be clickable
-  document.querySelectorAll('.provider-card').forEach(function(card) {
-    card.addEventListener('click', function(e) {
+  document.querySelectorAll(".provider-card").forEach(function (card) {
+    card.addEventListener("click", function (e) {
       // Avoid double click when clicking on the input itself
-      if (e.target.tagName !== 'INPUT') {
+      if (e.target.tagName !== "INPUT") {
         // Find the input within this card and mark it as selected
         const input = this.querySelector('input[type="radio"]');
         if (input) {
           input.checked = true;
 
           // Trigger change event to update the UI
-          const changeEvent = new Event('change');
+          const changeEvent = new Event("change");
           input.dispatchEvent(changeEvent);
 
           // Remove selected class from all cards
-          document.querySelectorAll('.provider-card').forEach((c) => {
-            c.classList.remove('selected');
+          document.querySelectorAll(".provider-card").forEach((c) => {
+            c.classList.remove("selected");
           });
 
           // Add selected class to the current card
-          this.classList.add('selected');
+          this.classList.add("selected");
         }
       }
     });

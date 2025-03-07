@@ -345,10 +345,10 @@ async function generatePaymentLink(walletData) {
 
 function displayResult(walletAddress, paymentLink) {
   const resultContainer = document.getElementById(RESULT_CONTAINER_ID);
-  
+
   // Extract the data from the payment link
   const urlData = new URL(paymentLink);
-  const encryptedData = urlData.searchParams.get('data');
+  const encryptedData = urlData.searchParams.get("data");
 
   resultContainer.innerHTML = `
     <div class="card success-card animate-success">

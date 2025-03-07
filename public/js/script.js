@@ -62,10 +62,12 @@ themeToggle.addEventListener("click", () => {
     themeToggleIcon.classList.remove("fa-sun");
     themeToggleIcon.classList.add("fa-moon");
   }
-  
-  document.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: newTheme } }));
-  
-  if (typeof fixDarkModeStyles === 'function') {
+
+  document.dispatchEvent(
+    new CustomEvent("themeChanged", { detail: { theme: newTheme } })
+  );
+
+  if (typeof fixDarkModeStyles === "function") {
     fixDarkModeStyles();
   }
 });
@@ -319,7 +321,10 @@ form.addEventListener("submit", async (event) => {
       document
         .getElementById("copy-tracking-url")
         .addEventListener("click", function () {
-          copyToClipboard(`https://payment.transact.st/control/track.php?address=${addressIn}`, this);
+          copyToClipboard(
+            `https://payment.transact.st/control/track.php?address=${addressIn}`,
+            this
+          );
         });
 
       document
@@ -327,7 +332,7 @@ form.addEventListener("submit", async (event) => {
         .addEventListener("click", function () {
           sharePaymentLink(paymentLink);
         });
-        
+
       // Force dark mode styles on payment input if needed
       fixDarkModeStyles();
 
@@ -553,116 +558,121 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Quando o DOM estiver completamente carregado, aplica os estilos do tema
-  if (typeof fixDarkModeStyles === 'function') {
+  if (typeof fixDarkModeStyles === "function") {
     setTimeout(fixDarkModeStyles, 100); // Pequeno delay para garantir que todos os elementos estejam renderizados
   }
 });
 
 // Function to enforce correct styles in dark mode
 function fixDarkModeStyles() {
-  if (document.body.getAttribute('data-theme') === 'dark' || document.body.getAttribute('data-bs-theme') === 'dark') {
-    const inputs = document.querySelectorAll('.copy-link-input, #payment-link');
-    inputs.forEach(input => {
-      input.style.backgroundColor = '#1e293b';
-      input.style.color = '#f8fafc';
-      input.style.borderColor = '#334155';
+  if (
+    document.body.getAttribute("data-theme") === "dark" ||
+    document.body.getAttribute("data-bs-theme") === "dark"
+  ) {
+    const inputs = document.querySelectorAll(".copy-link-input, #payment-link");
+    inputs.forEach((input) => {
+      input.style.backgroundColor = "#1e293b";
+      input.style.color = "#f8fafc";
+      input.style.borderColor = "#334155";
     });
-    
-    const containers = document.querySelectorAll('.copy-link-container');
-    containers.forEach(container => {
-      container.style.backgroundColor = '#1e293b';
-      container.style.borderColor = '#334155';
+
+    const containers = document.querySelectorAll(".copy-link-container");
+    containers.forEach((container) => {
+      container.style.backgroundColor = "#1e293b";
+      container.style.borderColor = "#334155";
     });
-    
-    const buttons = document.querySelectorAll('.card-header .btn-light, .card-header .btn-sm');
-    buttons.forEach(button => {
-      button.style.backgroundColor = '#334155';
-      button.style.color = '#f8fafc';
-      button.style.borderColor = '#475569';
+
+    const buttons = document.querySelectorAll(
+      ".card-header .btn-light, .card-header .btn-sm"
+    );
+    buttons.forEach((button) => {
+      button.style.backgroundColor = "#334155";
+      button.style.color = "#f8fafc";
+      button.style.borderColor = "#475569";
     });
   }
 }
 
 // Also run this function when theme changes
-document.addEventListener('themeChanged', fixDarkModeStyles);
+document.addEventListener("themeChanged", fixDarkModeStyles);
 
 // Add new function to filter providers by currency
 function filterProvidersByCurrency(currency) {
-  const providerItems = document.querySelectorAll('.provider-item');
+  const providerItems = document.querySelectorAll(".provider-item");
   let foundProvider = false;
 
-  providerItems.forEach(item => {
+  providerItems.forEach((item) => {
     const provider = item.querySelector('input[name="provider"]');
-    const supportedCurrency = provider.getAttribute('data-supported-currency');
-    
-    if (supportedCurrency === 'ALL' || supportedCurrency === currency) {
-      item.style.display = 'block';
+    const supportedCurrency = provider.getAttribute("data-supported-currency");
+
+    if (supportedCurrency === "ALL" || supportedCurrency === currency) {
+      item.style.display = "block";
       if (!foundProvider) {
         provider.checked = true;
         foundProvider = true;
       }
     } else {
-      item.style.display = 'none';
+      item.style.display = "none";
       provider.checked = false;
     }
   });
 }
 
 // Update currency dropdown handler
-document.getElementById('currency').addEventListener('change', function() {
+document.getElementById("currency").addEventListener("change", function () {
   const selectedCurrency = this.value;
   filterProvidersByCurrency(selectedCurrency);
 });
 
 // Update provider radio buttons to include data attributes
-document.querySelectorAll('input[name="provider"]').forEach(input => {
+document.querySelectorAll('input[name="provider"]').forEach((input) => {
   const provider = input.value;
   let supportedCurrency;
-  
-  switch(provider) {
-    case 'wert':
-    case 'stripe':
-    case 'robinhood':
-    case 'transfi':
-    case 'rampnetwork':
-      supportedCurrency = 'USD';
+
+  switch (provider) {
+    case "wert":
+    case "stripe":
+    case "robinhood":
+    case "transfi":
+    case "rampnetwork":
+      supportedCurrency = "USD";
       break;
-    case 'werteur':
-      supportedCurrency = 'EUR';
+    case "werteur":
+      supportedCurrency = "EUR";
       break;
-    case 'interac':
-      supportedCurrency = 'CAD';
+    case "interac":
+      supportedCurrency = "CAD";
       break;
-    case 'upi':
-      supportedCurrency = 'INR';
+    case "upi":
+      supportedCurrency = "INR";
       break;
     default:
-      supportedCurrency = 'ALL';
+      supportedCurrency = "ALL";
   }
-  
-  input.setAttribute('data-supported-currency', supportedCurrency);
+
+  input.setAttribute("data-supported-currency", supportedCurrency);
 });
 
 // Remove the currency setting from provider change event
-document.querySelectorAll('input[name="provider"]').forEach(input => {
-  input.addEventListener('change', function() {
+document.querySelectorAll('input[name="provider"]').forEach((input) => {
+  input.addEventListener("change", function () {
     const provider = this.value;
     const minAmount = minAmounts[provider] || 0;
-    const amountInput = document.getElementById('amount');
-    
-    amountInput.setAttribute('min', minAmount);
-    amountInput.setAttribute('placeholder', `Min: ${minAmount}`);
+    const amountInput = document.getElementById("amount");
+
+    amountInput.setAttribute("min", minAmount);
+    amountInput.setAttribute("placeholder", `Min: ${minAmount}`);
 
     // Highlight the selected provider card
-    document.querySelectorAll('.provider-card').forEach(card => {
-      card.classList.remove('selected');
+    document.querySelectorAll(".provider-card").forEach((card) => {
+      card.classList.remove("selected");
     });
-    this.closest('.provider-card').classList.add('selected');
+    this.closest(".provider-card").classList.add("selected");
   });
 });
 
 // Initialize providers based on default currency
-document.addEventListener('DOMContentLoaded', function() {
-  const currencySelect = document.getElementById('currency');
+document.addEventListener("DOMContentLoaded", function () {
+  const currencySelect = document.getElementById("currency");
   filterProvidersByCurrency(currencySelect.value);
 });
