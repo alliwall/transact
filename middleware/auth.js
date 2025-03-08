@@ -25,7 +25,14 @@ const authenticateAdmin = (req, res, next) => {
  * Redirects to invitation page with original URL if no valid invitation exists
  */
 const requireInvitation = (req, res, next) => {
-  // Skip public routes
+  // Debug logging
+  console.log("requireInvitation middleware called for path:", req.path);
+  console.log("Session ID:", req.sessionID);
+  console.log("Session exists:", !!req.session);
+  console.log("Invitation in session:", req.session ? !!req.session.invitation : false);
+  console.log("Full session data:", req.session);
+  
+  // Skip public routes and static assets
   if (
     req.path === "/invitation" ||
     req.path === "/" ||
@@ -34,6 +41,7 @@ const requireInvitation = (req, res, next) => {
     req.path.startsWith("/js/") ||
     req.path.startsWith("/images/")
   ) {
+    console.log("Skipping auth check for public path:", req.path);
     return next();
   }
 
@@ -53,6 +61,10 @@ const requireInvitation = (req, res, next) => {
     );
   }
 
+  // User has valid invitation, proceed
+  console.log("Valid invitation found, proceeding to:", req.path);
+  console.log("Invitation details:", req.session.invitation);
+
   // Check if user has permission for this path based on features
   const features = req.session.invitation.features || [];
   let hasPermission = true;
@@ -71,6 +83,9 @@ const requireInvitation = (req, res, next) => {
   }
 
   if (!hasPermission) {
+    console.log("Permission denied for path:", req.path);
+    console.log("User features:", features);
+    
     // Store error message in session for display
     req.session.invitationError =
       "Your invitation code does not grant access to this feature";

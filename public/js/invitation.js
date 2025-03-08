@@ -53,6 +53,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const code = document.getElementById("invitation-code").value.trim();
 
     try {
+      // First, check the current session status
+      const sessionCheckResponse = await fetch("/api/session-status", {
+        method: "GET",
+        credentials: "include",
+      });
+      
+      const sessionData = await sessionCheckResponse.json();
+      console.log("Current session before verification:", sessionData);
+
+      // Now verify the invitation code
       const response = await fetch("/api/invitation/verify", {
         method: "POST",
         headers: {
@@ -63,18 +73,29 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       const data = await response.json();
+      console.log("Verification response:", data);
 
       if (response.ok) {
         successMessage.textContent = "Checking your invitation code...";
         successMessage.style.display = "block";
         errorMessage.style.display = "none";
 
-        // Extrair o parâmetro redirect_url da URL atual, se existir
+        // Check session status again to confirm it was updated
+        const postVerifySessionCheck = await fetch("/api/session-status", {
+          method: "GET",
+          credentials: "include",
+        });
+        
+        const updatedSessionData = await postVerifySessionCheck.json();
+        console.log("Session after verification:", updatedSessionData);
+
+        // Extract the redirect_url parameter from the current URL, if it exists
         const urlParams = new URLSearchParams(window.location.search);
         const redirectUrl = urlParams.get("redirect_url") || "/";
 
-        // Redirecionar para o URL especificado ou para a página inicial por predefinição
+        // Add a small delay to ensure session is fully processed
         setTimeout(() => {
+          // Redirect to the specified URL or to the default page by default
           window.location.href = redirectUrl;
         }, 1500);
       } else {

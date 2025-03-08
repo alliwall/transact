@@ -124,23 +124,43 @@ const verifyInvitationCode = async (req, res) => {
       features,
     });
 
+    // Explicitly set the invitation in the session
     req.session.invitation = {
       code: invitationCode.code,
       type: invitationCode.type,
       features,
     };
 
-    // Ensure the session is saved before responding
-    req.session.save((err) => {
+    // Force session regeneration to ensure it's properly saved
+    req.session.regenerate((err) => {
       if (err) {
-        console.error("Error saving session:", err);
-        return res.status(500).json({ error: "Failed to save session" });
+        console.error("Error regenerating session:", err);
+        return res.status(500).json({ error: "Failed to regenerate session" });
       }
-
-      res.status(200).json({
-        message: "Invitation code verified successfully",
+      
+      // Set the invitation data again in the new session
+      req.session.invitation = {
+        code: invitationCode.code,
         type: invitationCode.type,
         features,
+      };
+      
+      // Ensure the session is saved before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("Error saving session:", err);
+          return res.status(500).json({ error: "Failed to save session" });
+        }
+
+        console.log("Session saved successfully. Session ID:", req.sessionID);
+        console.log("Session data:", req.session);
+
+        res.status(200).json({
+          message: "Invitation code verified successfully",
+          type: invitationCode.type,
+          features,
+          sessionId: req.sessionID // Include session ID in response for debugging
+        });
       });
     });
   } catch (error) {
