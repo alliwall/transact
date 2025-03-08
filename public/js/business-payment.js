@@ -12,6 +12,36 @@ const MERCHANT_INFO_ID = "merchant-info";
 const CURRENCY_ID = "currency";
 const ENCRYPTION_KEY = "Transact.st:8a7b6c5d4e3f2g1h"; // Fixed key for AES decryption
 
+// Minimum amounts for each provider
+const minAmounts = {
+  wert: 1,
+  werteur: 1,
+  guardarian: 20,
+  particle: 30,
+  robinhood: 5,
+  stripe: 2,
+  coinbase: 2,
+  transak: 15,
+  sardine: 30,
+  simpleswap: 30,
+  banxa: 20,
+  utorg: 50,
+  simplex: 50,
+  changenow: 20,
+  transfi: 70,
+  alchemypay: 5,
+  mercuryo: 30,
+  topper: 10,
+  swipelux: 14,
+  kado: 15,
+  unlimit: 10,
+  bitnovo: 10,
+  rampnetwork: 4,
+  upi: 100,
+  interac: 100,
+  moonpay: 20,
+};
+
 // Helper Functions
 function validateWalletAddress(address) {
   // Simple validation for Ethereum-style addresses
@@ -27,28 +57,42 @@ function validateEmail(email) {
   return emailRegex.test(email);
 }
 
+// Function to show toast messages
 function showToast(message, type = "info") {
-  const toastContainer = document.querySelector(TOAST_CONTAINER);
-  const toastId = `toast-${Date.now()}`;
-  const html = `
-    <div id="${toastId}" class="toast align-items-center text-white bg-${type}" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body">
-          ${message}
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+  const toastContainer = document.querySelector(".toast-container");
+
+  const toastElement = document.createElement("div");
+  toastElement.className = `toast align-items-center text-white bg-${type} border-0`;
+  toastElement.setAttribute("role", "alert");
+  toastElement.setAttribute("aria-live", "assertive");
+  toastElement.setAttribute("aria-atomic", "true");
+
+  const iconClass =
+    type === "info"
+      ? "info-circle"
+      : type === "warning"
+      ? "exclamation-triangle"
+      : type === "success"
+      ? "check-circle"
+      : "exclamation-circle";
+
+  toastElement.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="fas fa-${iconClass} me-2"></i>
+        ${message}
       </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
   `;
-  toastContainer.insertAdjacentHTML("beforeend", html);
-  const toastElement = document.getElementById(toastId);
-  const toast = new bootstrap.Toast(toastElement, {
-    autohide: true,
-    delay: 5000,
-  });
+
+  toastContainer.appendChild(toastElement);
+
+  // Initialize and show the toast
+  const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
   toast.show();
 
-  // Remove toast after it's hidden
+  // Remove after closing
   toastElement.addEventListener("hidden.bs.toast", () => {
     toastElement.remove();
   });
@@ -122,7 +166,6 @@ function decryptWalletAddress(encryptedData) {
         throw new Error("Invalid encrypted data format");
       }
 
-      const version = parts[0]; // F1
       const salt = parts[1];
       const integrityCheckHex = parts[2];
       const encrypted = parts[3];
@@ -513,7 +556,10 @@ async function handleFormSubmission(event) {
     }
 
     if (!validateAmount(amount)) {
-      showToast("Please enter a valid amount greater than zero.", "danger");
+      showToast(
+        "Please enter a valid amount. Check the minimum amount for the selected provider.",
+        "danger"
+      );
       toggleLoading(false);
       return;
     }
@@ -770,34 +816,51 @@ document.addEventListener("DOMContentLoaded", async function () {
   // Add tooltips to provider options
   const providerInputs = document.querySelectorAll('input[name="provider"]');
   providerInputs.forEach((input) => {
-    const minAmount = input.getAttribute("data-min-amount") || "N/A";
-    const supportedCurrency =
-      input.getAttribute("data-supported-currency") || "ALL";
+    const providerId = input.value;
+    const minAmount = minAmounts[providerId] || "N/A";
 
-    const tooltip = `Minimum amount: ${minAmount}${
-      supportedCurrency !== "ALL" ? ` (${supportedCurrency} only)` : ""
-    }`;
+    const tooltip = `Minimum amount: ${minAmount}`;
     input.parentElement.setAttribute("title", tooltip);
     input.parentElement.setAttribute("data-bs-toggle", "tooltip");
     input.parentElement.setAttribute("data-bs-placement", "top");
   });
 
-  // Update minimum amount when provider changes
+  // Update currency restrictions when changing provider
   document.querySelectorAll('input[name="provider"]').forEach((input) => {
     input.addEventListener("change", function () {
-      const minAmount = parseFloat(this.getAttribute("data-min-amount") || "0");
-      const supportedCurrency = this.getAttribute("data-supported-currency");
-      const amountInput = document.getElementById(AMOUNT_ID);
-
-      amountInput.setAttribute("min", minAmount);
+      const provider = this.value;
+      const currencyInput = document.getElementById("currency");
 
       // Set currency based on provider
-      const currencyInput = document.getElementById(CURRENCY_ID);
-      if (supportedCurrency !== "ALL") {
-        currencyInput.value = supportedCurrency;
+      if (
+        provider === "wert" ||
+        provider === "stripe" ||
+        provider === "transfi" ||
+        provider === "robinhood" ||
+        provider === "rampnetwork"
+      ) {
+        currencyInput.value = "USD";
+      } else if (provider === "werteur") {
+        currencyInput.value = "EUR";
+      } else if (provider === "upi") {
+        currencyInput.value = "INR";
+      } else if (provider === "interac") {
+        currencyInput.value = "CAD";
       } else {
-        currencyInput.value = "USD"; // Default to USD for providers that support all currencies
+        currencyInput.value = "USD"; // Default
       }
+
+      // Update minimum amount information
+      const minAmount = minAmounts[provider] || 0;
+      const amountInput = document.getElementById("amount");
+      amountInput.setAttribute("min", minAmount);
+      amountInput.setAttribute("placeholder", `Min: ${minAmount}`);
+
+      // Highlight the selected provider card
+      document.querySelectorAll(".provider-card").forEach((card) => {
+        card.classList.remove("selected");
+      });
+      this.closest(".provider-card").classList.add("selected");
     });
   });
 

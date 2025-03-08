@@ -12,9 +12,9 @@ require("dotenv").config();
 const invitationRoutes = require("./routes/invitationRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const {
-  authenticateAdmin,
   requireInvitation,
   requireFeature,
+  isValidWalletData,
 } = require("./middleware/auth");
 
 const app = express();
@@ -207,6 +207,29 @@ app.get("/api/session-test", (req, res) => {
       sessionID: req.sessionID
     });
   });
+});
+
+// Wallet data validation test endpoint
+app.get("/api/validate-wallet-data", (req, res) => {
+  const { data } = req.query;
+  
+  if (!data) {
+    return res.status(400).json({ error: "No data parameter provided" });
+  }
+  
+  try {
+    // Validate the data
+    const isValid = isValidWalletData(data);
+    
+    res.json({
+      data,
+      isValid,
+      decodedData: decodeURIComponent(data)
+    });
+  } catch (error) {
+    console.error("Error validating wallet data:", error);
+    res.status(500).json({ error: "Failed to validate wallet data" });
+  }
 });
 
 // 404 route for any undefined routes

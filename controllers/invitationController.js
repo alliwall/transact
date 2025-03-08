@@ -2,7 +2,6 @@ const db = require("../config/database");
 const {
   sendInvitationRequestNotification,
 } = require("../services/emailService");
-const crypto = require("crypto");
 
 // Submit a request for an invitation code
 const submitInvitationRequest = async (req, res) => {
@@ -71,7 +70,7 @@ const verifyInvitationCode = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Invalid invitation code" });
+      return res.status(422).json({ error: "Invalid invitation code" });
     }
 
     const invitationCode = result.rows[0];

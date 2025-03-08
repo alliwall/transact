@@ -86,7 +86,7 @@ const approveInvitationRequest = async (req, res) => {
 
     if (requestResult.rows.length === 0) {
       await db.query("ROLLBACK");
-      return res.status(404).json({ error: "Invitation request not found" });
+      return res.status(422).json({ error: "Invitation request not found" });
     }
 
     const request = requestResult.rows[0];
@@ -155,7 +155,7 @@ const rejectInvitationRequest = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Invitation request not found" });
+      return res.status(422).json({ error: "Invitation request not found" });
     }
 
     res.status(200).json({
@@ -196,7 +196,7 @@ const revokeInvitationCode = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Invitation code not found" });
+      return res.status(422).json({ error: "Invitation code not found" });
     }
 
     res.status(200).json({

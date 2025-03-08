@@ -36,7 +36,6 @@ function decryptWalletAddress(encryptedData) {
         throw new Error("Invalid encrypted data format");
       }
 
-      const version = parts[0]; // F1
       const salt = parts[1];
       const integrityCheckHex = parts[2];
       const encrypted = parts[3];
@@ -158,28 +157,42 @@ function decryptWalletAddress(encryptedData) {
   }
 }
 
+// Function to show toast messages
 function showToast(message, type = "info") {
-  const toastContainer = document.querySelector(TOAST_CONTAINER);
-  const toastId = `toast-${Date.now()}`;
-  const html = `
-    <div id="${toastId}" class="toast align-items-center text-white bg-${type}" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body">
-          ${message}
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+  const toastContainer = document.querySelector(".toast-container");
+
+  const toastElement = document.createElement("div");
+  toastElement.className = `toast align-items-center text-white bg-${type} border-0`;
+  toastElement.setAttribute("role", "alert");
+  toastElement.setAttribute("aria-live", "assertive");
+  toastElement.setAttribute("aria-atomic", "true");
+
+  const iconClass =
+    type === "info"
+      ? "info-circle"
+      : type === "warning"
+      ? "exclamation-triangle"
+      : type === "success"
+      ? "check-circle"
+      : "exclamation-circle";
+
+  toastElement.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="fas fa-${iconClass} me-2"></i>
+        ${message}
       </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
   `;
-  toastContainer.insertAdjacentHTML("beforeend", html);
-  const toastElement = document.getElementById(toastId);
-  const toast = new bootstrap.Toast(toastElement, {
-    autohide: true,
-    delay: 5000,
-  });
+
+  toastContainer.appendChild(toastElement);
+
+  // Initialize and show the toast
+  const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
   toast.show();
 
-  // Remove toast after it's hidden
+  // Remove after closing
   toastElement.addEventListener("hidden.bs.toast", () => {
     toastElement.remove();
   });
