@@ -101,13 +101,14 @@ const approveInvitationRequest = async (req, res) => {
     // Insert the new invitation code
     await db.query(
       `INSERT INTO invitation_codes 
-       (code, type, email, telegram_handle, name, country, daily_volume, referral_source, expires_at) 
+       (code, type, email, telegram_handle, whatsapp, name, country, daily_volume, referral_source, expires_at) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
       [
         code,
         type,
         request.email,
         request.telegram_handle,
+        request.whatsapp,
         request.name,
         request.country,
         request.daily_volume,

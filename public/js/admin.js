@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Check if user is already logged in
   if (authToken) {
     showAdminDashboard();
+    showRequestsSection();
     loadInvitationRequests();
   } else {
     showLoginForm();
@@ -61,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
   loginForm.addEventListener("submit", async function (e) {
     e.preventDefault();
 
-    const email = document.getElementById("login-email").value.trim();
+    const email = document.getElementById("login-email").value;
     const password = document.getElementById("login-password").value;
 
     try {
@@ -78,11 +79,11 @@ document.addEventListener("DOMContentLoaded", function () {
       if (response.ok) {
         authToken = data.token;
         localStorage.setItem("adminToken", authToken);
-        loginForm.reset();
         showAdminDashboard();
+        showRequestsSection();
         loadInvitationRequests();
       } else {
-        loginError.textContent = data.error || "Login failed";
+        loginError.textContent = data.error || "Invalid credentials";
         loginError.style.display = "block";
       }
     } catch (error) {
@@ -197,6 +198,41 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // Function to check if tables have horizontal scroll
+  function checkTableScroll() {
+    document.querySelectorAll(".table-responsive").forEach((tableContainer) => {
+      // Add class for styling
+      tableContainer.classList.add("table-has-scroll");
+
+      // Check if table has horizontal scroll
+      if (tableContainer.scrollWidth > tableContainer.clientWidth) {
+        tableContainer.classList.add("can-scroll");
+      } else {
+        tableContainer.classList.remove("can-scroll");
+      }
+
+      // Add scroll event (remove first to avoid duplication)
+      tableContainer.removeEventListener("scroll", handleTableScroll);
+      tableContainer.addEventListener("scroll", handleTableScroll);
+    });
+  }
+
+  // Function to handle scroll event
+  function handleTableScroll() {
+    // Check if at the end of the scroll
+    const isAtEnd = this.scrollLeft + this.clientWidth >= this.scrollWidth - 10;
+
+    if (isAtEnd) {
+      this.classList.remove("can-scroll");
+    } else if (this.scrollWidth > this.clientWidth) {
+      this.classList.add("can-scroll");
+    }
+  }
+
+  // Check scroll of tables when page loads and when resized
+  window.addEventListener("load", checkTableScroll);
+  window.addEventListener("resize", checkTableScroll);
+
   async function loadInvitationRequests() {
     try {
       const response = await fetch("/api/admin/invitation-requests", {
@@ -224,6 +260,9 @@ document.addEventListener("DOMContentLoaded", function () {
         noRequests.style.display = "none";
         renderRequestsTable(requests);
       }
+
+      // After rendering the table, check the scroll
+      checkTableScroll();
     } catch (error) {
       console.error("Error loading invitation requests:", error);
       alert("Failed to load invitation requests");
@@ -250,13 +289,31 @@ document.addEventListener("DOMContentLoaded", function () {
       // Update stats
       updateStats(null);
 
+      // Check if the table element exists
+      const codesTableBody = document.getElementById("codes-table-body");
+      const noCodes = document.getElementById("no-codes");
+
+      if (!codesTableBody) {
+        console.error("Element #codes-table-body not found!");
+        return;
+      }
+
+      if (!noCodes) {
+        console.error("Element #no-codes not found!");
+      }
+
       if (codes.length === 0) {
         codesTableBody.innerHTML = "";
-        noCodes.style.display = "block";
+        if (noCodes) noCodes.style.display = "block";
       } else {
-        noCodes.style.display = "none";
+        if (noCodes) noCodes.style.display = "none";
         renderCodesTable(codes);
       }
+
+      // After rendering the table, check the scroll
+      setTimeout(() => {
+        checkTableScroll();
+      }, 100);
     } catch (error) {
       console.error("Error loading invitation codes:", error);
       alert("Failed to load invitation codes");
@@ -282,7 +339,8 @@ document.addEventListener("DOMContentLoaded", function () {
       row.innerHTML = `
           <td>${request.id}</td>
           <td>${request.email}</td>
-          <td>${request.telegram_handle}</td>
+          <td>${request.telegram_handle || "-"}</td>
+          <td>${request.whatsapp || "-"}</td>
           <td>${request.name || "-"}</td>
           <td>${request.country || "-"}</td>
           <td>${request.daily_volume || "-"}</td>
@@ -336,9 +394,29 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function renderCodesTable(codes) {
+    // Get references to DOM elements
+    const codesTableBody = document.getElementById("codes-table-body");
+    const noCodes = document.getElementById("no-codes");
+
+    if (!codesTableBody) {
+      console.error("Element #codes-table-body not found in renderCodesTable!");
+      return;
+    }
+
+    if (!noCodes) {
+      console.error("Element #no-codes not found in renderCodesTable!");
+    }
+
+    if (!codes || codes.length === 0) {
+      codesTableBody.innerHTML = "";
+      if (noCodes) noCodes.style.display = "block";
+      return;
+    }
+
+    if (noCodes) noCodes.style.display = "none";
     codesTableBody.innerHTML = "";
 
-    codes.forEach((code) => {
+    codes.forEach((code, index) => {
       const row = document.createElement("tr");
 
       // Format dates
@@ -362,25 +440,32 @@ document.addEventListener("DOMContentLoaded", function () {
         : "Active";
 
       row.innerHTML = `
-          <td>${code.id}</td>
-          <td><code>${code.code}</code></td>
-          <td>${getCodeTypeLabel(code.type)}</td>
-          <td>${code.email}</td>
-          <td>${code.telegram_handle}</td>
+          <td>${code.id || "-"}</td>
+          <td><code>${code.code || "-"}</code></td>
+          <td>${getCodeTypeLabel(code.type) || "-"}</td>
+          <td>${code.email || "-"}</td>
+          <td>${code.telegram_handle || "-"}</td>
+          <td>${code.whatsapp || "-"}</td>
           <td>${createdDate}</td>
           <td>${expiresDate}</td>
           <td>${lastUsedDate}</td>
-          <td><span class="badge ${getStatusBadgeClass(
+          <td class="status-column"><span class="badge ${getStatusBadgeClass(
             status
           )}">${status}</span></td>
-          <td>${getCodeActions(code)}</td>
+          <td class="actions-column">${getCodeActions(code)}</td>
         `;
 
       codesTableBody.appendChild(row);
     });
 
     // Add event listeners to action buttons
-    document.querySelectorAll(".revoke-btn").forEach((btn) => {
+    addCodeActionListeners();
+  }
+
+  function addCodeActionListeners() {
+    const revokeBtns = document.querySelectorAll(".revoke-btn");
+
+    revokeBtns.forEach((btn, index) => {
       btn.addEventListener("click", async function () {
         if (confirm("Are you sure you want to revoke this invitation code?")) {
           const codeId = this.dataset.id;
@@ -424,6 +509,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function getStatusBadgeClass(status) {
+    if (!status) {
+      console.warn("Status is undefined or null");
+      return "bg-secondary";
+    }
+
     switch (status) {
       case "Active":
         return "bg-success";
@@ -432,6 +522,7 @@ document.addEventListener("DOMContentLoaded", function () {
       case "Revoked":
         return "bg-danger";
       default:
+        console.warn("Unknown status:", status);
         return "bg-secondary";
     }
   }
@@ -451,6 +542,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function getCodeActions(code) {
+    if (!code) {
+      console.warn("Code is undefined or null");
+      return "-";
+    }
+
     if (code.is_active && new Date(code.expires_at) >= new Date()) {
       return `
           <button class="btn btn-sm btn-danger revoke-btn" data-id="${code.id}">
@@ -462,6 +558,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function getCodeTypeLabel(type) {
+    if (!type) {
+      console.warn("Type is undefined or null");
+      return "-";
+    }
+
     switch (type) {
       case "A":
         return "A - Payment Link";
@@ -470,7 +571,8 @@ document.addEventListener("DOMContentLoaded", function () {
       case "C":
         return "C - Both Features";
       default:
-        return type;
+        console.warn("Unknown code type:", type);
+        return type || "-";
     }
   }
 });

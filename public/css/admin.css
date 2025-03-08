@@ -281,16 +281,120 @@ code {
 }
 
 .table-responsive {
-  border-radius: 10px;
-  overflow: hidden;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-color) rgba(var(--bs-dark-rgb), 0.1);
+  position: relative;
 }
 
+/* Scrollbar styling for WebKit browsers (Chrome, Safari) */
+.table-responsive::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: rgba(var(--bs-dark-rgb), 0.1);
+  border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background-color: var(--accent-color);
+  border-radius: 4px;
+}
+
+/* Ensure action and status columns have fixed width */
 .actions-column {
-  width: 150px;
+  width: 120px;
+  min-width: 120px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .status-column {
-  width: 120px;
+  width: 100px;
+  min-width: 100px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Ensure table cells do not break text */
+.table th,
+.table td {
+  white-space: nowrap;
+}
+
+/* Add visual scroll indicator */
+.table-has-scroll {
+  position: relative;
+}
+
+.table-has-scroll::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(to right, transparent, var(--card-bg));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.table-has-scroll.can-scroll::after {
+  opacity: 1;
+}
+
+/* Add visual hint to indicate table can be scrolled */
+.table-responsive::before {
+  content: "⟷";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--accent-color);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.table-responsive.can-scroll::before {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Add help text on small screens */
+@media (max-width: 768px) {
+  .table thead th,
+  .table tbody td {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  .table-responsive.can-scroll::after {
+    content: "Swipe to see more →";
+    position: absolute;
+    bottom: -25px;
+    left: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+    opacity: 0.8;
+  }
 }
 
 .login-card {

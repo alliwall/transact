@@ -19,10 +19,8 @@ const sendEmail = async (to, subject, html) => {
       subject,
       html,
     });
-    console.log("Email sent:", info.messageId);
     return info;
   } catch (error) {
-    console.error("Error sending email:", error);
     throw error;
   }
 };
@@ -33,6 +31,7 @@ const sendInvitationRequestNotification = async (requestData) => {
     <h2>New Invitation Code Request</h2>
     <p><strong>Email:</strong> ${requestData.email}</p>
     <p><strong>Telegram:</strong> ${requestData.telegram_handle}</p>
+    <p><strong>WhatsApp:</strong> ${requestData.whatsapp}</p>
     <p><strong>Name:</strong> ${requestData.name || "Not provided"}</p>
     <p><strong>Country:</strong> ${requestData.country || "Not provided"}</p>
     <p><strong>Daily Volume:</strong> ${

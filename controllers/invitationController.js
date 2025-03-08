@@ -8,6 +8,7 @@ const submitInvitationRequest = async (req, res) => {
   const {
     email,
     telegram_handle,
+    whatsapp,
     name,
     country,
     daily_volume,
@@ -15,26 +16,60 @@ const submitInvitationRequest = async (req, res) => {
   } = req.body;
 
   // Validate required fields
-  if (!email || !telegram_handle) {
+  if (!email) {
+    return res.status(400).json({ error: "Email address is required" });
+  }
+
+  // // At least one contact method is required
+  // if (!telegram_handle && !whatsapp) {
+  //   return res
+  //     .status(400)
+  //     .json({ error: "At least one contact method (Telegram or WhatsApp) is required" });
+  // }
+
+  // Validate Telegram format if provided
+  if (telegram_handle && !/^[a-zA-Z0-9_]{5,32}$/.test(telegram_handle)) {
     return res
       .status(400)
-      .json({ error: "Email and Telegram handle are required" });
+      .json({
+        error:
+          "Telegram handle must be 5-32 characters and contain only letters, numbers, and underscores",
+      });
+  }
+
+  // Validate WhatsApp format if provided
+  if (whatsapp && !/^[+0-9]+$/.test(whatsapp)) {
+    return res
+      .status(400)
+      .json({
+        error:
+          "WhatsApp number must contain only numbers and optionally a + sign",
+      });
   }
 
   try {
     // Insert the request into the database
     const result = await db.query(
       `INSERT INTO invitation_requests 
-       (email, telegram_handle, name, country, daily_volume, referral_source) 
-       VALUES ($1, $2, $3, $4, $5, $6) 
+       (email, telegram_handle, whatsapp, name, country, daily_volume, referral_source) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) 
        RETURNING id`,
-      [email, telegram_handle, name, country, daily_volume, referral_source]
+      [
+        email,
+        telegram_handle,
+        whatsapp,
+        name,
+        country,
+        daily_volume,
+        referral_source,
+      ]
     );
 
     // Send notification email to admin
     await sendInvitationRequestNotification({
       email,
       telegram_handle,
+      whatsapp,
       name,
       country,
       daily_volume,
@@ -128,14 +163,14 @@ const verifyInvitationCode = async (req, res) => {
         console.error("Error regenerating session:", err);
         return res.status(500).json({ error: "Failed to regenerate session" });
       }
-      
+
       // Set the invitation data again in the new session
       req.session.invitation = {
         code: invitationCode.code,
         type: invitationCode.type,
         features,
       };
-      
+
       // Ensure the session is saved before responding
       req.session.save((err) => {
         if (err) {
@@ -147,7 +182,7 @@ const verifyInvitationCode = async (req, res) => {
           message: "Invitation code verified successfully",
           type: invitationCode.type,
           features,
-          sessionId: req.sessionID // Include session ID in response for debugging
+          sessionId: req.sessionID, // Include session ID in response for debugging
         });
       });
     });

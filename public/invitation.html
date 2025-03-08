@@ -64,8 +64,9 @@
                     />
                   </div>
                   <div class="d-grid">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                      Submit
+                    <button type="submit" class="btn btn-primary btn-lg" id="verify-code-btn">
+                      <span class="spinner-border spinner-border-sm me-2 d-none" id="verify-spinner" role="status" aria-hidden="true"></span>
+                      <span id="verify-text">Submit</span>
                     </button>
                   </div>
                 </form>
@@ -104,52 +105,124 @@
                       >
                     </div>
                     <div class="form-group">
-                      <label for="telegram" class="form-label required-field"
+                      <label for="telegram" class="form-label"
                         >Telegram Handle</label
+                      >
+                      <div class="input-group">
+                        <span class="input-group-text">@</span>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="telegram"
+                          pattern="[a-zA-Z0-9_]{5,32}"
+                          title="Telegram usernames can only contain letters, numbers and underscores. Must be 5-32 characters long."
+                        />
+                      </div>
+                      <small class="form-text"
+                        >For quick communication and updates (optional)</small
+                      >
+                    </div>
+                    <div class="form-group">
+                      <label for="whatsapp" class="form-label"
+                        >WhatsApp Number</label
                       >
                       <input
                         type="text"
                         class="form-control"
-                        id="telegram"
-                        required
+                        id="whatsapp"
+                        pattern="[+0-9]+"
+                        title="Please enter a valid WhatsApp number with country code (e.g., +1234567890)"
                       />
                       <small class="form-text"
-                        >For quick communication and updates</small
+                        >Alternative contact method (optional)</small
                       >
                     </div>
                     <div class="form-group">
                       <label for="name" class="form-label">Full Name</label>
-                      <input type="text" class="form-control" id="name" />
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="name"
+                        maxlength="50"
+                      />
                     </div>
                   </div>
 
                   <div class="form-section">
                     <div class="form-section-title">Merchant Information</div>
                     <div class="form-group">
-                      <label for="country" class="form-label"
-                        >Country of Operation</label
-                      >
-                      <input type="text" class="form-control" id="country" />
-                    </div>
-                    <div class="form-group">
-                      <label for="daily-volume" class="form-label"
-                        >Expected Daily Volume</label
-                      >
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="daily-volume"
-                      />
+                      <label for="country" class="form-label">
+                        Region of Operation
+                      </label>
+                      <select class="form-select" id="country">
+                        <option value="" selected>Select a region</option>
+                        <optgroup label="Continents">
+                          <option value="Europe">Europe</option>
+                          <option value="North America">North America</option>
+                          <option value="South America">South America</option>
+                          <option value="Asia">Asia</option>
+                          <option value="Africa">Africa</option>
+                          <option value="Oceania">Oceania</option>
+                        </optgroup>
+                        <optgroup label="Countries">
+                          <!-- Countries will be populated via JavaScript -->
+                        </optgroup>
+                      </select>
                       <small class="form-text"
-                        >Approximate transaction volume you expect to process
-                        daily</small
+                        >Select a continent or specific country</small
                       >
                     </div>
                     <div class="form-group">
-                      <label for="referral" class="form-label"
-                        >How did you hear about Transact?</label
+                      <label for="daily-volume" class="form-label">
+                        Expected Daily Transaction Volume
+                      </label>
+                      <select class="form-select" id="daily-volume">
+                        <option value="" selected>Select a range</option>
+                        <option value="0-10">0 - 10 transactions</option>
+                        <option value="11-50">11 - 50 transactions</option>
+                        <option value="51-100">51 - 100 transactions</option>
+                        <option value="101-500">101 - 500 transactions</option>
+                        <option value="501+">501+ transactions</option>
+                      </select>
+                      <small class="form-text">
+                        Approximate number of transactions you expect to process
+                        daily
+                      </small>
+                    </div>
+                    <div class="form-group">
+                      <label for="referral-source" class="form-label">
+                        How did you hear about Transact?
+                      </label>
+                      <select class="form-select" id="referral-source">
+                        <option value="" selected>Select an option</option>
+                        <option value="Search Engine">Search Engine</option>
+                        <option value="Social Media">Social Media</option>
+                        <option value="Word of Mouth">Word of Mouth</option>
+                        <option value="Friend Suggestion">
+                          Friend Suggestion
+                        </option>
+                        <option value="Reddit">Reddit</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div
+                      class="form-group"
+                      id="other-referral-container"
+                      style="display: none"
+                    >
+                      <label for="other-referral" class="form-label"
+                        >Please specify:</label
                       >
-                      <input type="text" class="form-control" id="referral" />
+                      <textarea
+                        class="form-control"
+                        id="other-referral"
+                        rows="2"
+                        maxlength="500"
+                      ></textarea>
+                      <small class="form-text">
+                        <span id="other-referral-char-count">0</span>/500
+                        characters
+                      </small>
                     </div>
                   </div>
 
@@ -161,8 +234,9 @@
                   </div>
 
                   <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                      Submit Request
+                    <button type="submit" class="btn btn-primary btn-lg" id="submit-request-btn">
+                      <span class="spinner-border spinner-border-sm me-2 d-none" id="submit-spinner" role="status" aria-hidden="true"></span>
+                      <span id="submit-text">Submit Request</span>
                     </button>
                     <button
                       type="button"

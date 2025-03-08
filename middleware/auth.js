@@ -182,15 +182,11 @@ const requireInvitation = (req, res, next) => {
     req.path.startsWith("/js/") ||
     req.path.startsWith("/images/")
   ) {
-    console.log("Skipping auth check for public path:", req.path);
     return next();
   }
 
   // Special case for merchant-payment with valid data parameter
   if (req.path === "/merchant-payment" && req.query.data) {
-    // Merchant payment with data parameter detected
-    console.log("Merchant payment with data parameter detected:", req.query.data);
-
     // Check if the data parameter contains a valid wallet
     if (isValidWalletData(req.query.data)) {
       // Valid wallet data detected, bypassing invitation requirement
@@ -205,20 +201,11 @@ const requireInvitation = (req, res, next) => {
     // Capture the full original URL (including path and query parameters)
     const originalUrl = req.originalUrl;
 
-    // Log the redirection
-    console.log(
-      `No invitation found, redirecting to invitation page with redirect to: ${originalUrl}`
-    );
-
     // Redirect to invitation page with original URL as redirect_url parameter
     return res.redirect(
       `/invitation?redirect_url=${encodeURIComponent(originalUrl)}`
     );
   }
-
-  // User has valid invitation, proceed
-  console.log("Valid invitation found, proceeding to:", req.path);
-  console.log("Invitation details:", req.session.invitation);
 
   // Check if user has permission for this path based on features
   const features = req.session.invitation.features || [];
@@ -238,9 +225,6 @@ const requireInvitation = (req, res, next) => {
   }
 
   if (!hasPermission) {
-    console.log("Permission denied for path:", req.path);
-    console.log("User features:", features);
-
     // Store error message in session for display
     req.session.invitationError =
       "Your invitation code does not grant access to this feature";
@@ -254,9 +238,6 @@ const requireInvitation = (req, res, next) => {
 // Middleware to check if user has specific feature access
 const requireFeature = (feature) => {
   return (req, res, next) => {
-    console.log(`Checking feature access for: ${feature}`);
-    console.log("Session:", req.session);
-
     if (
       !req.session ||
       !req.session.invitation ||
