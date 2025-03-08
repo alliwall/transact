@@ -24,14 +24,7 @@ const authenticateAdmin = (req, res, next) => {
  * Middleware to check if user has a valid invitation
  * Redirects to invitation page with original URL if no valid invitation exists
  */
-const requireInvitation = (req, res, next) => {
-  // Debug logging
-  console.log("requireInvitation middleware called for path:", req.path);
-  console.log("Session ID:", req.sessionID);
-  console.log("Session exists:", !!req.session);
-  console.log("Invitation in session:", req.session ? !!req.session.invitation : false);
-  console.log("Full session data:", req.session);
-  
+const requireInvitation = (req, res, next) => {  
   // Skip public routes and static assets
   if (
     req.path === "/invitation" ||

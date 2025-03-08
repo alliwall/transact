@@ -8,11 +8,6 @@ const requireInvitation = (req, res, next) => {
     // Capture the full original URL (including path and query parameters)
     const originalUrl = req.originalUrl;
 
-    // Log the redirection
-    console.log(
-      `No invitation found, redirecting to invitation page with redirect to: ${originalUrl}`
-    );
-
     // Redirect to invitation page with original URL as redirect_url parameter
     return res.redirect(
       `/invitation?redirect_url=${encodeURIComponent(originalUrl)}`
@@ -32,11 +27,6 @@ const requireFeature = (feature) => {
     ) {
       // Capture the full original URL (including path and query parameters)
       const originalUrl = req.originalUrl;
-
-      // Log the redirection
-      console.log(
-        `No invitation found, redirecting to invitation page with redirect to: ${originalUrl}`
-      );
 
       // Redirect to invitation page with original URL as redirect_url parameter
       return res.redirect(

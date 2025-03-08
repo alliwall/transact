@@ -60,7 +60,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       
       const sessionData = await sessionCheckResponse.json();
-      console.log("Current session before verification:", sessionData);
 
       // Now verify the invitation code
       const response = await fetch("/api/invitation/verify", {
@@ -73,7 +72,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       const data = await response.json();
-      console.log("Verification response:", data);
 
       if (response.ok) {
         successMessage.textContent = "Checking your invitation code...";
@@ -87,7 +85,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         
         const updatedSessionData = await postVerifySessionCheck.json();
-        console.log("Session after verification:", updatedSessionData);
 
         // Extract the redirect_url parameter from the current URL, if it exists
         const urlParams = new URLSearchParams(window.location.search);

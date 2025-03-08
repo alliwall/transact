@@ -6,7 +6,6 @@ const crypto = require("crypto");
 
 // Submit a request for an invitation code
 const submitInvitationRequest = async (req, res) => {
-  console.log("Received invitation request:", req.body);
   const {
     email,
     telegram_handle,
@@ -56,7 +55,6 @@ const submitInvitationRequest = async (req, res) => {
 
 // Verify an invitation code
 const verifyInvitationCode = async (req, res) => {
-  console.log("Verifying invitation code:", req.body);
   const { code } = req.body;
 
   if (!code) {
@@ -118,12 +116,6 @@ const verifyInvitationCode = async (req, res) => {
       return res.status(500).json({ error: "Session initialization failed" });
     }
 
-    console.log("Setting invitation in session:", {
-      code: invitationCode.code,
-      type: invitationCode.type,
-      features,
-    });
-
     // Explicitly set the invitation in the session
     req.session.invitation = {
       code: invitationCode.code,
@@ -151,9 +143,6 @@ const verifyInvitationCode = async (req, res) => {
           console.error("Error saving session:", err);
           return res.status(500).json({ error: "Failed to save session" });
         }
-
-        console.log("Session saved successfully. Session ID:", req.sessionID);
-        console.log("Session data:", req.session);
 
         res.status(200).json({
           message: "Invitation code verified successfully",
