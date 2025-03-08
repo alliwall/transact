@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ code }),
-        credentials: "same-origin",
+        credentials: "include",
       });
 
       const data = await response.json();
@@ -111,6 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(requestData),
+        credentials: "include",
       });
 
       const data = await response.json();

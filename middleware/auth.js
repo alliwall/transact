@@ -29,7 +29,10 @@ const requireInvitation = (req, res, next) => {
   if (
     req.path === "/invitation" ||
     req.path === "/" ||
-    req.path.startsWith("/api/")
+    req.path.startsWith("/api/") ||
+    req.path.startsWith("/css/") ||
+    req.path.startsWith("/js/") ||
+    req.path.startsWith("/images/")
   ) {
     return next();
   }
