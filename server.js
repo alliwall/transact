@@ -133,8 +133,8 @@ app.use("/api/invitation", invitationRoutes);
 app.use("/api/admin", adminRoutes);
 
 // Protected page routes - using app.get (not app.use)
-app.get("/business-payment", requireInvitation, (req, res) => {
-  res.sendFile(path.join(__dirname, "public/business-payment.html"));
+app.get("/merchant-payment", requireInvitation, (req, res) => {
+  res.sendFile(path.join(__dirname, "public/merchant-payment.html"));
 });
 
 app.get(
@@ -147,11 +147,11 @@ app.get(
 );
 
 app.get(
-  "/payment-url-gen",
+  "/generate-merchant-link",
   requireInvitation,
-  requireFeature("payment_url_gen"),
+  requireFeature("generate_merchant_link"),
   (req, res) => {
-    res.sendFile(path.join(__dirname, "public/payment-url-gen.html"));
+    res.sendFile(path.join(__dirname, "public/generate-merchant-link.html"));
   }
 );
 

@@ -466,7 +466,7 @@ document.addEventListener("DOMContentLoaded", function () {
       case "A":
         return "A - Payment Link";
       case "B":
-        return "B - Custom URL";
+        return "B - Merchant Page";
       case "C":
         return "C - Both Features";
       default:

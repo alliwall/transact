@@ -13,8 +13,8 @@ router.get("/invitation", (req, res) => {
 });
 
 // Protected routes - require valid invitation
-router.get("/business-payment", requireInvitation, (req, res) => {
-  res.sendFile("business-payment.html", { root: "./public" });
+router.get("/merchant-payment", requireInvitation, (req, res) => {
+  res.sendFile("merchant-payment.html", { root: "./public" });
 });
 
 // Protected routes - require specific features
@@ -28,11 +28,11 @@ router.get(
 );
 
 router.get(
-  "/payment-url-gen",
+  "/generate-merchant-link",
   requireInvitation,
-  requireFeature("payment_url_gen"),
+  requireFeature("generate_merchant_link"),
   (req, res) => {
-    res.sendFile("payment-url-gen.html", { root: "./public" });
+    res.sendFile("generate-merchant-link.html", { root: "./public" });
   }
 );
 

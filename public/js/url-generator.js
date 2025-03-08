@@ -1,6 +1,6 @@
 // Constants
 const FORM_ID = "generator-form";
-const WALLET_ADDRESS_ID = "business_wallet_address";
+const WALLET_ADDRESS_ID = "merchant_wallet_address";
 const SUBMIT_BUTTON_ID = "submit-btn";
 const SUBMIT_TEXT_ID = "submit-text";
 const LOADING_SPINNER_ID = "loading-spinner";
@@ -349,7 +349,7 @@ async function generatePaymentLink(walletData) {
   const currentHost = window.location.origin;
   return {
     addressIn: data.address_in,
-    paymentLink: `${currentHost}/business-payment?data=${encodeURIComponent(
+    paymentLink: `${currentHost}/merchant-payment?data=${encodeURIComponent(
       walletData
     )}`,
     trackingUrl: `https://api.transact.st/control/track.php?address=${data.address_in}`,
@@ -379,17 +379,17 @@ function displayResult(walletAddress, paymentLink) {
               
               <div class="alert alert-info mb-4">
                 <i class="fas fa-info-circle me-2"></i>
-                <strong>Your business payment page is ready!</strong> Share this link with your business clients and they'll be able to create payment links for their customers with your wallet address locked.
+                <strong>Your merchant payment page is ready!</strong> Share this link with your clients and they'll be able to create payment links with your wallet address locked.
               </div>
               
-              <label class="form-label fw-bold">Business Payment URL:</label>
+              <label class="form-label fw-bold">Merchant Payment URL:</label>
               <div class="input-group mb-3">
                 <input type="text" class="form-control" value="${paymentLink}" id="payment-link" readonly style="background-color: var(--input-background); color: var(--input-text-color);">
                 <button class="btn btn-outline-secondary" type="button" id="copy-link" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to Clipboard">
                   <i class="fas fa-copy"></i>
                 </button>
               </div>
-              <small class="text-muted d-block mb-3">Share this URL with business clients who need to create payment links</small>
+              <small class="text-muted d-block mb-3">Share this URL with clients who need to create payment links</small>
             </div>
             
             <div class="tracking-section">
@@ -403,7 +403,7 @@ function displayResult(walletAddress, paymentLink) {
                     <i class="fas fa-copy"></i>
                   </button>
                 </div>
-                <small class="text-muted d-block">Reference code for this business payment page</small>
+                <small class="text-muted d-block">Reference code for this merchant payment page</small>
               </div>
               
               <div class="mb-3">

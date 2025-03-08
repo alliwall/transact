@@ -11,7 +11,7 @@ A web application that allows users to generate payment links to receive funds i
 ## Features
 
 - Custom payment link generation
-- Business payment link generator with locked receiver wallet address
+- Merchant page generator with locked receiver wallet address
 - Support for multiple currencies (USD, EUR, CAD, INR)
 - Various integrated payment providers
 - Light/dark theme
@@ -21,12 +21,12 @@ A web application that allows users to generate payment links to receive funds i
 
 ## New Features Added
 
-### Business Payment Link Generator
+### Merchant Page Generator
 
-Businesses can now generate custom payment links with a locked wallet address. The generated links can be shared with their customers to process payments directly to the business's wallet.
+Merchants can now generate custom merchant pages with a locked wallet address. The generated pages can be shared with their customers to process payments directly to the merchant's wallet.
 
-- Access the generator at: `/payment-url-gen.html`
-- Generated payment links format: `/business-payment.html?data=encryptedWalletAddress`
+- Access the generator at: `/generate-merchant-link`
+- Generated merchant pages format: `/merchant-payment.html?data=encryptedWalletAddress`
 
 ### Enhanced Security Features
 
@@ -47,8 +47,8 @@ Businesses can now generate custom payment links with a locked wallet address. T
 ## Pages
 
 - **Standard Payment Link Generator** (`/index.html`) - For individual users to create payment links with their own wallet address
-- **Business Payment Link Generator** (`/payment-url-gen.html`) - For businesses to create a pre-configured payment page with a locked wallet address
-- **Business Payment Page** (`/business-payment.html`) - Generated payment page for business customers where only amount, email, and payment provider can be configured by the end user
+- **Merchant Page Generator** (`/generate-merchant-link.html`) - For merchants to create a pre-configured payment page with a locked wallet address
+- **Merchant Payment Page** (`/merchant-payment.html`) - Generated payment page for merchant customers where only amount, email, and payment provider can be configured by the end user
 
 ## Technologies Used
 
@@ -69,5 +69,5 @@ Businesses can now generate custom payment links with a locked wallet address. T
 
 - `/index.html` - Main page with payment form
 - `/payment.html` - Standard payment page
-- `/payment-url-gen.html` - Business payment link generator
-- `/business-payment.html` - Business payment page with locked wallet address
+- `/generate-merchant-link.html` - Merchant page generator
+- `/merchant-payment.html` - Merchant payment page with locked wallet address

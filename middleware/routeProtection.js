@@ -51,8 +51,8 @@ router.get("/admin", (req, res) => {
 });
 
 // Protected routes
-router.get("/business-payment", requireInvitation, (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/business-payment.html"));
+router.get("/merchant-payment", requireInvitation, (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/merchant-payment.html"));
 });
 
 router.get(
@@ -65,11 +65,11 @@ router.get(
 );
 
 router.get(
-  "/payment-url-gen",
+  "/generate-merchant-link",
   requireInvitation,
-  requireFeature("payment_url_gen"),
+  requireFeature("generate_merchant_link"),
   (req, res) => {
-    res.sendFile(path.join(__dirname, "../public/payment-url-gen.html"));
+    res.sendFile(path.join(__dirname, "../public/generate-merchant-link.html"));
   }
 );
 

@@ -645,7 +645,7 @@ async function processUrlParams() {
     // Update merchant info
     const merchantInfo = document.getElementById(MERCHANT_INFO_ID);
     if (merchantInfo) {
-      merchantInfo.innerHTML = `<strong>Business Payment:</strong> You are creating a payment link that will send funds to the business wallet address shown below. This address is locked and cannot be changed.`;
+      merchantInfo.innerHTML = `<strong>Merchant Payment:</strong> You are creating a payment link that will send funds to the merchant wallet address shown below. This address is locked and cannot be changed.`;
     }
 
     return true;

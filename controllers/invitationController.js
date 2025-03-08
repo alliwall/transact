@@ -102,10 +102,10 @@ const verifyInvitationCode = async (req, res) => {
         features = ["generate_payment_link"];
         break;
       case "B":
-        features = ["payment_url_gen"];
+        features = ["generate_merchant_link"];
         break;
       case "C":
-        features = ["generate_payment_link", "payment_url_gen"];
+        features = ["generate_payment_link", "generate_merchant_link"];
         break;
     }
 

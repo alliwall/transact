@@ -186,10 +186,10 @@ const requireInvitation = (req, res, next) => {
     return next();
   }
 
-  // Special case for business-payment with valid data parameter
-  if (req.path === "/business-payment" && req.query.data) {
-    // Business payment with data parameter detected
-    console.log("Business payment with data parameter detected:", req.query.data);
+  // Special case for merchant-payment with valid data parameter
+  if (req.path === "/merchant-payment" && req.query.data) {
+    // Merchant payment with data parameter detected
+    console.log("Merchant payment with data parameter detected:", req.query.data);
 
     // Check if the data parameter contains a valid wallet
     if (isValidWalletData(req.query.data)) {
@@ -231,8 +231,8 @@ const requireInvitation = (req, res, next) => {
   ) {
     hasPermission = false;
   } else if (
-    req.path.includes("/payment-url-gen") &&
-    !features.includes("payment_url_gen")
+    req.path.includes("/generate-merchant-link") &&
+    !features.includes("generate_merchant_link")
   ) {
     hasPermission = false;
   }
