@@ -21,8 +21,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Trust proxy if in production (important for secure cookies behind proxies)
-if (process.env.NODE_ENV === 'production') {
-  app.set('trust proxy', 1);
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
 }
 
 // Request logging middleware for debugging
@@ -66,7 +66,14 @@ if (process.env.NODE_ENV === "production") {
             "data:",
           ],
           imgSrc: ["'self'", "data:", "blob:", "https:"],
-          connectSrc: ["'self'"],
+          connectSrc: [
+            "'self'",
+            "https://paygate.to",
+            "api.transact.st",
+            "payment.transact.st",
+            "https://api.transact.st",
+            "https://payment.transact.st",
+          ],
           objectSrc: ["'none'"],
           upgradeInsecureRequests: [],
         },
@@ -79,8 +86,8 @@ if (process.env.NODE_ENV === "production") {
     cors({
       origin: process.env.APP_URL || true, // Use APP_URL from env or allow same origin
       credentials: true, // Important: allows sending cookies
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization']
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
     })
   );
 } else {
@@ -92,8 +99,8 @@ if (process.env.NODE_ENV === "production") {
     cors({
       origin: true,
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization']
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
     })
   );
 }
@@ -106,18 +113,18 @@ app.use(
   session({
     store: new pgSession({
       pool: db.pool,
-      tableName: 'session'
+      tableName: "session",
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { 
-      secure: process.env.NODE_ENV === 'production',
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-    name: 'transact.sid' // Custom name to avoid conflicts
+    name: "transact.sid", // Custom name to avoid conflicts
   })
 );
 
@@ -190,21 +197,21 @@ app.get("/api/session-test", (req, res) => {
   if (!req.session) {
     return res.status(500).json({ error: "Session not initialized" });
   }
-  
+
   // Set a test value in the session
   req.session.testValue = new Date().toISOString();
-  
+
   // Save the session
   req.session.save((err) => {
     if (err) {
       console.error("Error saving session:", err);
       return res.status(500).json({ error: "Failed to save session" });
     }
-    
+
     res.json({
       message: "Test value set in session",
       testValue: req.session.testValue,
-      sessionID: req.sessionID
+      sessionID: req.sessionID,
     });
   });
 });
@@ -212,19 +219,19 @@ app.get("/api/session-test", (req, res) => {
 // Wallet data validation test endpoint
 app.get("/api/validate-wallet-data", (req, res) => {
   const { data } = req.query;
-  
+
   if (!data) {
     return res.status(400).json({ error: "No data parameter provided" });
   }
-  
+
   try {
     // Validate the data
     const isValid = isValidWalletData(data);
-    
+
     res.json({
       data,
       isValid,
-      decodedData: decodeURIComponent(data)
+      decodedData: decodeURIComponent(data),
     });
   } catch (error) {
     console.error("Error validating wallet data:", error);
