@@ -1,27 +1,70 @@
 const nodemailer = require("nodemailer");
+const { sanitizeHtml } = require("../utils/sanitizer");
 require("dotenv").config();
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: process.env.SMTP_PORT === "465",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
+// Create reusable transporter with proper error handling
+let transporter;
+
+try {
+  transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: process.env.SMTP_PORT === "465",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
+    },
+    // Add TLS options for security
+    tls: {
+      // Reject unauthorized certificates in production
+      rejectUnauthorized: process.env.NODE_ENV === "production",
+      minVersion: "TLSv1.2",
+    },
+  });
+} catch (error) {
+  console.error("Failed to create email transporter:", error);
+}
+
+// Verify transporter connection
+if (transporter) {
+  transporter.verify((error) => {
+    if (error) {
+      console.error("Email service not properly configured:", error);
+    } else {
+      console.log("Email service is ready to send messages");
+    }
+  });
+}
 
 const sendEmail = async (to, subject, html) => {
+  if (!transporter) {
+    console.error("Email transporter not initialized");
+    throw new Error("Email service not available");
+  }
+
+  // Validate email address format
+  if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+    throw new Error("Invalid recipient email address");
+  }
+
+  // Sanitize HTML content to prevent XSS
+  const sanitizedHtml = sanitizeHtml(html);
+
   try {
     const info = await transporter.sendMail({
       from: `"Transact" <${process.env.SMTP_FROM}>`,
       to,
       subject,
-      html,
+      html: sanitizedHtml,
+      // Add text version for better deliverability
+      text: sanitizedHtml.replace(/<[^>]*>/g, ""),
     });
+
+    console.log(`Email sent: ${info.messageId}`);
     return info;
   } catch (error) {
-    throw error;
+    console.error("Error sending email:", error);
+    throw new Error(`Failed to send email: ${error.message}`);
   }
 };
 

@@ -1,6 +1,14 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const ENCRYPTION_KEY = "Transact.st:8a7b6c5d4e3f2g1h"; // Fixed key for AES decryption
+// Replace hardcoded encryption key with environment variable
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "";
+
+// Ensure encryption key is set
+if (!ENCRYPTION_KEY) {
+  console.error(
+    "WARNING: ENCRYPTION_KEY environment variable is not set. This is a security risk!"
+  );
+}
 
 function validateWalletAddress(address) {
   // Simple validation for Ethereum-style addresses
@@ -149,7 +157,7 @@ function isValidWalletData(encryptedData) {
   }
 }
 
-// Middleware to verify JWT token for admin routes
+// Improved JWT authentication middleware with better error handling
 const authenticateAdmin = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -161,10 +169,25 @@ const authenticateAdmin = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Check token expiration explicitly
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    if (decoded.exp && decoded.exp < currentTimestamp) {
+      return res.status(401).json({ error: "Token expired." });
+    }
+
+    // Add user info to request
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ error: "Invalid token." });
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ error: "Token expired." });
+    } else if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ error: "Invalid token." });
+    } else {
+      console.error("Token verification error:", error);
+      return res.status(401).json({ error: "Token validation failed." });
+    }
   }
 };
 

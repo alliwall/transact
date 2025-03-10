@@ -7,6 +7,7 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const db = require("./config/database");
 const axios = require("axios");
+const crypto = require("crypto");
 require("dotenv").config();
 
 // Import routes
@@ -25,6 +26,40 @@ const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
+
+// Simple rate limiting middleware
+const createRateLimiter = (windowMs, maxRequests) => {
+  const requests = new Map();
+
+  return (req, res, next) => {
+    const ip = req.ip || req.connection.remoteAddress;
+    const now = Date.now();
+
+    // Clean up old entries
+    if (!requests.has(ip)) {
+      requests.set(ip, []);
+    }
+
+    const userRequests = requests
+      .get(ip)
+      .filter((time) => now - time < windowMs);
+    requests.set(ip, userRequests);
+
+    if (userRequests.length >= maxRequests) {
+      return res.status(429).json({
+        error: "Too many requests, please try again later.",
+        retryAfter: Math.ceil(windowMs / 1000),
+      });
+    }
+
+    userRequests.push(now);
+    requests.set(ip, userRequests);
+    next();
+  };
+};
+
+// Apply rate limiting to all requests
+app.use(createRateLimiter(60 * 1000, 60)); // 60 requests per minute
 
 // Request logging middleware for debugging
 app.use((req, res, next) => {
@@ -76,8 +111,20 @@ if (process.env.NODE_ENV === "production") {
             "https://payment.transact.st",
           ],
           objectSrc: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
+          frameAncestors: ["'none'"],
           upgradeInsecureRequests: [],
         },
+      },
+      // Enable additional security headers
+      xssFilter: true,
+      noSniff: true,
+      referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+      hsts: {
+        maxAge: 15552000, // 180 days
+        includeSubDomains: true,
+        preload: true,
       },
     })
   );
@@ -109,12 +156,47 @@ if (process.env.NODE_ENV === "production") {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Add CSRF protection middleware
+const csrfProtection = (req, res, next) => {
+  // Skip for GET, HEAD, OPTIONS requests
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+    return next();
+  }
+
+  // Check CSRF token in headers
+  const csrfToken = req.headers["x-csrf-token"];
+
+  if (!csrfToken || csrfToken !== req.session.csrfToken) {
+    return res.status(403).json({ error: "CSRF token validation failed" });
+  }
+
+  next();
+};
+
+// Generate CSRF token endpoint
+app.get("/api/csrf-token", (req, res) => {
+  if (!req.session.csrfToken) {
+    // Generate a random token
+    req.session.csrfToken = crypto.randomBytes(32).toString("hex");
+  }
+
+  res.json({ csrfToken: req.session.csrfToken });
+});
+
 // Session configuration with PostgreSQL storage
 app.use(
   session({
     store: new pgSession({
       pool: db.pool,
       tableName: "session",
+      // Add schema if needed
+      schemaName: process.env.DB_SCHEMA || "public",
+      // Add column mapping if needed
+      columns: {
+        session_id: "sid",
+        session_data: "sess",
+        expire: "expire",
+      },
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -124,15 +206,25 @@ app.use(
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      path: "/",
+      domain: process.env.COOKIE_DOMAIN || undefined,
     },
     name: "transact.sid", // Custom name to avoid conflicts
+    rolling: true, // Reset expiration on activity
   })
 );
 
-// Add session debugging middleware
+// Apply CSRF protection to all non-GET routes
+app.use(csrfProtection);
+
+// Remove session debugging middleware that logs sensitive data
+// Add production-safe request logging
 app.use((req, res, next) => {
-  console.log(`Session ID: ${req.sessionID}`);
-  console.log(`Session data:`, req.session);
+  // Only log non-sensitive information
+  const cleanUrl = req.url.replace(/\?.*$/, "?[REDACTED]"); // Redact query parameters
+  console.log(
+    `${new Date().toISOString()} - ${req.method} ${cleanUrl} - IP: ${req.ip}`
+  );
   next();
 });
 
@@ -303,25 +395,77 @@ setInterval(async () => {
 
 // Scheduled task to ping the server with randomized intervals to prevent Render from sleeping
 const scheduleSelfPing = () => {
-  // Generate a random interval between 4 and 13 minutes (in milliseconds)
-  const randomInterval = (Math.floor(Math.random() * 9) + 4) * 60 * 1000;
+  // Use environment variables for configuration with sensible defaults
+  const minInterval = parseInt(process.env.PING_MIN_INTERVAL_MINUTES || "4");
+  const maxInterval = parseInt(process.env.PING_MAX_INTERVAL_MINUTES || "13");
+
+  // Validate configuration
+  if (minInterval >= maxInterval) {
+    console.warn(
+      `Invalid ping interval configuration: min=${minInterval}, max=${maxInterval}. Using defaults.`
+    );
+  }
+
+  // Generate a random interval between min and max minutes (in milliseconds)
+  const randomInterval =
+    (Math.floor(Math.random() * (maxInterval - minInterval + 1)) +
+      minInterval) *
+    60 *
+    1000;
   const nextPingTime = new Date(Date.now() + randomInterval);
-  
-  console.log(`Next self-ping scheduled at ${nextPingTime.toISOString()} (in ${randomInterval/60000} minutes)`);
-  
+
+  console.log(
+    `Next self-ping scheduled at ${nextPingTime.toISOString()} (in ${
+      randomInterval / 60000
+    } minutes)`
+  );
+
   setTimeout(async () => {
     try {
       const appUrl = process.env.APP_URL;
+
+      if (!appUrl) {
+        throw new Error("APP_URL environment variable is not set");
+      }
+
       console.log(`Self-pinging application at ${new Date().toISOString()}`);
-      const response = await axios.get(`${appUrl}/api/ping`);
+
+      // Set timeout for the request to prevent hanging
+      const response = await axios.get(`${appUrl}/api/ping`, {
+        timeout: 10000, // 10 second timeout
+        headers: {
+          "User-Agent": "TransactSelfPing/1.0",
+        },
+      });
+
       console.log(`Self-ping response: ${response.status}`);
     } catch (error) {
-      console.error("Error during self-ping:", error.message);
+      // More detailed error logging
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error(
+          `Self-ping error: ${error.response.status} - ${error.response.statusText}`
+        );
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error(
+          `Self-ping error: No response received - ${error.message}`
+        );
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error(`Self-ping error: ${error.message}`);
+      }
+    } finally {
+      // Always schedule the next ping, even if this one failed
+      scheduleSelfPing();
     }
-    // Schedule the next ping after this one completes
-    scheduleSelfPing();
   }, randomInterval);
 };
 
-// Start the first ping cycle
-scheduleSelfPing();
+// Start the first ping cycle if APP_URL is set
+if (process.env.APP_URL) {
+  scheduleSelfPing();
+} else {
+  console.warn("APP_URL environment variable is not set. Self-ping disabled.");
+}
