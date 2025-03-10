@@ -8,6 +8,8 @@ const bcrypt = require("bcrypt");
 const db = require("./config/database");
 const axios = require("axios");
 const crypto = require("crypto");
+const cookieParser = require("cookie-parser");
+const { doubleCsrf } = require("csrf-csrf");
 require("dotenv").config();
 
 // Import routes
@@ -153,35 +155,12 @@ if (process.env.NODE_ENV === "production") {
   );
 }
 
+// Parse cookies - required for CSRF
+app.use(cookieParser());
+
+// Parse JSON and URL-encoded bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Add CSRF protection middleware
-const csrfProtection = (req, res, next) => {
-  // Skip for GET, HEAD, OPTIONS requests
-  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
-    return next();
-  }
-
-  // Check CSRF token in headers
-  const csrfToken = req.headers["x-csrf-token"];
-
-  if (!csrfToken || csrfToken !== req.session.csrfToken) {
-    return res.status(403).json({ error: "CSRF token validation failed" });
-  }
-
-  next();
-};
-
-// Generate CSRF token endpoint
-app.get("/api/csrf-token", (req, res) => {
-  if (!req.session.csrfToken) {
-    // Generate a random token
-    req.session.csrfToken = crypto.randomBytes(32).toString("hex");
-  }
-
-  res.json({ csrfToken: req.session.csrfToken });
-});
 
 // Session configuration with PostgreSQL storage
 app.use(
@@ -214,8 +193,72 @@ app.use(
   })
 );
 
-// Apply CSRF protection to all non-GET routes
-app.use(csrfProtection);
+// Setup CSRF protection with csrf-csrf
+const csrfProtectionOptions = {
+  getSecret: () => crypto.randomBytes(32).toString("hex"),
+  cookieName: "_csrf",
+  cookieOptions: {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  },
+  size: 64, // Token size
+  ignoredMethods: ["GET", "HEAD", "OPTIONS"],
+  getTokenFromRequest: (req) => {
+    // Check for token in various places
+    return (
+      req.body._csrf ||
+      req.query._csrf ||
+      req.headers["csrf-token"] ||
+      req.headers["xsrf-token"] ||
+      req.headers["x-csrf-token"] ||
+      req.headers["x-xsrf-token"]
+    );
+  },
+};
+
+const { generateToken, doubleCsrfProtection } = doubleCsrf(
+  csrfProtectionOptions
+);
+
+// CSRF error handler
+app.use((err, req, res, next) => {
+  if (err && err.code === "CSRF_INVALID") {
+    console.log("CSRF error:", req.method, req.path);
+    return res.status(403).json({
+      error: "CSRF token validation failed",
+      message: "Form has been tampered with",
+    });
+  }
+  next(err);
+});
+
+// Skip CSRF for specific routes
+const csrfExemptPaths = [
+  "/api/admin/login",
+  "/api/invitation/request",
+  "/api/invitation/verify",
+  "/api/ping",
+  "/api/csrf-token",
+];
+
+// Apply CSRF protection to routes that need it
+app.use((req, res, next) => {
+  if (csrfExemptPaths.some((path) => req.path.startsWith(path))) {
+    next();
+  } else {
+    doubleCsrfProtection(req, res, next);
+  }
+});
+
+// CSRF token endpoint
+app.get("/api/csrf-token", (req, res) => {
+  // Generate a CSRF token and send it to the client
+  const token = generateToken(res);
+  res.json({ csrfToken: token });
+});
 
 // Remove session debugging middleware that logs sensitive data
 // Add production-safe request logging

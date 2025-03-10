@@ -65,8 +65,17 @@
                     />
                   </div>
                   <div class="d-grid">
-                    <button type="submit" class="btn btn-primary btn-lg" id="verify-code-btn">
-                      <span class="spinner-border spinner-border-sm me-2 d-none" id="verify-spinner" role="status" aria-hidden="true"></span>
+                    <button
+                      type="submit"
+                      class="btn btn-primary btn-lg"
+                      id="verify-code-btn"
+                    >
+                      <span
+                        class="spinner-border spinner-border-sm me-2 d-none"
+                        id="verify-spinner"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
                       <span id="verify-text">Submit</span>
                     </button>
                   </div>
@@ -235,8 +244,17 @@
                   </div>
 
                   <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary btn-lg" id="submit-request-btn">
-                      <span class="spinner-border spinner-border-sm me-2 d-none" id="submit-spinner" role="status" aria-hidden="true"></span>
+                    <button
+                      type="submit"
+                      class="btn btn-primary btn-lg"
+                      id="submit-request-btn"
+                    >
+                      <span
+                        class="spinner-border spinner-border-sm me-2 d-none"
+                        id="submit-spinner"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
                       <span id="submit-text">Submit Request</span>
                     </button>
                     <button
@@ -266,7 +284,11 @@
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/invitation.js"></script>
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Add CSRF protection script before other scripts -->
+    <script src="/js/csrf.js"></script>
+    <script src="/js/invitation.js"></script>
   </body>
 </html>
