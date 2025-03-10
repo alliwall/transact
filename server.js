@@ -6,6 +6,7 @@ const cors = require("cors");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const db = require("./config/database");
+const axios = require("axios");
 require("dotenv").config();
 
 // Import routes
@@ -239,6 +240,12 @@ app.get("/api/validate-wallet-data", (req, res) => {
   }
 });
 
+// Ping endpoint to keep the application alive on Render
+app.get("/api/ping", (req, res) => {
+  console.log(`Ping received at ${new Date().toISOString()}`);
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 // 404 route for any undefined routes
 app.use("*", (req, res) => {
   res.status(404).sendFile(path.join(__dirname, "public/404.html"));
@@ -293,3 +300,15 @@ setInterval(async () => {
     console.error("Error checking for expired invitation codes:", error);
   }
 }, 24 * 60 * 60 * 1000); // Run once per day
+
+// Scheduled task to ping the server every 10 minutes to prevent Render from sleeping
+setInterval(async () => {
+  try {
+    const appUrl = process.env.APP_URL;
+    console.log(`Self-pinging application at ${new Date().toISOString()}`);
+    const response = await axios.get(`${appUrl}/api/ping`);
+    console.log(`Self-ping response: ${response.status}`);
+  } catch (error) {
+    console.error("Error during self-ping:", error.message);
+  }
+}, 5 * 60 * 1000); // Run every 5 minutes
