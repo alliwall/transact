@@ -83,7 +83,10 @@ if (process.env.NODE_ENV === "production") {
             "code.jquery.com",
             "stackpath.bootstrapcdn.com",
             "unpkg.com",
+            // Allow inline scripts for functionality
             "'unsafe-inline'",
+            // Allow eval for some libraries that might need it
+            "'unsafe-eval'",
           ],
           styleSrc: [
             "'self'",
@@ -110,22 +113,35 @@ if (process.env.NODE_ENV === "production") {
             "payment.transact.st",
             "https://api.transact.st",
             "https://payment.transact.st",
-          ],
+            // Allow connections to localhost in development
+            process.env.NODE_ENV !== "production" ? "http://localhost:*" : null,
+          ].filter(Boolean),
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
           formAction: ["'self'"],
-          frameAncestors: ["'none'"],
-          upgradeInsecureRequests: [],
+          // Allow frame navigation to same origin
+          frameAncestors: ["'self'"],
+          // Disable upgradeInsecureRequests in development
+          ...(process.env.NODE_ENV === "production"
+            ? { upgradeInsecureRequests: [] }
+            : {}),
+          // Allow navigation to any URL (important for redirects)
+          navigateTo: ["*"],
         },
       },
-      // Enable additional security headers
+      // Disable referrerPolicy to allow redirects
+      referrerPolicy: { policy: "no-referrer-when-downgrade" },
+      // Other security headers
       xssFilter: true,
       noSniff: true,
-      referrerPolicy: { policy: "strict-origin-when-cross-origin" },
       hsts: {
         maxAge: 15552000, // 180 days
         includeSubDomains: true,
         preload: true,
+      },
+      // Disable frameguard to allow frames if needed
+      frameguard: {
+        action: "sameorigin",
       },
     })
   );
