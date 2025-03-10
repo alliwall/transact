@@ -301,14 +301,27 @@ setInterval(async () => {
   }
 }, 24 * 60 * 60 * 1000); // Run once per day
 
-// Scheduled task to ping the server every 10 minutes to prevent Render from sleeping
-setInterval(async () => {
-  try {
-    const appUrl = process.env.APP_URL;
-    console.log(`Self-pinging application at ${new Date().toISOString()}`);
-    const response = await axios.get(`${appUrl}/api/ping`);
-    console.log(`Self-ping response: ${response.status}`);
-  } catch (error) {
-    console.error("Error during self-ping:", error.message);
-  }
-}, 5 * 60 * 1000); // Run every 5 minutes
+// Scheduled task to ping the server with randomized intervals to prevent Render from sleeping
+const scheduleSelfPing = () => {
+  // Generate a random interval between 4 and 13 minutes (in milliseconds)
+  const randomInterval = (Math.floor(Math.random() * 9) + 4) * 60 * 1000;
+  const nextPingTime = new Date(Date.now() + randomInterval);
+  
+  console.log(`Next self-ping scheduled at ${nextPingTime.toISOString()} (in ${randomInterval/60000} minutes)`);
+  
+  setTimeout(async () => {
+    try {
+      const appUrl = process.env.APP_URL;
+      console.log(`Self-pinging application at ${new Date().toISOString()}`);
+      const response = await axios.get(`${appUrl}/api/ping`);
+      console.log(`Self-ping response: ${response.status}`);
+    } catch (error) {
+      console.error("Error during self-ping:", error.message);
+    }
+    // Schedule the next ping after this one completes
+    scheduleSelfPing();
+  }, randomInterval);
+};
+
+// Start the first ping cycle
+scheduleSelfPing();
