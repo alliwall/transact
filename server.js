@@ -9,7 +9,6 @@ const db = require("./config/database");
 const axios = require("axios");
 const crypto = require("crypto");
 const cookieParser = require("cookie-parser");
-const { doubleCsrf } = require("csrf-csrf");
 require("dotenv").config();
 
 // Import routes
@@ -193,47 +192,20 @@ app.use(
   })
 );
 
-// Setup CSRF protection with csrf-csrf
-const csrfProtectionOptions = {
-  getSecret: () => crypto.randomBytes(32).toString("hex"),
-  cookieName: "_csrf",
-  cookieOptions: {
-    httpOnly: true,
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-  },
-  size: 64, // Token size
-  ignoredMethods: ["GET", "HEAD", "OPTIONS"],
-  getTokenFromRequest: (req) => {
-    // Check for token in various places
-    return (
-      req.body._csrf ||
-      req.query._csrf ||
-      req.headers["csrf-token"] ||
-      req.headers["xsrf-token"] ||
-      req.headers["x-csrf-token"] ||
-      req.headers["x-xsrf-token"]
-    );
-  },
+// Custom CSRF implementation
+// Function to generate a CSRF token
+const generateCsrfToken = () => {
+  return crypto.randomBytes(32).toString("hex");
 };
 
-const { generateToken, doubleCsrfProtection } = doubleCsrf(
-  csrfProtectionOptions
-);
+// Function to verify a CSRF token
+const verifyCsrfToken = (token, secret) => {
+  if (!token || !secret) return false;
 
-// CSRF error handler
-app.use((err, req, res, next) => {
-  if (err && err.code === "CSRF_INVALID") {
-    console.log("CSRF error:", req.method, req.path);
-    return res.status(403).json({
-      error: "CSRF token validation failed",
-      message: "Form has been tampered with",
-    });
-  }
-  next(err);
-});
+  // In a real implementation, you might want to use HMAC or another verification method
+  // For simplicity, we're just checking if the token exists in the session
+  return token === secret;
+};
 
 // Skip CSRF for specific routes
 const csrfExemptPaths = [
@@ -244,20 +216,66 @@ const csrfExemptPaths = [
   "/api/csrf-token",
 ];
 
-// Apply CSRF protection to routes that need it
-app.use((req, res, next) => {
-  if (csrfExemptPaths.some((path) => req.path.startsWith(path))) {
-    next();
-  } else {
-    doubleCsrfProtection(req, res, next);
+// CSRF token endpoint
+app.get("/api/csrf-token", (req, res) => {
+  try {
+    // Generate a new CSRF token
+    const token = generateCsrfToken();
+
+    // Store the token in the session
+    req.session.csrfToken = token;
+
+    // Save the session to ensure the token is stored
+    req.session.save((err) => {
+      if (err) {
+        console.error("Error saving CSRF token to session:", err);
+        return res.status(500).json({
+          error: "Failed to save CSRF token",
+          message: "Session storage error occurred",
+        });
+      }
+
+      // Send the token to the client
+      res.json({ csrfToken: token });
+    });
+  } catch (error) {
+    console.error("Error generating CSRF token:", error);
+    res.status(500).json({ error: "Failed to generate CSRF token" });
   }
 });
 
-// CSRF token endpoint
-app.get("/api/csrf-token", (req, res) => {
-  // Generate a CSRF token and send it to the client
-  const token = generateToken(res);
-  res.json({ csrfToken: token });
+// CSRF protection middleware
+app.use((req, res, next) => {
+  // Skip CSRF for exempt paths and GET requests
+  if (
+    req.method === "GET" ||
+    csrfExemptPaths.some((path) => req.path.startsWith(path))
+  ) {
+    return next();
+  }
+
+  // Get the token from the request
+  const token =
+    req.body?._csrf ||
+    req.query?._csrf ||
+    req.headers["csrf-token"] ||
+    req.headers["xsrf-token"] ||
+    req.headers["x-csrf-token"] ||
+    req.headers["x-xsrf-token"];
+
+  // Get the token from the session
+  const sessionToken = req.session?.csrfToken;
+
+  // Verify the token
+  if (!verifyCsrfToken(token, sessionToken)) {
+    console.error("CSRF validation failed:", req.method, req.path);
+    return res.status(403).json({
+      error: "CSRF token validation failed",
+      message: "Invalid or missing CSRF token",
+    });
+  }
+
+  next();
 });
 
 // Remove session debugging middleware that logs sensitive data

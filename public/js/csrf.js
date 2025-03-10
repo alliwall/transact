@@ -11,7 +11,12 @@ let csrfToken = "";
 // Function to fetch a new CSRF token from the server
 async function fetchCsrfToken() {
   try {
-    const response = await fetch("/api/csrf-token");
+    // Add a cache-busting parameter to avoid caching issues
+    const timestamp = new Date().getTime();
+    const response = await fetch(`/api/csrf-token?_=${timestamp}`, {
+      credentials: "include", // Important: include cookies in the request
+    });
+
     if (!response.ok) {
       throw new Error(
         `Failed to fetch CSRF token: ${response.status} ${response.statusText}`
@@ -19,6 +24,11 @@ async function fetchCsrfToken() {
     }
 
     const data = await response.json();
+
+    if (!data.csrfToken) {
+      throw new Error("CSRF token not found in response");
+    }
+
     csrfToken = data.csrfToken;
 
     // Store in localStorage for persistence across page loads
@@ -53,7 +63,31 @@ async function getCsrfToken() {
 // Add CSRF token to all AJAX requests
 document.addEventListener("DOMContentLoaded", function () {
   // Fetch CSRF token when page loads
-  fetchCsrfToken();
+  fetchCsrfToken().then((token) => {
+    if (token) {
+      // Add hidden CSRF input to all forms
+      document.querySelectorAll("form").forEach((form) => {
+        // Skip if the form already has a CSRF token input
+        if (form.querySelector('input[name="_csrf"]')) return;
+
+        // Create and append the CSRF token input
+        const csrfInput = document.createElement("input");
+        csrfInput.type = "hidden";
+        csrfInput.name = "_csrf";
+        csrfInput.value = token;
+        form.appendChild(csrfInput);
+
+        // Update the token value when the form is submitted
+        form.addEventListener("submit", function () {
+          const currentToken = localStorage.getItem("csrfToken");
+          if (currentToken) {
+            const input = this.querySelector('input[name="_csrf"]');
+            if (input) input.value = currentToken;
+          }
+        });
+      });
+    }
+  });
 
   // Intercept fetch requests to add CSRF token
   const originalFetch = window.fetch;
@@ -105,6 +139,9 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
+    // Always include credentials to ensure cookies are sent
+    options.credentials = options.credentials || "include";
+
     return originalFetch.call(this, url, options);
   };
 
@@ -155,6 +192,9 @@ document.addEventListener("DOMContentLoaded", function () {
           data = JSON.stringify({ _csrf: token });
         }
       }
+
+      // Always include credentials
+      this.withCredentials = true;
     }
     originalXhrSend.call(this, data);
   };
@@ -162,6 +202,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // For jQuery if it's being used
   if (window.jQuery) {
     jQuery.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+      // Always include credentials
+      options.xhrFields = options.xhrFields || {};
+      options.xhrFields.withCredentials = true;
+
       if (!["GET", "HEAD", "OPTIONS"].includes(options.type.toUpperCase())) {
         const token = localStorage.getItem("csrfToken");
         if (token) {
@@ -199,28 +243,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
-
-  // Add hidden CSRF input to all forms
-  document.querySelectorAll("form").forEach((form) => {
-    // Skip if the form already has a CSRF token input
-    if (form.querySelector('input[name="_csrf"]')) return;
-
-    // Create and append the CSRF token input
-    const csrfInput = document.createElement("input");
-    csrfInput.type = "hidden";
-    csrfInput.name = "_csrf";
-    csrfInput.value = localStorage.getItem("csrfToken") || "";
-    form.appendChild(csrfInput);
-
-    // Update the token value when the form is submitted
-    form.addEventListener("submit", function () {
-      const token = localStorage.getItem("csrfToken");
-      if (token) {
-        const input = this.querySelector('input[name="_csrf"]');
-        if (input) input.value = token;
-      }
-    });
-  });
 });
 
 // Export functions for direct use in other scripts
