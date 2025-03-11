@@ -6,7 +6,36 @@ const FORM_ID="generator-form",WALLET_ADDRESS_ID="merchant_wallet_address",SUBMI
       </div>
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
-  `,a.appendChild(l);let n=new bootstrap.Toast(l,{delay:3e3});n.show(),l.addEventListener("hidden.bs.toast",()=>{l.remove()})}function toggleLoading(e=!0){let t=document.getElementById("submit-btn"),a=document.getElementById("submit-text"),l=document.getElementById("loading-spinner");e?(t.disabled=!0,a.classList.add("invisible"),l.classList.remove("d-none")):(t.disabled=!1,a.classList.remove("invisible"),l.classList.add("d-none"))}function encryptWalletAddress(e){try{if(window.crypto&&window.crypto.subtle&&window.crypto.subtle.encrypt){let t=new TextEncoder,a=t.encode(e),l=window.crypto.getRandomValues(new Uint8Array(16)),n=new Uint8Array(256),r=t.encode(ENCRYPTION_KEY);for(let s=0;s<256;s++)n[s]=s;let i=0;for(let o=0;o<256;o++)i=(i+n[o]+r[o%r.length]+l[o%l.length])%256,[n[o],n[i]]=[n[i],n[o]];let d=new Uint8Array(a.length);for(let c=0;c<a.length;c++){let p=(c+1)%256,m=(n[p]+n[c%256])%256;[n[p],n[m]]=[n[m],n[p]];let u=n[(n[p]+n[m])%256];d[c]=a[c]^u}let b=new Uint8Array(32);for(let g=0;g<32;g++){let y=l[g%l.length];for(let h=0;h<a.length;h++)y^=a[h],y=(y<<1|y>>7)&255;b[g]=y}let f=new Uint8Array(l.length+b.length+d.length);f.set(l,0),f.set(b,l.length),f.set(d,l.length+b.length);let v=btoa(String.fromCharCode.apply(null,f));return v.replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}{console.warn("WebCrypto API not fully available, using fallback encryption");let k=Array.from(crypto.getRandomValues(new Uint8Array(16))).map(e=>e.toString(16).padStart(2,"0")).join(""),$=ENCRYPTION_KEY+k,w=e;for(let E=0;E<3;E++){let C="";for(let I=0;I<w.length;I++){let L=$.charCodeAt((I*E+I)%$.length),T=I>0?w.charCodeAt(I-1):0,A=w.charCodeAt(I)^L^T>>3;C+=String.fromCharCode(A)}w=C}let _=0;for(let x=0;x<e.length;x++)_=31*_+e.charCodeAt(x)>>>0;let R=`F1:${k}:${_.toString(16)}:${w}`,S=btoa(R);return S.replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}}catch(N){return console.error("Encryption error:",N),alert("Error encrypting wallet address. Please try again."),null}}async function generatePaymentLink(e){let t=`https://paygate.to/payment-link/invoice.php?payment=${Date.now()}_${Math.floor(9e6*Math.random())+1e6}`,a=encodeURIComponent(t),l=await fetch(`https://api.transact.st/control/wallet.php?address=${decryptWalletAddress(e)}&callback=${a}`);if(!l.ok)throw Error(`Server response error: ${l.status}`);let n=await l.json(),r=window.location.origin;return{addressIn:n.address_in,paymentLink:`${r}/merchant-payment?data=${encodeURIComponent(e)}`,trackingUrl:`https://api.transact.st/control/track.php?address=${n.address_in}`}}function displayResult(e,t){let a=document.getElementById(RESULT_CONTAINER_ID),l=new URL(t),n=l.searchParams.get("data");a.innerHTML=`
+  `,a.appendChild(l);let n=new bootstrap.Toast(l,{delay:3e3});n.show(),l.addEventListener("hidden.bs.toast",()=>{l.remove()})}function toggleLoading(e=!0){let t=document.getElementById("submit-btn"),a=document.getElementById("submit-text"),l=document.getElementById("loading-spinner");e?(t.disabled=!0,a.classList.add("invisible"),l.classList.remove("d-none")):(t.disabled=!1,a.classList.remove("invisible"),l.classList.add("d-none"))}function encryptWalletAddress(e){try{if(window.crypto&&window.crypto.subtle&&window.crypto.subtle.encrypt){let t=new TextEncoder,a=t.encode(e),l=window.crypto.getRandomValues(new Uint8Array(16)),n=new Uint8Array(256),r=t.encode(ENCRYPTION_KEY);for(let s=0;s<256;s++)n[s]=s;let i=0;for(let o=0;o<256;o++)i=(i+n[o]+r[o%r.length]+l[o%l.length])%256,[n[o],n[i]]=[n[i],n[o]];let d=new Uint8Array(a.length);for(let c=0;c<a.length;c++){let p=(c+1)%256,m=(n[p]+n[c%256])%256;[n[p],n[m]]=[n[m],n[p]];let u=n[(n[p]+n[m])%256];d[c]=a[c]^u}let b=new Uint8Array(32);for(let g=0;g<32;g++){let y=l[g%l.length];for(let h=0;h<a.length;h++)y^=a[h],y=(y<<1|y>>7)&255;b[g]=y}let f=new Uint8Array(l.length+b.length+d.length);f.set(l,0),f.set(b,l.length),f.set(d,l.length+b.length);let v=btoa(String.fromCharCode.apply(null,f));return v.replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}{console.warn("WebCrypto API not fully available, using fallback encryption");let k=Array.from(crypto.getRandomValues(new Uint8Array(16))).map(e=>e.toString(16).padStart(2,"0")).join(""),$=ENCRYPTION_KEY+k,w=e;for(let E=0;E<3;E++){let C="";for(let I=0;I<w.length;I++){let L=$.charCodeAt((I*E+I)%$.length),T=I>0?w.charCodeAt(I-1):0,A=w.charCodeAt(I)^L^T>>3;C+=String.fromCharCode(A)}w=C}let _=0;for(let x=0;x<e.length;x++)_=31*_+e.charCodeAt(x)>>>0;let R=`F1:${k}:${_.toString(16)}:${w}`,S=btoa(R);return S.replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}}catch(N){return console.error("Encryption error:",N),alert("Error encrypting wallet address. Please try again."),null}}
+
+/**
+ * Function to fetch data from external APIs without sending credentials
+ * @param {string} url - The URL to fetch
+ * @param {Object} options - Fetch options
+ * @returns {Promise<Response>} - The fetch response
+ */
+async function fetchExternalApi(url, options = {}) {
+  try {
+    // Ensure credentials are explicitly omitted for external requests
+    const fetchOptions = {
+      ...options,
+      credentials: 'omit' // Never send credentials to external domains
+    };
+    
+    const response = await fetch(url, fetchOptions);
+    
+    if (!response.ok) {
+      throw new Error(`API request failed with status: ${response.status}`);
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('External API fetch error:', error);
+    throw error;
+  }
+}
+
+async function generatePaymentLink(e){let t=`https://paygate.to/payment-link/invoice.php?payment=${Date.now()}_${Math.floor(9e6*Math.random())+1e6}`,a=encodeURIComponent(t),l=await fetchExternalApi(`https://api.transact.st/control/wallet.php?address=${decryptWalletAddress(e)}&callback=${a}`);if(!l.ok)throw Error(`Server response error: ${l.status}`);let n=await l.json(),r=window.location.origin;return{addressIn:n.address_in,paymentLink:`${r}/merchant-payment?data=${encodeURIComponent(e)}`,trackingUrl:`https://api.transact.st/control/track.php?address=${n.address_in}`}}function displayResult(e,t){let a=document.getElementById(RESULT_CONTAINER_ID),l=new URL(t),n=l.searchParams.get("data");a.innerHTML=`
     <div class="card success-card animate-success">
       <div class="card-header text-white">
         <i class="fas fa-check-circle me-2"></i> Payment Page Generated Successfully

@@ -86,7 +86,7 @@ if (process.env.NODE_ENV === "production") {
             // Allow inline scripts for functionality
             "'unsafe-inline'",
             // Allow eval for some libraries that might need it
-            "'unsafe-eval'",
+            "'unsafe-eval'"
           ],
           styleSrc: [
             "'self'",
@@ -122,27 +122,24 @@ if (process.env.NODE_ENV === "production") {
           // Allow frame navigation to same origin
           frameAncestors: ["'self'"],
           // Disable upgradeInsecureRequests in development
-          ...(process.env.NODE_ENV === "production"
-            ? { upgradeInsecureRequests: [] }
-            : {}),
-          // Allow navigation to any URL (important for redirects)
-          navigateTo: ["*"],
+          ...(process.env.NODE_ENV === "production" ? { upgradeInsecureRequests: [] } : {}),
+          // Remove the navigate-to directive as it's not widely supported
         },
       },
       // Disable referrerPolicy to allow redirects
-      referrerPolicy: { policy: "no-referrer-when-downgrade" },
+      referrerPolicy: { policy: 'no-referrer-when-downgrade' },
       // Other security headers
       xssFilter: true,
       noSniff: true,
       hsts: {
         maxAge: 15552000, // 180 days
         includeSubDomains: true,
-        preload: true,
+        preload: true
       },
       // Disable frameguard to allow frames if needed
       frameguard: {
-        action: "sameorigin",
-      },
+        action: 'sameorigin'
+      }
     })
   );
 
