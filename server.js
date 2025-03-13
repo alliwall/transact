@@ -60,7 +60,7 @@ const createRateLimiter = (windowMs, maxRequests) => {
 };
 
 // Apply rate limiting to all requests
-app.use(createRateLimiter(60 * 1000, 60)); // 60 requests per minute
+app.use(createRateLimiter(60 * 1000, 500)); // 60 requests per minute
 
 // Request logging middleware for debugging
 app.use((req, res, next) => {
