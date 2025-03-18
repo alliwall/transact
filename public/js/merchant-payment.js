@@ -388,6 +388,12 @@ async function processUrlParams() {
             merchantInfo.innerHTML = "<strong>Merchant Payment:</strong> You are creating a payment link that will send funds to the merchant wallet address shown below. This address is locked and cannot be changed.";
         }
         
+        // Ensure USD is pre-selected
+        const currencySelect = document.getElementById("currency");
+        if (currencySelect) {
+            currencySelect.value = "USD";
+        }
+        
         // Process provider restrictions if present
         const encryptedProviders = new URLSearchParams(window.location.search).get("providers");
         if (encryptedProviders) {
@@ -422,14 +428,20 @@ async function processUrlParams() {
                     }
                 });
                 
-                // Select the first available provider
-                const firstAvailableProvider = document.querySelector(`.provider-item[style="display: block"] input[name="provider"]`);
-                if (firstAvailableProvider) {
-                    firstAvailableProvider.checked = true;
+                // Find USD providers first (priority)
+                let firstUsdProvider = document.querySelector(`.provider-item[style="display: block"] input[name="provider"][data-supported-currency="USD"]`);
+                
+                // If no USD provider, get the first available provider
+                if (!firstUsdProvider) {
+                    firstUsdProvider = document.querySelector(`.provider-item[style="display: block"] input[name="provider"]`);
+                }
+                
+                if (firstUsdProvider) {
+                    firstUsdProvider.checked = true;
                     
                     // Trigger change event to update UI
                     const changeEvent = new Event('change');
-                    firstAvailableProvider.dispatchEvent(changeEvent);
+                    firstUsdProvider.dispatchEvent(changeEvent);
                 } else {
                     // If no providers are available, show an error
                     showToast("No payment providers are available for this link.", "danger");
@@ -439,6 +451,16 @@ async function processUrlParams() {
                 console.error("Error decrypting providers:", decryptError);
                 showToast("Error processing payment providers. Please contact the merchant.", "danger");
                 return false;
+            }
+        } else {
+            // If no providers specified, pre-select a USD provider
+            const usdProvider = document.querySelector('input[name="provider"][data-supported-currency="USD"]');
+            if (usdProvider) {
+                usdProvider.checked = true;
+                
+                // Trigger change event to update UI
+                const changeEvent = new Event('change');
+                usdProvider.dispatchEvent(changeEvent);
             }
         }
         
@@ -470,27 +492,75 @@ async function filterProvidersByCurrency(currency) {
         }
     }
     
+    // First, reset all providers to be hidden
+    providerItems.forEach(item => {
+        item.style.display = 'none';
+        const radio = item.querySelector('input[type="radio"]');
+        if (radio) {
+            radio.checked = false;
+        }
+    });
+    
+    // Then, show only the providers that match both currency and allowedProviders
     providerItems.forEach((item) => {
         const providerInput = item.querySelector('input[name="provider"]');
+        if (!providerInput) return;
+        
         const supportedCurrency = providerInput.getAttribute("data-supported-currency");
+        const providerValue = providerInput.value;
         
         // Check if provider is in the allowed list (if restriction exists)
-        const isAllowed = !allowedProviders || allowedProviders.includes(providerInput.value);
+        const isAllowed = !allowedProviders || allowedProviders.includes(providerValue);
         
         // Show the provider if it supports the currency AND is in the allowed list
         if ((supportedCurrency === "ALL" || supportedCurrency === currency) && isAllowed) {
             item.style.display = "block";
             
-            // Select the first visible provider if none is selected yet
-            if (!foundChecked) {
+            // Select the first visible provider if none is selected yet (prefer USD providers)
+            if (!foundChecked && (supportedCurrency === "USD" || supportedCurrency === currency || supportedCurrency === "ALL")) {
                 providerInput.checked = true;
                 foundChecked = true;
+                
+                // Update minimum amount based on the selected provider
+                const minAmount = minAmounts[providerValue] || 0;
+                const amountInput = document.getElementById("amount");
+                if (amountInput) {
+                    amountInput.setAttribute("min", minAmount);
+                    amountInput.setAttribute("placeholder", `Min: ${minAmount}`);
+                }
+                
+                // Highlight the selected provider card
+                const card = providerInput.closest(".provider-card");
+                if (card) {
+                    document.querySelectorAll('.provider-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                }
             }
-        } else {
-            item.style.display = "none";
-            providerInput.checked = false;
         }
     });
+    
+    // If no provider was checked, try to find any visible provider
+    if (!foundChecked) {
+        const firstVisibleProvider = document.querySelector('.provider-item[style="display: block"] input[name="provider"]');
+        if (firstVisibleProvider) {
+            firstVisibleProvider.checked = true;
+            
+            // Update minimum amount based on the selected provider
+            const minAmount = minAmounts[firstVisibleProvider.value] || 0;
+            const amountInput = document.getElementById("amount");
+            if (amountInput) {
+                amountInput.setAttribute("min", minAmount);
+                amountInput.setAttribute("placeholder", `Min: ${minAmount}`);
+            }
+            
+            // Highlight the selected provider card
+            const card = firstVisibleProvider.closest(".provider-card");
+            if (card) {
+                document.querySelectorAll('.provider-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+            }
+        }
+    }
 }
 document.addEventListener("DOMContentLoaded", function () {
     // Setup currency change listener
@@ -629,8 +699,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     a &&
         a.addEventListener("input", () => {
             let e = a.value.toLowerCase();
-            document.querySelectorAll(".provider-item").forEach((t) => {
-                t.querySelector(".provider-name").textContent.toLowerCase().includes(e) ? (t.style.display = "block") : (t.style.display = "none");
+            document.querySelectorAll('.provider-item[style="display: block"]').forEach((t) => {
+                const providerName = t.querySelector(".provider-name").textContent.toLowerCase();
+                if (providerName.includes(e)) {
+                    t.style.display = "block";
+                } else {
+                    t.style.display = "none";
+                }
             });
         });
     
