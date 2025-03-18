@@ -318,62 +318,46 @@ footer a:hover {
     border-radius: 20px;
 }
 .provider-card {
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 12px;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: var(--card-bg);
-    margin-bottom: 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
     position: relative;
-    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
-.provider-badge,
-.provider-tag {
-    font-size: 0.7rem;
-    padding: 0.2em 0.5em;
-    border-radius: 0.25rem;
+.provider-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+.provider-card.selected {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.05);
 }
 .provider-card input {
-    margin-right: 0.75rem;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
 }
 .provider-card .form-check-label {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
     cursor: pointer;
-    flex: 1;
+    display: block;
+    width: 100%;
+    padding-right: 25px;
 }
-.provider-badge {
-    font-weight: 600;
-    text-transform: uppercase;
-}
-.provider-badge.usd {
-    background-color: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-}
-.provider-badge.eur {
-    background-color: rgba(99, 102, 241, 0.1);
-    color: #6366f1;
-}
-.provider-badge.cad {
-    background-color: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
-}
-.provider-badge.inr {
-    background-color: rgba(236, 72, 153, 0.1);
-    color: #ec4899;
-}
-.provider-badge.all {
-    background-color: rgba(16, 185, 129, 0.1);
-    color: #10b981;
+.provider-name {
+    font-weight: 500;
+    display: block;
 }
 .provider-tag {
-    background-color: rgba(100, 116, 139, 0.1);
-    color: var(--text-muted);
+    display: inline-block;
+    font-size: 0.7rem;
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-top: 5px;
 }
 .form-actions {
     display: flex;
@@ -1652,147 +1636,75 @@ input:focus {
     z-index: 2;
 }
 
-/* Provider Card Styling */
+/* Payment providers styling */
 .provider-card {
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 12px;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: var(--card-bg);
-    margin-bottom: 8px;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Style for provider cards in merchant link generator */
-input[type="checkbox"] + label.form-check-label {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    cursor: pointer;
-}
-
-input[type="checkbox"]:checked + label.form-check-label .provider-name {
-    font-weight: 600;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .provider-card:hover {
-    border-color: var(--primary-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
 
-input[type="checkbox"]:checked + label.form-check-label .provider-card,
-input[type="radio"]:checked + label.form-check-label .provider-card,
 .provider-card.selected {
-    border-color: var(--primary-color);
-    background-color: var(--highlight-bg);
+  border-color: #007bff;
+  background-color: rgba(0, 123, 255, 0.05);
 }
 
-.provider-card .provider-name {
-    font-weight: 500;
-    color: var(--text-color);
+.provider-card input {
+  cursor: pointer;
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
-.provider-card .provider-tag {
-    font-size: 0.7rem;
-    padding: 2px 5px;
-    border-radius: 4px;
-    background-color: var(--tag-bg);
-    color: var(--tag-color);
-    margin-left: 5px;
-    display: inline-block;
+.provider-card .form-check-label {
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  padding-right: 25px;
 }
 
-.provider-filter {
-    margin-bottom: 15px;
+.provider-name {
+  font-weight: 500;
+  display: block;
 }
 
-.provider-group {
-    max-height: 300px;
-    overflow-y: auto;
-    padding-right: 5px;
-    margin-bottom: 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 10px;
+.provider-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 5px;
 }
 
-.provider-section {
-    margin-bottom: 20px;
-}
-
-/* For dark mode compatibility */
-[data-bs-theme="dark"] .provider-card {
-    background-color: var(--dark-card-bg);
-    border-color: var(--dark-border-color);
-}
-
-[data-bs-theme="dark"] .provider-card:hover {
-    border-color: var(--primary-color);
-}
-
-[data-bs-theme="dark"] input[type="checkbox"]:checked + label.form-check-label .provider-card,
-[data-bs-theme="dark"] input[type="radio"]:checked + label.form-check-label .provider-card,
-[data-bs-theme="dark"] .provider-card.selected {
-    background-color: var(--dark-highlight-bg);
-    border-color: var(--primary-color);
-}
-
-[data-bs-theme="dark"] .provider-card .provider-tag {
-    background-color: var(--dark-tag-bg);
-    color: var(--dark-tag-color);
-}
-
-[data-bs-theme="dark"] .provider-group {
-    border-color: var(--dark-border-color);
-}
-
-.provider-summary {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: 5px;
-}
-
-.provider-summary .badge {
-    padding: 6px 10px;
-    font-weight: 500;
-    font-size: 0.8rem;
-}
-
-[data-bs-theme="dark"] .provider-summary .badge {
-    background-color: var(--dark-tag-bg) !important;
-    color: var(--dark-tag-color) !important;
-    border: 1px solid var(--dark-border-color);
-}
-
-/* Ensure provider cards are clickable and have appropriate styling */
-.provider-card {
-    cursor: pointer;
-    user-select: none;
-}
-
-.provider-card:hover {
-    border-color: var(--primary-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Fix for provider cards in merchant-payment page to ensure proper clickability */
-.provider-card input[type="radio"] {
-    cursor: pointer;
-    position: relative;
-    z-index: 2;
-}
-
-.provider-card label,
-.provider-card div.form-check-label {
-    cursor: pointer;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    margin: 0;
+/* Dark mode adjustments for provider cards */
+@media (prefers-color-scheme: dark) {
+  .provider-card {
+    border-color: #555;
+    background-color: #333;
+  }
+  
+  .provider-card:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+  }
+  
+  .provider-card.selected {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.1);
+  }
+  
+  .provider-tag {
+    background-color: #444;
+    color: #ddd;
+  }
 }
