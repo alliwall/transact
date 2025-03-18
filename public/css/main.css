@@ -1682,7 +1682,7 @@ input[type="checkbox"]:checked + label.form-check-label .provider-name {
 
 .provider-card:hover {
     border-color: var(--primary-color);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 input[type="checkbox"]:checked + label.form-check-label .provider-card,
@@ -1768,4 +1768,31 @@ input[type="radio"]:checked + label.form-check-label .provider-card,
     background-color: var(--dark-tag-bg) !important;
     color: var(--dark-tag-color) !important;
     border: 1px solid var(--dark-border-color);
+}
+
+/* Ensure provider cards are clickable and have appropriate styling */
+.provider-card {
+    cursor: pointer;
+    user-select: none;
+}
+
+.provider-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Fix for provider cards in merchant-payment page to ensure proper clickability */
+.provider-card input[type="radio"] {
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+}
+
+.provider-card label,
+.provider-card div.form-check-label {
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
 }

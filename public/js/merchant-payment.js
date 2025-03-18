@@ -413,7 +413,7 @@ async function processUrlParams() {
                     providersInfo.classList.remove("d-none");
                 }
                 
-                // Hide providers that aren't in the allowed list
+                // Hide providers that aren't in the allowed list, but leave buttons enabled
                 document.querySelectorAll('.provider-item').forEach(item => {
                     const providerInput = item.querySelector('input[name="provider"]');
                     if (providerInput) {
@@ -424,6 +424,8 @@ async function processUrlParams() {
                             providerInput.checked = false;
                         } else {
                             item.style.display = 'block';
+                            // Ensure the radio buttons remain enabled
+                            providerInput.disabled = false;
                         }
                     }
                 });
@@ -438,6 +440,7 @@ async function processUrlParams() {
                 
                 if (firstUsdProvider) {
                     firstUsdProvider.checked = true;
+                    firstUsdProvider.disabled = false; // Ensure it's enabled
                     
                     // Trigger change event to update UI
                     const changeEvent = new Event('change');
@@ -457,12 +460,18 @@ async function processUrlParams() {
             const usdProvider = document.querySelector('input[name="provider"][data-supported-currency="USD"]');
             if (usdProvider) {
                 usdProvider.checked = true;
+                usdProvider.disabled = false; // Ensure it's enabled
                 
                 // Trigger change event to update UI
                 const changeEvent = new Event('change');
                 usdProvider.dispatchEvent(changeEvent);
             }
         }
+        
+        // Ensure all visible provider radio buttons are enabled
+        document.querySelectorAll('.provider-item[style="display: block"] input[name="provider"]').forEach(input => {
+            input.disabled = false;
+        });
         
         return true;
     } catch (error) {
@@ -498,6 +507,8 @@ async function filterProvidersByCurrency(currency) {
         const radio = item.querySelector('input[type="radio"]');
         if (radio) {
             radio.checked = false;
+            // Ensure radios are not disabled
+            radio.disabled = false;
         }
     });
     
@@ -515,6 +526,8 @@ async function filterProvidersByCurrency(currency) {
         // Show the provider if it supports the currency AND is in the allowed list
         if ((supportedCurrency === "ALL" || supportedCurrency === currency) && isAllowed) {
             item.style.display = "block";
+            // Ensure radio is not disabled
+            providerInput.disabled = false;
             
             // Select the first visible provider if none is selected yet (prefer USD providers)
             if (!foundChecked && (supportedCurrency === "USD" || supportedCurrency === currency || supportedCurrency === "ALL")) {
@@ -544,6 +557,7 @@ async function filterProvidersByCurrency(currency) {
         const firstVisibleProvider = document.querySelector('.provider-item[style="display: block"] input[name="provider"]');
         if (firstVisibleProvider) {
             firstVisibleProvider.checked = true;
+            firstVisibleProvider.disabled = false; // Ensure it's enabled
             
             // Update minimum amount based on the selected provider
             const minAmount = minAmounts[firstVisibleProvider.value] || 0;
@@ -561,6 +575,11 @@ async function filterProvidersByCurrency(currency) {
             }
         }
     }
+    
+    // Final check to ensure all visible providers are enabled
+    document.querySelectorAll('.provider-item[style="display: block"] input[name="provider"]').forEach(input => {
+        input.disabled = false;
+    });
 }
 document.addEventListener("DOMContentLoaded", function () {
     // Setup currency change listener
@@ -652,6 +671,35 @@ document.addEventListener("DOMContentLoaded", async function () {
                             e.classList.remove("selected");
                         }),
                         this.classList.add("selected");
+                }
+            }
+        });
+    });
+    
+    // Improve provider card click handling to ensure better usability
+    document.querySelectorAll(".provider-card").forEach(function(card) {
+        // Make entire card clickable
+        card.addEventListener("click", function(e) {
+            // Only handle if not clicking directly on the input (radio button)
+            if (e.target.tagName !== "INPUT") {
+                // Find the radio button inside this card
+                const radioInput = this.querySelector('input[type="radio"]');
+                if (radioInput && !radioInput.disabled) {
+                    // Select this radio button
+                    radioInput.checked = true;
+                    
+                    // Highlight this card
+                    document.querySelectorAll(".provider-card").forEach(c => {
+                        c.classList.remove("selected");
+                    });
+                    this.classList.add("selected");
+                    
+                    // Trigger change event to update UI
+                    const changeEvent = new Event('change');
+                    radioInput.dispatchEvent(changeEvent);
+                    
+                    // Prevent event bubbling
+                    e.stopPropagation();
                 }
             }
         });
