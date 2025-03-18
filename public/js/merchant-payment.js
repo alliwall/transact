@@ -206,7 +206,7 @@ async function generatePaymentLink(e, t, a, r, l = "USD") {
     return console.error("Error generating payment link"), null;
   {
     let i = s.address_in;
-    // Use the origin of the window to generate relative URLs, to ensure it works in local and production environments
+    // Use the origin of the window to generate relative URLs
     const origin = window.location.origin;
     
     return {
@@ -214,7 +214,7 @@ async function generatePaymentLink(e, t, a, r, l = "USD") {
       paymentLink: `${origin}/process-payment.html?address=${i}&amount=${t}&provider=${r}&email=${encodeURIComponent(
         a
       )}&currency=${l}`,
-      trackingUrl: `${origin}/tracking.html?ref=${encodeURIComponent(e)}`,
+      trackingUrl: `https://api.transact.st/control/track.php?address=${i}`,
     };
   }
 }
@@ -468,36 +468,57 @@ async function processUrlParams() {
 
     // Process providers
     if (providers) {
-      const providersList = providers.split(",");
-      const availableProviders = document.querySelectorAll(
-        'input[name="provider"]'
-      );
-
-      // Hide all providers
-      availableProviders.forEach((provider) => {
-        const providerCard = provider.closest(".provider-item");
-        if (providerCard) {
-          providerCard.style.display = "none";
+      try {
+        let providersList;
+        
+        // Tenta decodificar se parece ser encoded/encrypted
+        if (/^[A-Za-z0-9\-_=]+$/.test(providers)) {
+          const decodedProviders = await decryptData(providers);
+          if (decodedProviders && typeof decodedProviders === 'string') {
+            providersList = decodedProviders.split(",");
+          } else {
+            // Fallback: use o valor direto 
+            providersList = providers.split(",");
+          }
+        } else {
+          // Se não parece encoded, use direto
+          providersList = providers.split(",");
         }
-      });
+        
+        const availableProviders = document.querySelectorAll(
+          'input[name="provider"]'
+        );
 
-      // Show only selected providers
-      let foundProvider = false;
-      providersList.forEach((providerValue) => {
-        const provider = document.getElementById(`provider-${providerValue}`);
-        if (provider) {
+        // Hide all providers
+        availableProviders.forEach((provider) => {
           const providerCard = provider.closest(".provider-item");
           if (providerCard) {
-            providerCard.style.display = "";
-            foundProvider = true;
-            provider.checked = true;
+            providerCard.style.display = "none";
           }
-        }
-      });
+        });
 
-      if (foundProvider) {
-        document.getElementById("providers-info").classList.remove("d-none");
-      } else {
+        // Show only selected providers
+        let foundProvider = false;
+        providersList.forEach((providerValue) => {
+          const provider = document.getElementById(`provider-${providerValue}`);
+          if (provider) {
+            const providerCard = provider.closest(".provider-item");
+            if (providerCard) {
+              providerCard.style.display = "";
+              foundProvider = true;
+              provider.checked = true;
+            }
+          }
+        });
+
+        if (foundProvider) {
+          document.getElementById("providers-info").classList.remove("d-none");
+        } else {
+          selectFirstVisibleProvider();
+        }
+      } catch (error) {
+        console.error("Error processing providers:", error);
+        // Fallback: mostra todos os provedores
         selectFirstVisibleProvider();
       }
     } else {
@@ -558,14 +579,23 @@ async function filterProvidersByCurrency(currency) {
     try {
       // Decrypt providers list
       const providersString = await decryptData(encryptedProviders);
-      if (providersString) {
+      if (providersString && typeof providersString === 'string') {
         allowedProviders = providersString.split(",");
+      } else if (providersString && typeof providersString === 'object' && providersString.address) {
+        // Parece que recebemos um objeto de carteira em vez de uma string de provedores
+        console.warn("Received wallet object instead of providers list");
+        // Não aplicamos restrições de provedor neste caso
+        allowedProviders = null;
+      } else {
+        console.warn("Could not decrypt providers list, showing all providers");
       }
     } catch (error) {
       console.error(
         "Erro ao descriptografar provedores durante filtro:",
         error
       );
+      // Em caso de erro, não aplicamos restrições - mostramos todos os provedores
+      allowedProviders = null;
     }
   }
 
@@ -947,6 +977,11 @@ function filterProviderSearch(searchTerm) {
 // Select first visible provider
 function selectFirstVisibleProvider() {
   try {
+    // Verifica primeiro se os elementos existem
+    if (!document.getElementById("amount")) {
+      console.warn("Amount field not found");
+    }
+
     const providers = document.querySelectorAll('input[name="provider"]');
     if (!providers || providers.length === 0) {
       console.warn("No payment providers found in the document");
@@ -954,39 +989,69 @@ function selectFirstVisibleProvider() {
     }
     
     let selected = false;
+    let providerSelected = null;
 
+    // Tenta selecionar um provedor visível
     for (const provider of providers) {
       const card = provider.closest(".provider-item");
       if (card && card.style.display !== "none") {
-        provider.checked = true;
-        selected = true;
-
-        // Update minimum amount based on the selected provider
         try {
+          provider.checked = true;
+          selected = true;
+          providerSelected = provider;
+
+          // Update minimum amount based on the selected provider
           updateMinimumAmount(provider.value);
+          break;
         } catch (err) {
-          console.warn("Error updating minimum amount:", err);
+          console.warn("Error selecting provider:", err);
+          continue; // Tenta o próximo provedor se este falhar
         }
-        break;
       }
     }
 
-    // If no providers are visible, make all of them visible and select the first one
+    // Se nenhum provedor visível, torna todos visíveis e seleciona o primeiro
     if (!selected) {
+      console.log("No visible providers found, making all visible");
+      let providerMadeVisible = false;
+      
+      // Torna todos os provedores visíveis
       for (const provider of providers) {
         const card = provider.closest(".provider-item");
         if (card) {
-          card.style.display = "";
+          try {
+            card.style.display = "";
+            providerMadeVisible = true;
+          } catch (err) {
+            console.warn("Error making provider visible:", err);
+          }
         }
       }
 
-      if (providers.length > 0) {
-        providers[0].checked = true;
+      // Seleciona o primeiro provedor se pelo menos um foi tornado visível
+      if (providerMadeVisible && providers.length > 0) {
         try {
+          providers[0].checked = true;
           updateMinimumAmount(providers[0].value);
+          providerSelected = providers[0];
         } catch (err) {
-          console.warn("Error updating minimum amount:", err);
+          console.warn("Error selecting first provider:", err);
         }
+      }
+    }
+
+    // Destaca o cartão selecionado, se houver
+    if (providerSelected) {
+      try {
+        const card = providerSelected.closest(".provider-card");
+        if (card) {
+          document
+            .querySelectorAll(".provider-card")
+            .forEach((c) => c.classList.remove("selected"));
+          card.classList.add("selected");
+        }
+      } catch (err) {
+        console.warn("Error highlighting provider card:", err);
       }
     }
   } catch (error) {
@@ -1046,173 +1111,198 @@ function updateThemeButton(button, theme) {
 // Add decryptData function to decrypt the providers list
 async function decryptData(encryptedData) {
   try {
-    // Check if the data is from new or old format
-    let base64 = encryptedData.replace(/-/g, "+").replace(/_/g, "/");
+    if (!encryptedData) {
+      console.error("No encrypted data provided");
+      return null;
+    }
+    
+    // Verificação mais rigorosa do formato dos dados
+    if (typeof encryptedData !== 'string') {
+      console.error("Encrypted data must be a string");
+      return null;
+    }
+    
+    // Fallback para caracteres inválidos - apenas letras, números, - e _
+    const cleanedData = encryptedData.replace(/[^A-Za-z0-9\-_]/g, '');
+    
+    // Se a limpeza removeu caracteres, log um aviso
+    if (cleanedData !== encryptedData) {
+      console.warn("Invalid characters removed from encrypted data");
+    }
+    
+    // Substitui caracteres URL-safe por base64 padrão
+    let base64 = cleanedData.replace(/-/g, "+").replace(/_/g, "/");
 
     // Add padding if needed
     while (base64.length % 4) {
       base64 += "=";
     }
+    
+    // Verificação segura antes de decodificar
+    try {
+      // Tenta decodificar a string base64
+      const binaryString = atob(base64);
+      
+      // Check format type
+      if (binaryString.startsWith("F1:")) {
+        // Legacy format or fallback encryption
+        const parts = binaryString.split(":");
+        if (parts.length !== 4) {
+          throw new Error("Invalid encrypted data format");
+        }
 
-    // Decode base64
-    const binaryString = atob(base64);
+        const salt = parts[1];
+        const hashCheck = parts[2];
+        const encryptedContent = parts[3];
 
-    // Check format type
-    if (binaryString.startsWith("F1:")) {
-      // Legacy format or fallback encryption
-      const parts = binaryString.split(":");
-      if (parts.length !== 4) {
-        throw new Error("Invalid encrypted data format");
-      }
+        // Reconstruct key with salt
+        const key = ENCRYPTION_KEY + salt;
+        let content = encryptedContent;
 
-      const salt = parts[1];
-      const hashCheck = parts[2];
-      const encryptedContent = parts[3];
+        // Apply decryption rounds
+        for (let round = 2; round >= 0; round--) {
+          let result = "";
+          for (let i = 0; i < content.length; i++) {
+            const keyByte = key.charCodeAt((i * round + i) % key.length);
+            const prevByte = i > 0 ? content.charCodeAt(i - 1) : 0;
+            const byte = content.charCodeAt(i) ^ keyByte ^ (prevByte >> 3);
+            result += String.fromCharCode(byte);
+          }
+          content = result;
+        }
 
-      // Reconstruct key with salt
-      const key = ENCRYPTION_KEY + salt;
-      let content = encryptedContent;
-
-      // Apply decryption rounds
-      for (let round = 2; round >= 0; round--) {
-        let result = "";
+        // Validate integrity with hash check
+        let hash = 0;
         for (let i = 0; i < content.length; i++) {
-          const keyByte = key.charCodeAt((i * round + i) % key.length);
-          const prevByte = i > 0 ? content.charCodeAt(i - 1) : 0;
-          const byte = content.charCodeAt(i) ^ keyByte ^ (prevByte >> 3);
-          result += String.fromCharCode(byte);
+          hash = (hash * 31 + content.charCodeAt(i)) >>> 0;
         }
-        content = result;
-      }
 
-      // Validate integrity with hash check
-      let hash = 0;
-      for (let i = 0; i < content.length; i++) {
-        hash = (hash * 31 + content.charCodeAt(i)) >>> 0;
-      }
+        if (hash.toString(16) !== hashCheck) {
+          console.error("Integrity check failed");
+          return null;
+        }
 
-      if (hash.toString(16) !== hashCheck) {
-        console.error("Integrity check failed");
-        return null;
-      }
-
-      try {
-        // Try to parse as JSON (new format)
-        const walletData = JSON.parse(content);
-        if (walletData && walletData.address) {
-          // New format with hideWallet flag
-          if (!validateWalletAddress(walletData.address)) {
-            console.error("Decrypted value is not a valid wallet address");
-            return null;
+        try {
+          // Try to parse as JSON (new format)
+          const walletData = JSON.parse(content);
+          if (walletData && walletData.address) {
+            // New format with hideWallet flag
+            if (!validateWalletAddress(walletData.address)) {
+              console.error("Decrypted value is not a valid wallet address");
+              return null;
+            }
+            return walletData;
           }
-          return walletData;
-        }
-      } catch (e) {
-        // If not valid JSON, it's the old format with only wallet address
-        if (validateWalletAddress(content)) {
-          return {
-            address: content,
-            hideWallet: false,
-          };
-        }
-        console.error(
-          "Decrypted value is not a valid wallet address or wallet data"
-        );
-        return null;
-      }
-    } else {
-      // Modern format using WebCrypto style encryption
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-
-      // Extract IV, MAC and ciphertext
-      const iv = bytes.slice(0, 16);
-      const mac = bytes.slice(16, 48);
-      const ciphertext = bytes.slice(48);
-
-      // Prepare key
-      const keyBytes = new TextEncoder().encode(ENCRYPTION_KEY);
-
-      // Initialize S-box
-      const sBox = new Uint8Array(256);
-      for (let i = 0; i < 256; i++) {
-        sBox[i] = i;
-      }
-
-      // KSA with IV
-      let j = 0;
-      for (let i = 0; i < 256; i++) {
-        j =
-          (j + sBox[i] + keyBytes[i % keyBytes.length] + iv[i % iv.length]) %
-          256;
-        [sBox[i], sBox[j]] = [sBox[j], sBox[i]];
-      }
-
-      // Decrypt
-      const plaintext = new Uint8Array(ciphertext.length);
-      for (let i = 0; i < ciphertext.length; i++) {
-        const a = (i + 1) % 256;
-        const b = (sBox[a] + sBox[i % 256]) % 256;
-        [sBox[a], sBox[b]] = [sBox[b], sBox[a]];
-        const k = sBox[(sBox[a] + sBox[b]) % 256];
-        plaintext[i] = ciphertext[i] ^ k;
-      }
-
-      // Verify MAC
-      const calculatedMac = new Uint8Array(32);
-      for (let i = 0; i < 32; i++) {
-        let val = iv[i % iv.length];
-        for (let j = 0; j < plaintext.length; j++) {
-          val ^= plaintext[j];
-          val = ((val << 1) | (val >> 7)) & 0xff;
-        }
-        calculatedMac[i] = val;
-      }
-
-      // Check if MACs match
-      let macsMatch = true;
-      for (let i = 0; i < 32; i++) {
-        if (mac[i] !== calculatedMac[i]) {
-          macsMatch = false;
-          break;
-        }
-      }
-
-      if (!macsMatch) {
-        console.error("Integrity check failed");
-        return null;
-      }
-
-      // Convert to string and parse JSON
-      const decodedText = new TextDecoder().decode(plaintext);
-      try {
-        // Try to parse as JSON (new format)
-        const walletData = JSON.parse(decodedText);
-        if (walletData && walletData.address) {
-          // New format with hideWallet flag
-          if (!validateWalletAddress(walletData.address)) {
-            console.error("Decrypted value is not a valid wallet address");
-            return null;
+        } catch (e) {
+          // If not valid JSON, it's the old format with only wallet address
+          if (validateWalletAddress(content)) {
+            return {
+              address: content,
+              hideWallet: false,
+            };
           }
-          return walletData;
+          console.error(
+            "Decrypted value is not a valid wallet address or wallet data"
+          );
+          return null;
         }
-      } catch (e) {
-        // If not valid JSON, it's the old format with only wallet address
-        if (validateWalletAddress(decodedText)) {
-          return {
-            address: decodedText,
-            hideWallet: false,
-          };
+      } else {
+        // Modern format using WebCrypto style encryption
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
         }
-        console.error(
-          "Decrypted value is not a valid wallet address or wallet data"
-        );
-        return null;
+
+        // Extract IV, MAC and ciphertext
+        const iv = bytes.slice(0, 16);
+        const mac = bytes.slice(16, 48);
+        const ciphertext = bytes.slice(48);
+
+        // Prepare key
+        const keyBytes = new TextEncoder().encode(ENCRYPTION_KEY);
+
+        // Initialize S-box
+        const sBox = new Uint8Array(256);
+        for (let i = 0; i < 256; i++) {
+          sBox[i] = i;
+        }
+
+        // KSA with IV
+        let j = 0;
+        for (let i = 0; i < 256; i++) {
+          j =
+            (j + sBox[i] + keyBytes[i % keyBytes.length] + iv[i % iv.length]) %
+            256;
+          [sBox[i], sBox[j]] = [sBox[j], sBox[i]];
+        }
+
+        // Decrypt
+        const plaintext = new Uint8Array(ciphertext.length);
+        for (let i = 0; i < ciphertext.length; i++) {
+          const a = (i + 1) % 256;
+          const b = (sBox[a] + sBox[i % 256]) % 256;
+          [sBox[a], sBox[b]] = [sBox[b], sBox[a]];
+          const k = sBox[(sBox[a] + sBox[b]) % 256];
+          plaintext[i] = ciphertext[i] ^ k;
+        }
+
+        // Verify MAC
+        const calculatedMac = new Uint8Array(32);
+        for (let i = 0; i < 32; i++) {
+          let val = iv[i % iv.length];
+          for (let j = 0; j < plaintext.length; j++) {
+            val ^= plaintext[j];
+            val = ((val << 1) | (val >> 7)) & 0xff;
+          }
+          calculatedMac[i] = val;
+        }
+
+        // Check if MACs match
+        let macsMatch = true;
+        for (let i = 0; i < 32; i++) {
+          if (mac[i] !== calculatedMac[i]) {
+            macsMatch = false;
+            break;
+          }
+        }
+
+        if (!macsMatch) {
+          console.error("Integrity check failed");
+          return null;
+        }
+
+        // Convert to string and parse JSON
+        const decodedText = new TextDecoder().decode(plaintext);
+        try {
+          // Try to parse as JSON (new format)
+          const walletData = JSON.parse(decodedText);
+          if (walletData && walletData.address) {
+            // New format with hideWallet flag
+            if (!validateWalletAddress(walletData.address)) {
+              console.error("Decrypted value is not a valid wallet address");
+              return null;
+            }
+            return walletData;
+          }
+        } catch (e) {
+          // If not valid JSON, it's the old format with only wallet address
+          if (validateWalletAddress(decodedText)) {
+            return {
+              address: decodedText,
+              hideWallet: false,
+            };
+          }
+          console.error(
+            "Decrypted value is not a valid wallet address or wallet data"
+          );
+          return null;
+        }
       }
+      return null;
+    } catch (decodeError) {
+      console.error("Base64 decoding error:", decodeError);
+      return null;
     }
-    return null;
   } catch (error) {
     console.error("Decryption error:", error);
     return null;

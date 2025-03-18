@@ -484,7 +484,7 @@ function displayResult(walletAddress, merchantUrl) {
       : "";
 
   // Create a tracking fallback URL that works without relying on external APIs
-  const trackingFallbackUrl = `${window.location.origin}/tracking?ref=${encodeURIComponent(n)}`;
+  const trackingFallbackUrl = `https://api.transact.st/control/track.php?address=${n}`;
 
   a.innerHTML = `
     <div class="card success-card animate-success">
