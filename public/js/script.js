@@ -321,6 +321,9 @@ providerInputs.forEach((e) => {
         e && !/^0x[a-fA-F0-9]{40}$/.test(e) ? (this.classList.add("is-invalid"), this.setCustomValidity("Invalid wallet address")) : (this.classList.remove("is-invalid"), this.setCustomValidity(""));
     }),
     document.addEventListener("DOMContentLoaded", function () {
+        // Initial call to filter providers based on the selected currency (USD)
+        filterProvidersByCurrency(document.getElementById("currency").value);
+        
         [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (e) {
             return new bootstrap.Tooltip(e);
         });

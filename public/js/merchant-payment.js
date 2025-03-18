@@ -426,7 +426,9 @@ document.getElementById("currency").addEventListener("change", function () {
         });
     }),
     document.addEventListener("DOMContentLoaded", function () {
+        // Initial call to filter providers based on the selected currency (USD)
         filterProvidersByCurrency(document.getElementById("currency").value);
+        
         [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (e) {
             return new bootstrap.Tooltip(e);
         });
