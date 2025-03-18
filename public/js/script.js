@@ -267,18 +267,6 @@ function fixDarkModeStyles() {
 function filterProvidersByCurrency(e) {
     let t = document.querySelectorAll(".provider-item"),
         a = !1;
-    
-    // If no currency is selected, show all providers
-    if (e === "") {
-        t.forEach((t) => {
-            t.style.display = "block";
-            // Do not select any provider by default
-            let s = t.querySelector('input[name="provider"]');
-            s.checked = false;
-        });
-        return;
-    }
-    
     t.forEach((t) => {
         let s = t.querySelector('input[name="provider"]'),
             r = s.getAttribute("data-supported-currency");
@@ -336,28 +324,14 @@ providerInputs.forEach((e) => {
         [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (e) {
             return new bootstrap.Tooltip(e);
         });
-        
-        // Only configure the minimum value if a provider is selected
-        const selectedProvider = document.querySelector('input[name="provider"]:checked');
-        if (selectedProvider) {
-            let e = selectedProvider.value,
-                t = document.getElementById("amount");
-            t.setAttribute("min", minAmounts[e]);
-            t.setAttribute("placeholder", `Min: ${minAmounts[e]}`);
-            selectedProvider.closest(".provider-card").classList.add("selected");
-        }
-        
-        window.innerWidth < 768 && (document.querySelector(".provider-group").style.maxHeight = "200px"),
+        let e = document.querySelector('input[name="provider"]:checked').value,
+            t = document.getElementById("amount");
+        t.setAttribute("min", minAmounts[e]), t.setAttribute("placeholder", `Min: ${minAmounts[e]}`);
+        document.querySelector('input[name="provider"]:checked').closest(".provider-card").classList.add("selected"),
+            window.innerWidth < 768 && (document.querySelector(".provider-group").style.maxHeight = "200px"),
             document.querySelectorAll(".provider-card").forEach(function (e) {
                 e.addEventListener("click", function (e) {
                     if ("INPUT" !== e.target.tagName) {
-                        // Check if a currency has been selected
-                        const currencyValue = document.getElementById("currency").value;
-                        if (currencyValue === "") {
-                            showToast("Please select a currency first.", "warning");
-                            return;
-                        }
-                        
                         let t = this.querySelector('input[type="radio"]');
                         if (t) {
                             t.checked = !0;
@@ -413,7 +387,4 @@ providerInputs.forEach((e) => {
                 }),
                 this.closest(".provider-card").classList.add("selected");
         });
-    }),
-    document.addEventListener("DOMContentLoaded", function () {
-        filterProvidersByCurrency(document.getElementById("currency").value);
     });

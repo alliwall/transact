@@ -379,18 +379,6 @@ async function processUrlParams() {
 function filterProvidersByCurrency(e) {
     let t = document.querySelectorAll(".provider-item"),
         a = !1;
-    
-    // If no currency is selected, show all providers
-    if (e === "") {
-        t.forEach((t) => {
-            t.style.display = "block";
-            // Não selecionar nenhum provedor por padrão
-            let r = t.querySelector('input[name="provider"]');
-            r.checked = false;
-        });
-        return;
-    }
-    
     t.forEach((t) => {
         let r = t.querySelector('input[name="provider"]'),
             l = r.getAttribute("data-supported-currency");
@@ -438,46 +426,30 @@ document.getElementById("currency").addEventListener("change", function () {
         });
     }),
     document.addEventListener("DOMContentLoaded", function () {
-        const currencyValue = document.getElementById("currency").value;
-        filterProvidersByCurrency(currencyValue);
-        
+        filterProvidersByCurrency(document.getElementById("currency").value);
         [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (e) {
             return new bootstrap.Tooltip(e);
         });
-        
-        // Only configure the minimum value if a provider is selected
-        const selectedProvider = document.querySelector('input[name="provider"]:checked');
-        if (selectedProvider) {
-            let e = selectedProvider.value,
-                t = document.getElementById("amount");
-            t.setAttribute("min", minAmounts[e]);
-            t.setAttribute("placeholder", `Min: ${minAmounts[e]}`);
-            selectedProvider.closest(".provider-card").classList.add("selected");
-        }
-        
-        document.querySelectorAll(".provider-card").forEach(function (e) {
-            e.addEventListener("click", function (e) {
-                if ("INPUT" !== e.target.tagName) {
-                    // Check if a currency has been selected
-                    const currencyValue = document.getElementById("currency").value;
-                    if (currencyValue === "") {
-                        showToast("Please select a currency first.", "warning");
-                        return;
+        let e = document.querySelector('input[name="provider"]:checked').value,
+            t = document.getElementById("amount");
+        t.setAttribute("min", minAmounts[e]), t.setAttribute("placeholder", `Min: ${minAmounts[e]}`);
+        document.querySelector('input[name="provider"]:checked').closest(".provider-card").classList.add("selected"),
+            document.querySelectorAll(".provider-card").forEach(function (e) {
+                e.addEventListener("click", function (e) {
+                    if ("INPUT" !== e.target.tagName) {
+                        let t = this.querySelector('input[type="radio"]');
+                        if (t) {
+                            t.checked = !0;
+                            let a = new Event("change");
+                            t.dispatchEvent(a),
+                                document.querySelectorAll(".provider-card").forEach((e) => {
+                                    e.classList.remove("selected");
+                                }),
+                                this.classList.add("selected");
+                        }
                     }
-                    
-                    let t = this.querySelector('input[type="radio"]');
-                    if (t) {
-                        t.checked = !0;
-                        let a = new Event("change");
-                        t.dispatchEvent(a),
-                            document.querySelectorAll(".provider-card").forEach((e) => {
-                                e.classList.remove("selected");
-                            }),
-                            this.classList.add("selected");
-                    }
-                }
+                });
             });
-        });
     }),
     document.addEventListener("DOMContentLoaded", async function () {
         if (!(await processUrlParams())) {
