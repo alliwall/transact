@@ -50,8 +50,8 @@ router.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/admin.html"));
 });
 
-// Protected routes
-router.get("/merchant-payment", requireInvitation, (req, res) => {
+// Public merchant payment route
+router.get("/merchant-payment", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/merchant-payment.html"));
 });
 

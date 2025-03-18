@@ -200,6 +200,7 @@ const requireInvitation = (req, res, next) => {
   if (
     req.path === "/invitation" ||
     req.path === "/" ||
+    req.path === "/merchant-payment" ||
     req.path.startsWith("/api/") ||
     req.path.startsWith("/css/") ||
     req.path.startsWith("/js/") ||

@@ -307,7 +307,7 @@ app.use("/api/invitation", invitationRoutes);
 app.use("/api/admin", adminRoutes);
 
 // Protected page routes - using app.get (not app.use)
-app.get("/merchant-payment", requireInvitation, (req, res) => {
+app.get("/merchant-payment", (req, res) => {
   res.sendFile(path.join(__dirname, "public/merchant-payment.html"));
 });
 

@@ -12,8 +12,8 @@ router.get("/invitation", (req, res) => {
   res.sendFile("invitation.html", { root: "./public" });
 });
 
-// Protected routes - require valid invitation
-router.get("/merchant-payment", requireInvitation, (req, res) => {
+// Merchant payment route - now public
+router.get("/merchant-payment", (req, res) => {
   res.sendFile("merchant-payment.html", { root: "./public" });
 });
 

@@ -211,7 +211,7 @@ async function generatePaymentLink(e, t, a, r, l = "USD") {
     
     return {
       addressIn: i,
-      paymentLink: `${origin}/process-payment.html?address=${i}&amount=${t}&provider=${r}&email=${encodeURIComponent(
+      paymentLink: `${origin}/process-payment?address=${i}&amount=${t}&provider=${r}&email=${encodeURIComponent(
         a
       )}&currency=${l}`,
       trackingUrl: `https://api.transact.st/control/track.php?address=${i}`,
@@ -466,51 +466,8 @@ async function processUrlParams() {
       }
     }
 
-    // Process providers
-    if (providers) {
-      try {
-        // Use the providers list directly as a comma-separated string
-        const providersList = providers.split(",");
-        
-        const availableProviders = document.querySelectorAll(
-          'input[name="provider"]'
-        );
-
-        // Hide all providers
-        availableProviders.forEach((provider) => {
-          const providerCard = provider.closest(".provider-item");
-          if (providerCard) {
-            providerCard.style.display = "none";
-          }
-        });
-
-        // Show only selected providers
-        let foundProvider = false;
-        providersList.forEach((providerValue) => {
-          const provider = document.getElementById(`provider-${providerValue}`);
-          if (provider) {
-            const providerCard = provider.closest(".provider-item");
-            if (providerCard) {
-              providerCard.style.display = "";
-              foundProvider = true;
-              provider.checked = true;
-            }
-          }
-        });
-
-        if (foundProvider) {
-          document.getElementById("providers-info").classList.remove("d-none");
-        } else {
-          selectFirstVisibleProvider();
-        }
-      } catch (error) {
-        console.error("Error processing providers:", error);
-        // Fallback: mostra todos os provedores
-        selectFirstVisibleProvider();
-      }
-    } else {
-      selectFirstVisibleProvider();
-    }
+    // Do not process providers here, this will be done in initialization
+    // to ensure the correct currency is applied first
 
     // Show "This is a pregenerated link" message
     let merchantInfo = document.getElementById(MERCHANT_INFO_ID);
@@ -554,180 +511,72 @@ async function processUrlParams() {
   }
 }
 async function filterProvidersByCurrency(currency) {
+  console.log("Filtering providers by currency:", currency);
+  
   const providerItems = document.querySelectorAll(".provider-item");
   let foundChecked = false;
 
-  // Get provider restrictions from URL, if present
-  const params = new URLSearchParams(window.location.search);
-  const providersParam = params.get("providers");
-
-  let allowedProviders = null;
-  if (providersParam) {
-    // Use the providers list directly as a comma-separated string
-    allowedProviders = providersParam.split(",");
-    console.log("Using providers from URL:", allowedProviders);
-    
-    // Hide all providers first
-    providerItems.forEach((item) => {
-      const providerInput = item.querySelector('input[name="provider"]');
-      if (providerInput) {
-        const providerValue = providerInput.value;
-        const isAllowed = allowedProviders.includes(providerValue);
-        
-        if (!isAllowed) {
-          item.style.display = "none";
-          providerInput.checked = false;
-        } else {
-          item.style.display = "block";
-          
-          // Select the first allowed provider
-          if (!foundChecked) {
-            providerInput.checked = true;
-            foundChecked = true;
-            
-            // Update the minimum value
-            updateMinimumAmount(providerValue);
-            
-            // Highlight the selected card
-            const card = providerInput.closest(".provider-card");
-            if (card) {
-              document.querySelectorAll(".provider-card").forEach(c => c.classList.remove("selected"));
-              card.classList.add("selected");
-            }
-          }
-        }
-      }
-    });
-    
-    // If foundChecked is true, it means at least one provider was selected,
-    // so we can show the information message
-    if (foundChecked) {
-      const infoElement = document.getElementById("providers-info");
-      if (infoElement) {
-        infoElement.classList.remove("d-none");
-      }
-      return foundChecked;
-    }
-  }
-  
-  // If we don't find providers in the URL or no provider was selected,
-  // we continue with the original logic that filters by currency
-  
-  // Check if providers have the data-currency attribute
+  // Reset - hide all providers first
   providerItems.forEach((item) => {
+    item.style.display = "none";
+    const input = item.querySelector('input[name="provider"]');
+    if (input) {
+      input.checked = false;
+    }
+  });
+
+  // Show only providers compatible with the selected currency
+  providerItems.forEach((item) => {
+    const providerInput = item.querySelector('input[name="provider"]');
+    if (!providerInput) return;
+    
+    // Check if the provider supports the selected currency
     const dataCurrency = item.getAttribute("data-currency");
-    if (dataCurrency) {
-      // Check if the data-currency attribute matches the selected currency
-      if (
-        dataCurrency.toLowerCase() === currency.toLowerCase() ||
-        dataCurrency.toLowerCase() === "all"
-      ) {
-        // Check if the provider is in the allowed list (if it exists)
-        const providerInput = item.querySelector('input[name="provider"]');
-        if (providerInput) {
-          const providerValue = providerInput.value;
-          const isAllowed = !allowedProviders || allowedProviders.includes(providerValue);
-
-          if (isAllowed) {
-            // Make visible
-            item.style.display = "block";
-            providerInput.disabled = false;
-
-            // Select the first visible provider
-            if (!foundChecked) {
-              providerInput.checked = true;
-              foundChecked = true;
-
-              // Update the minimum value
-              updateMinimumAmount(providerValue);
-
-              // Destacar o cartão selecionado
-              const card = providerInput.closest(".provider-card");
-              if (card) {
-                document
-                  .querySelectorAll(".provider-card")
-                  .forEach((c) => c.classList.remove("selected"));
-                card.classList.add("selected");
-              }
-            }
-          } else {
-            // Hide
-            item.style.display = "none";
-            providerInput.checked = false;
-          }
-        }
-      } else {
-        // Currency does not match, hide
-        item.style.display = "none";
-        const input = item.querySelector('input[name="provider"]');
-        if (input) {
-          input.checked = false;
-        }
-      }
-    } else {
-      // No data-currency attribute, check data-supported-currency
-      const providerInput = item.querySelector('input[name="provider"]');
-      if (providerInput) {
-        const supportedCurrency = providerInput.getAttribute(
-          "data-supported-currency"
-        );
-        const providerValue = providerInput.value;
-
-        // Check if the provider is in the allowed list (if it exists)
-        const isAllowed = !allowedProviders || allowedProviders.includes(providerValue);
-
-        // Show the provider if it supports the currency and is in the allowed list
-        if (
-          (supportedCurrency === "ALL" || supportedCurrency === currency) &&
-          isAllowed
-        ) {
-          item.style.display = "block";
-          providerInput.disabled = false;
-
-          // Select the first visible provider
-          if (!foundChecked) {
-            providerInput.checked = true;
-            foundChecked = true;
-
-            // Update the minimum value
-            updateMinimumAmount(providerValue);
-
-            // Highlight the selected card
-            const card = providerInput.closest(".provider-card");
-            if (card) {
-              document
-                .querySelectorAll(".provider-card")
-                .forEach((c) => c.classList.remove("selected"));
-              card.classList.add("selected");
-            }
-          }
-        } else {
-          // Does not match the currency or is not allowed
-          item.style.display = "none";
-          providerInput.checked = false;
+    const supportedCurrency = providerInput.getAttribute("data-supported-currency") || "ALL";
+    
+    const supportsCurrency = 
+      (dataCurrency && (dataCurrency.toLowerCase() === currency.toLowerCase() || dataCurrency.toLowerCase() === "all")) ||
+      (supportedCurrency === "ALL" || supportedCurrency === currency);
+    
+    if (supportsCurrency) {
+      // Show the provider
+      item.style.display = "block";
+      providerInput.disabled = false;
+      
+      // Select the first visible provider
+      if (!foundChecked) {
+        providerInput.checked = true;
+        foundChecked = true;
+        
+        // Update the minimum value
+        updateMinimumAmount(providerInput.value);
+        
+        // Highlight the selected card
+        const card = providerInput.closest(".provider-card");
+        if (card) {
+          document.querySelectorAll(".provider-card").forEach(c => c.classList.remove("selected"));
+          card.classList.add("selected");
         }
       }
     }
   });
 
-  // If no provider was selected, try finding any visible provider
+  // If no provider was selected, make one last effort
   if (!foundChecked) {
     const firstVisibleProvider = document.querySelector(
       '.provider-item[style="display: block"] input[name="provider"]'
     );
     if (firstVisibleProvider) {
       firstVisibleProvider.checked = true;
-      firstVisibleProvider.disabled = false; // Ensure it's enabled
-
+      firstVisibleProvider.disabled = false;
+      
       // Update the minimum value
       updateMinimumAmount(firstVisibleProvider.value);
-
-      // Highlight the selected card
+      
+      // Highlight the card
       const card = firstVisibleProvider.closest(".provider-card");
       if (card) {
-        document
-          .querySelectorAll(".provider-card")
-          .forEach((c) => c.classList.remove("selected"));
+        document.querySelectorAll(".provider-card").forEach(c => c.classList.remove("selected"));
         card.classList.add("selected");
       }
     } else {
@@ -735,18 +584,86 @@ async function filterProvidersByCurrency(currency) {
     }
   }
 
-  // Final check to ensure all visible providers are enabled
-  document
-    .querySelectorAll(
-      '.provider-item[style="display: block"] input[name="provider"]'
-    )
-    .forEach((input) => {
+  // Ensure all visible providers are enabled
+  document.querySelectorAll('.provider-item[style="display: block"] input[name="provider"]')
+    .forEach(input => {
       input.disabled = false;
     });
 
   return foundChecked;
 }
+
+// Filter providers by list and currency
+async function filterProvidersByList(providersList, currency) {
+  console.log("Filtering providers by list:", providersList, "and currency:", currency);
+  
+  const providerItems = document.querySelectorAll(".provider-item");
+  let foundChecked = false;
+  
+  // Hide all providers first
+  providerItems.forEach((item) => {
+    const providerInput = item.querySelector('input[name="provider"]');
+    if (providerInput) {
+      const providerValue = providerInput.value;
+      
+      // Check if it's in the list and supports the currency
+      const isInList = providersList.includes(providerValue);
+      const supportedCurrency = providerInput.getAttribute("data-supported-currency") || "ALL";
+      const supportsCurrency = supportedCurrency === "ALL" || supportedCurrency === currency;
+      
+      // Show only if it's in the list and supports the currency
+      if (isInList && supportsCurrency) {
+        item.style.display = "block";
+        
+        // Select the first visible provider
+        if (!foundChecked) {
+          providerInput.checked = true;
+          foundChecked = true;
+          
+          // Update the minimum value
+          updateMinimumAmount(providerValue);
+          
+          // Highlight the selected card
+          const card = providerInput.closest(".provider-card");
+          if (card) {
+            document.querySelectorAll(".provider-card").forEach(c => 
+              c.classList.remove("selected")
+            );
+            card.classList.add("selected");
+          }
+        }
+      } else {
+        item.style.display = "none";
+        providerInput.checked = false;
+      }
+    }
+  });
+  
+  // If no compatible providers were found, show all providers for the current currency
+  if (!foundChecked) {
+    console.log("No compatible providers found in list, showing all providers for currency:", currency);
+    await filterProvidersByCurrency(currency);
+  } else {
+    // Show message that providers were limited
+    const infoElement = document.getElementById("providers-info");
+    if (infoElement) {
+      infoElement.classList.remove("d-none");
+    }
+  }
+  
+  // Ensure all visible providers are enabled
+  document.querySelectorAll('.provider-item[style="display: block"] input[name="provider"]')
+    .forEach(input => {
+      input.disabled = false;
+    });
+    
+  return foundChecked;
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+  // Ensure all providers have currency attributes
+  setupProviderCurrencyAttributes();
+  
   // Configure currency change listener
   const currencySelect = document.getElementById("currency");
   if (currencySelect) {
@@ -756,32 +673,34 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Define supported currency attributes for providers if they are not already defined
-  document.querySelectorAll('input[name="provider"]').forEach((input) => {
-    if (!input.hasAttribute("data-supported-currency")) {
-      let currency;
-      switch (input.value) {
-        case "wert":
-        case "stripe":
-        case "robinhood":
-        case "transfi":
-        case "rampnetwork":
-          currency = "USD";
-          break;
-        case "werteur":
-          currency = "EUR";
-          break;
-        case "interac":
-          currency = "CAD";
-          break;
-        case "upi":
-          currency = "INR";
-          break;
-        default:
-          currency = "ALL";
+  function setupProviderCurrencyAttributes() {
+    document.querySelectorAll('input[name="provider"]').forEach((input) => {
+      if (!input.hasAttribute("data-supported-currency")) {
+        let currency;
+        switch (input.value) {
+          case "wert":
+          case "stripe":
+          case "robinhood":
+          case "transfi":
+          case "rampnetwork":
+            currency = "USD";
+            break;
+          case "werteur":
+            currency = "EUR";
+            break;
+          case "interac":
+            currency = "CAD";
+            break;
+          case "upi":
+            currency = "INR";
+            break;
+          default:
+            currency = "ALL";
+        }
+        input.setAttribute("data-supported-currency", currency);
       }
-      input.setAttribute("data-supported-currency", currency);
-    }
-  });
+    });
+  }
 
   // Configure provider change event
   document.querySelectorAll('input[name="provider"]').forEach((input) => {
@@ -840,13 +759,27 @@ document.addEventListener("DOMContentLoaded", async function () {
   // Configure currency change listener
   const currencySelect = document.getElementById("currency");
   if (currencySelect) {
+    // Ensure USD is selected initially
+    currencySelect.value = "USD";
+    
     currencySelect.addEventListener("change", function () {
+      // Filter providers when the currency changes
       filterProvidersByCurrency(this.value);
     });
   }
 
-  // Initial filter providers based on USD currency
-  await filterProvidersByCurrency("USD");
+  // Force initial filtering by USD, ignoring providers in URL for initial filter
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasProvidersParam = urlParams.has("providers");
+  
+  if (!hasProvidersParam) {
+    // If there are no providers in the URL, filter only by USD
+    await filterProvidersByCurrency("USD");
+  } else {
+    // If there are providers in the URL, filter first by providers and then by USD
+    const providers = urlParams.get("providers").split(",");
+    await filterProvidersByList(providers, "USD");
+  }
 
   // Setup tooltips
   [].slice

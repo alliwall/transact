@@ -360,7 +360,7 @@ async function generatePaymentLink(encryptedAddress) {
 
   return {
     addressIn: data.address_in,
-    paymentLink: `${origin}/merchant-payment.html?waddr=${encodeURIComponent(
+    paymentLink: `${origin}/merchant-payment?waddr=${encodeURIComponent(
       encryptedAddress
     )}${providersParam}`,
     trackingUrl: `https://api.transact.st/control/track.php?address=${data.address_in}`,
@@ -682,7 +682,7 @@ async function handleFormSubmission(e) {
       params.append("providers", selectedProviders.join(","));
     }
     
-    const merchantUrl = `${window.location.origin}/merchant-payment.html?${params.toString()}`;
+    const merchantUrl = `${window.location.origin}/merchant-payment?${params.toString()}`;
 
     // 6. Try to register tracking (with robust fallback system)
     try {
