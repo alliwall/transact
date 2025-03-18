@@ -521,7 +521,7 @@
             document.getElementById('provider-restrictions-badge').classList.add('bg-secondary');
           }
           
-          const paymentUrl = `${origin}/merchant-payment?${params.toString()}`;
+          const paymentUrl = `${origin}/merchant-payment.html?${params.toString()}`;
           document.getElementById('payment-url').value = paymentUrl;
           document.getElementById('open-payment-link').href = paymentUrl;
           

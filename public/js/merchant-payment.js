@@ -206,12 +206,15 @@ async function generatePaymentLink(e, t, a, r, l = "USD") {
     return console.error("Error generating payment link"), null;
   {
     let i = s.address_in;
+    // Use the origin of the window to generate relative URLs, to ensure it works in local and production environments
+    const origin = window.location.origin;
+    
     return {
       addressIn: i,
-      paymentLink: `https://payment.transact.st/process-payment.php?address=${i}&amount=${t}&provider=${r}&email=${encodeURIComponent(
+      paymentLink: `${origin}/process-payment.html?address=${i}&amount=${t}&provider=${r}&email=${encodeURIComponent(
         a
       )}&currency=${l}`,
-      trackingUrl: `https://api.transact.st/control/track.php?address=${i}`,
+      trackingUrl: `${origin}/tracking.html?ref=${encodeURIComponent(e)}`,
     };
   }
 }
@@ -502,7 +505,28 @@ async function processUrlParams() {
     }
 
     // Show "This is a pregenerated link" message
-    const merchantInfo = document.getElementById(MERCHANT_INFO_ID);
+    let merchantInfo = document.getElementById(MERCHANT_INFO_ID);
+    
+    // Create the element if it doesn't exist
+    if (!merchantInfo) {
+      merchantInfo = document.createElement("div");
+      merchantInfo.id = MERCHANT_INFO_ID;
+      merchantInfo.className = "mb-4";
+      
+      // Insert after the lead paragraph
+      const leadParagraph = document.querySelector(".card-body .lead");
+      if (leadParagraph && leadParagraph.parentNode) {
+        leadParagraph.parentNode.insertBefore(merchantInfo, leadParagraph.nextSibling);
+      } else {
+        // Fallback: insert at the beginning of the form
+        const form = document.getElementById(FORM_ID);
+        if (form && form.parentNode) {
+          form.parentNode.insertBefore(merchantInfo, form);
+        }
+      }
+    }
+    
+    // Update the element content
     merchantInfo.innerHTML = `<div class="alert-box info">
             <i class="fas fa-info-circle"></i>
             <span>This is a pregenerated payment link that will send funds to the merchant wallet address${
@@ -922,34 +946,51 @@ function filterProviderSearch(searchTerm) {
 
 // Select first visible provider
 function selectFirstVisibleProvider() {
-  const providers = document.querySelectorAll('input[name="provider"]');
-  let selected = false;
-
-  for (const provider of providers) {
-    const card = provider.closest(".provider-item");
-    if (card && card.style.display !== "none") {
-      provider.checked = true;
-      selected = true;
-
-      // Update minimum amount based on the selected provider
-      updateMinimumAmount(provider.value);
-      break;
+  try {
+    const providers = document.querySelectorAll('input[name="provider"]');
+    if (!providers || providers.length === 0) {
+      console.warn("No payment providers found in the document");
+      return;
     }
-  }
+    
+    let selected = false;
 
-  // If no providers are visible, make all of them visible and select the first one
-  if (!selected) {
     for (const provider of providers) {
       const card = provider.closest(".provider-item");
-      if (card) {
-        card.style.display = "";
+      if (card && card.style.display !== "none") {
+        provider.checked = true;
+        selected = true;
+
+        // Update minimum amount based on the selected provider
+        try {
+          updateMinimumAmount(provider.value);
+        } catch (err) {
+          console.warn("Error updating minimum amount:", err);
+        }
+        break;
       }
     }
 
-    if (providers.length > 0) {
-      providers[0].checked = true;
-      updateMinimumAmount(providers[0].value);
+    // If no providers are visible, make all of them visible and select the first one
+    if (!selected) {
+      for (const provider of providers) {
+        const card = provider.closest(".provider-item");
+        if (card) {
+          card.style.display = "";
+        }
+      }
+
+      if (providers.length > 0) {
+        providers[0].checked = true;
+        try {
+          updateMinimumAmount(providers[0].value);
+        } catch (err) {
+          console.warn("Error updating minimum amount:", err);
+        }
+      }
     }
+  } catch (error) {
+    console.error("Error selecting first visible provider:", error);
   }
 }
 
