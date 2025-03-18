@@ -599,6 +599,7 @@ async function filterProvidersByList(providersList, currency) {
   
   const providerItems = document.querySelectorAll(".provider-item");
   let foundChecked = false;
+  let anyProviderVisible = false;
   
   // Hide all providers first
   providerItems.forEach((item) => {
@@ -614,6 +615,7 @@ async function filterProvidersByList(providersList, currency) {
       // Show only if it's in the list and supports the currency
       if (isInList && supportsCurrency) {
         item.style.display = "block";
+        anyProviderVisible = true;
         
         // Select the first visible provider
         if (!foundChecked) {
@@ -639,16 +641,55 @@ async function filterProvidersByList(providersList, currency) {
     }
   });
   
-  // If no compatible providers were found, show all providers for the current currency
-  if (!foundChecked) {
-    console.log("No compatible providers found in list, showing all providers for currency:", currency);
-    await filterProvidersByCurrency(currency);
-  } else {
-    // Show message that providers were limited
-    const infoElement = document.getElementById("providers-info");
-    if (infoElement) {
-      infoElement.classList.remove("d-none");
+  // Show message that providers were limited
+  const infoElement = document.getElementById("providers-info");
+  if (infoElement) {
+    infoElement.classList.remove("d-none");
+    
+    // If no compatible providers found, show a message
+    if (!anyProviderVisible) {
+      const providerSection = document.querySelector(".provider-section");
+      if (providerSection) {
+        // If no compatible providers found, create or update an info message
+        let noProvidersMsg = document.getElementById("no-providers-message");
+        if (!noProvidersMsg) {
+          noProvidersMsg = document.createElement("div");
+          noProvidersMsg.id = "no-providers-message";
+          noProvidersMsg.className = "alert alert-warning mt-3";
+          providerSection.appendChild(noProvidersMsg);
+        }
+        
+        noProvidersMsg.innerHTML = `
+          <i class="fas fa-exclamation-circle me-2"></i>
+          <span>No payment providers available for ${currency}. The merchant has selected providers that don't support this currency.</span>
+        `;
+        noProvidersMsg.style.display = "block";
+      }
+      
+      // Disable the form submission
+      const submitBtn = document.getElementById(SUBMIT_BUTTON_ID);
+      if (submitBtn) {
+        submitBtn.disabled = true;
+      }
+    } else {
+      // If providers are found, hide the message if it exists
+      const noProvidersMsg = document.getElementById("no-providers-message");
+      if (noProvidersMsg) {
+        noProvidersMsg.style.display = "none";
+      }
+      
+      // Enable the form submission
+      const submitBtn = document.getElementById(SUBMIT_BUTTON_ID);
+      if (submitBtn) {
+        submitBtn.disabled = false;
+      }
     }
+  }
+  
+  // If no compatible providers were found, don't try to show all providers
+  if (!anyProviderVisible) {
+    console.log("No compatible providers found for currency:", currency);
+    return false;
   }
   
   // Ensure all visible providers are enabled
@@ -756,6 +797,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     return;
   }
 
+  // Store the original providers from URL for later use
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasProvidersParam = urlParams.has("providers");
+  const urlProviders = hasProvidersParam ? urlParams.get("providers").split(",") : null;
+  
   // Configure currency change listener
   const currencySelect = document.getElementById("currency");
   if (currencySelect) {
@@ -763,22 +809,23 @@ document.addEventListener("DOMContentLoaded", async function () {
     currencySelect.value = "USD";
     
     currencySelect.addEventListener("change", function () {
-      // Filter providers when the currency changes
-      filterProvidersByCurrency(this.value);
+      // Filter by the providers in the URL, but with the new currency
+      if (urlProviders && urlProviders.length > 0) {
+        filterProvidersByList(urlProviders, this.value);
+      } else {
+        // If no providers in URL, filter by currency
+        filterProvidersByCurrency(this.value);
+      }
     });
   }
 
-  // Force initial filtering by USD, ignoring providers in URL for initial filter
-  const urlParams = new URLSearchParams(window.location.search);
-  const hasProvidersParam = urlParams.has("providers");
-  
+  // Force initial filtering
   if (!hasProvidersParam) {
     // If there are no providers in the URL, filter only by USD
     await filterProvidersByCurrency("USD");
   } else {
     // If there are providers in the URL, filter first by providers and then by USD
-    const providers = urlParams.get("providers").split(",");
-    await filterProvidersByList(providers, "USD");
+    await filterProvidersByList(urlProviders, "USD");
   }
 
   // Setup tooltips
@@ -877,15 +924,17 @@ function updateMinimumAmount(providerValue) {
 // Filter providers by search term
 function filterProviderSearch(searchTerm) {
   searchTerm = searchTerm.toLowerCase();
+  
+  // Only filter among the already visible providers
   document
     .querySelectorAll('.provider-item[style="display: block"]')
     .forEach((item) => {
       const providerName = item
         .querySelector(".provider-name")
         .textContent.toLowerCase();
-      if (providerName.includes(searchTerm)) {
-        item.style.display = "block";
-      } else {
+      
+      // Hide providers that don't match the search term
+      if (!providerName.includes(searchTerm)) {
         item.style.display = "none";
       }
     });
@@ -901,6 +950,47 @@ function filterProviderSearch(searchTerm) {
     }
   } else {
     selectFirstVisibleProvider();
+  }
+  
+  // Check if any providers are visible
+  const visibleProviders = document.querySelectorAll('.provider-item[style="display: block"]');
+  if (visibleProviders.length === 0) {
+    let noProvidersMsg = document.getElementById("no-providers-message");
+    if (!noProvidersMsg) {
+      const providerSection = document.querySelector(".provider-section");
+      if (providerSection) {
+        noProvidersMsg = document.createElement("div");
+        noProvidersMsg.id = "no-providers-message";
+        noProvidersMsg.className = "alert alert-warning mt-3";
+        providerSection.appendChild(noProvidersMsg);
+      }
+    }
+    
+    if (noProvidersMsg) {
+      noProvidersMsg.innerHTML = `
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <span>No payment providers match your search "${searchTerm}".</span>
+      `;
+      noProvidersMsg.style.display = "block";
+      
+      // Disable the form submission
+      const submitBtn = document.getElementById(SUBMIT_BUTTON_ID);
+      if (submitBtn) {
+        submitBtn.disabled = true;
+      }
+    }
+  } else {
+    // Hide the no providers message if it exists
+    const noProvidersMsg = document.getElementById("no-providers-message");
+    if (noProvidersMsg) {
+      noProvidersMsg.style.display = "none";
+    }
+    
+    // Enable the form submission
+    const submitBtn = document.getElementById(SUBMIT_BUTTON_ID);
+    if (submitBtn) {
+      submitBtn.disabled = false;
+    }
   }
 }
 

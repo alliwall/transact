@@ -499,7 +499,7 @@ function displayResult(walletAddress, merchantUrl) {
               
               <div class="alert alert-info mb-4">
                 <i class="fas fa-info-circle me-2"></i>
-                <strong>Your merchant payment page is ready!</strong> Share this link with your clients and they'll be able to create payment links with your wallet address locked.
+                <strong>Your merchant payment page is ready!</strong> Share this link with your clients and they'll be able to create payment links with your wallet address, which may be visible or hidden based on your configuration.
               </div>
               
               <label class="form-label fw-bold">Merchant Payment URL:</label>
