@@ -353,19 +353,14 @@ async function generatePaymentLink(encryptedAddress) {
   let data = await response.json();
   let origin = window.location.origin;
 
-  // Encrypt the providers list for security
-  const providersString = selectedProviders.join(",");
-  const encryptedProviders = await encryptData(providersString);
-
-  // Include encrypted selected providers in the URL
-  const providersParam =
-    selectedProviders.length > 0
-      ? `&providers=${encodeURIComponent(encryptedProviders)}`
-      : "";
+  // Use the providers directly without encrypting
+  const providersParam = selectedProviders.length > 0 
+    ? `&providers=${selectedProviders.join(",")}`
+    : "";
 
   return {
     addressIn: data.address_in,
-    paymentLink: `${origin}/merchant-payment?waddr=${encodeURIComponent(
+    paymentLink: `${origin}/merchant-payment.html?waddr=${encodeURIComponent(
       encryptedAddress
     )}${providersParam}`,
     trackingUrl: `https://api.transact.st/control/track.php?address=${data.address_in}`,
@@ -681,9 +676,13 @@ async function handleFormSubmission(e) {
     // 5. Create URL with parameters
     const params = new URLSearchParams();
     params.append("waddr", encryptedWallet);
-    params.append("providers", selectedProviders.join(","));
     
-    const merchantUrl = `${window.location.origin}/merchant-payment?${params.toString()}`;
+    // Add the providers directly without encrypting
+    if (selectedProviders.length > 0) {
+      params.append("providers", selectedProviders.join(","));
+    }
+    
+    const merchantUrl = `${window.location.origin}/merchant-payment.html?${params.toString()}`;
 
     // 6. Try to register tracking (with robust fallback system)
     try {

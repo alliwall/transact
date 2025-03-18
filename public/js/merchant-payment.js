@@ -469,21 +469,8 @@ async function processUrlParams() {
     // Process providers
     if (providers) {
       try {
-        let providersList;
-        
-        // Tenta decodificar se parece ser encoded/encrypted
-        if (/^[A-Za-z0-9\-_=]+$/.test(providers)) {
-          const decodedProviders = await decryptData(providers);
-          if (decodedProviders && typeof decodedProviders === 'string') {
-            providersList = decodedProviders.split(",");
-          } else {
-            // Fallback: use o valor direto 
-            providersList = providers.split(",");
-          }
-        } else {
-          // Se não parece encoded, use direto
-          providersList = providers.split(",");
-        }
+        // Use the providers list directly as a comma-separated string
+        const providersList = providers.split(",");
         
         const availableProviders = document.querySelectorAll(
           'input[name="provider"]'
@@ -572,33 +559,60 @@ async function filterProvidersByCurrency(currency) {
 
   // Get provider restrictions from URL, if present
   const params = new URLSearchParams(window.location.search);
-  const encryptedProviders = params.get("providers");
+  const providersParam = params.get("providers");
 
   let allowedProviders = null;
-  if (encryptedProviders) {
-    try {
-      // Decrypt providers list
-      const providersString = await decryptData(encryptedProviders);
-      if (providersString && typeof providersString === 'string') {
-        allowedProviders = providersString.split(",");
-      } else if (providersString && typeof providersString === 'object' && providersString.address) {
-        // Parece que recebemos um objeto de carteira em vez de uma string de provedores
-        console.warn("Received wallet object instead of providers list");
-        // Não aplicamos restrições de provedor neste caso
-        allowedProviders = null;
-      } else {
-        console.warn("Could not decrypt providers list, showing all providers");
+  if (providersParam) {
+    // Use the providers list directly as a comma-separated string
+    allowedProviders = providersParam.split(",");
+    console.log("Using providers from URL:", allowedProviders);
+    
+    // Hide all providers first
+    providerItems.forEach((item) => {
+      const providerInput = item.querySelector('input[name="provider"]');
+      if (providerInput) {
+        const providerValue = providerInput.value;
+        const isAllowed = allowedProviders.includes(providerValue);
+        
+        if (!isAllowed) {
+          item.style.display = "none";
+          providerInput.checked = false;
+        } else {
+          item.style.display = "block";
+          
+          // Select the first allowed provider
+          if (!foundChecked) {
+            providerInput.checked = true;
+            foundChecked = true;
+            
+            // Update the minimum value
+            updateMinimumAmount(providerValue);
+            
+            // Highlight the selected card
+            const card = providerInput.closest(".provider-card");
+            if (card) {
+              document.querySelectorAll(".provider-card").forEach(c => c.classList.remove("selected"));
+              card.classList.add("selected");
+            }
+          }
+        }
       }
-    } catch (error) {
-      console.error(
-        "Erro ao descriptografar provedores durante filtro:",
-        error
-      );
-      // Em caso de erro, não aplicamos restrições - mostramos todos os provedores
-      allowedProviders = null;
+    });
+    
+    // If foundChecked is true, it means at least one provider was selected,
+    // so we can show the information message
+    if (foundChecked) {
+      const infoElement = document.getElementById("providers-info");
+      if (infoElement) {
+        infoElement.classList.remove("d-none");
+      }
+      return foundChecked;
     }
   }
-
+  
+  // If we don't find providers in the URL or no provider was selected,
+  // we continue with the original logic that filters by currency
+  
   // Check if providers have the data-currency attribute
   providerItems.forEach((item) => {
     const dataCurrency = item.getAttribute("data-currency");
@@ -612,8 +626,7 @@ async function filterProvidersByCurrency(currency) {
         const providerInput = item.querySelector('input[name="provider"]');
         if (providerInput) {
           const providerValue = providerInput.value;
-          const isAllowed =
-            !allowedProviders || allowedProviders.includes(providerValue);
+          const isAllowed = !allowedProviders || allowedProviders.includes(providerValue);
 
           if (isAllowed) {
             // Make visible
@@ -626,12 +639,7 @@ async function filterProvidersByCurrency(currency) {
               foundChecked = true;
 
               // Update the minimum value
-              const minAmount = minAmounts[providerValue] || 0;
-              const amountInput = document.getElementById("amount");
-              if (amountInput) {
-                amountInput.setAttribute("min", minAmount);
-                amountInput.setAttribute("placeholder", `Min: ${minAmount}`);
-              }
+              updateMinimumAmount(providerValue);
 
               // Destacar o cartão selecionado
               const card = providerInput.closest(".provider-card");
@@ -666,8 +674,7 @@ async function filterProvidersByCurrency(currency) {
         const providerValue = providerInput.value;
 
         // Check if the provider is in the allowed list (if it exists)
-        const isAllowed =
-          !allowedProviders || allowedProviders.includes(providerValue);
+        const isAllowed = !allowedProviders || allowedProviders.includes(providerValue);
 
         // Show the provider if it supports the currency and is in the allowed list
         if (
@@ -683,12 +690,7 @@ async function filterProvidersByCurrency(currency) {
             foundChecked = true;
 
             // Update the minimum value
-            const minAmount = minAmounts[providerValue] || 0;
-            const amountInput = document.getElementById("amount");
-            if (amountInput) {
-              amountInput.setAttribute("min", minAmount);
-              amountInput.setAttribute("placeholder", `Min: ${minAmount}`);
-            }
+            updateMinimumAmount(providerValue);
 
             // Highlight the selected card
             const card = providerInput.closest(".provider-card");
@@ -718,12 +720,7 @@ async function filterProvidersByCurrency(currency) {
       firstVisibleProvider.disabled = false; // Ensure it's enabled
 
       // Update the minimum value
-      const minAmount = minAmounts[firstVisibleProvider.value] || 0;
-      const amountInput = document.getElementById("amount");
-      if (amountInput) {
-        amountInput.setAttribute("min", minAmount);
-        amountInput.setAttribute("placeholder", `Min: ${minAmount}`);
-      }
+      updateMinimumAmount(firstVisibleProvider.value);
 
       // Highlight the selected card
       const card = firstVisibleProvider.closest(".provider-card");
@@ -1120,6 +1117,14 @@ async function decryptData(encryptedData) {
     if (typeof encryptedData !== 'string') {
       console.error("Encrypted data must be a string");
       return null;
+    }
+    
+    // Try interpreting directly as a wallet if it starts with 0x (for compatibility)
+    if (encryptedData.startsWith("0x") && validateWalletAddress(encryptedData)) {
+      return {
+        address: encryptedData,
+        hideWallet: false
+      };
     }
     
     // Fallback para caracteres inválidos - apenas letras, números, - e _
