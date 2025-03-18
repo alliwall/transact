@@ -121,6 +121,182 @@
                   >
                 </div>
 
+                <div class="mb-3">
+                  <label for="selected_providers" class="form-label"
+                    >Payment Providers:</label
+                  >
+                  <div class="alert-box info mb-2">
+                    <i class="fas fa-info-circle"></i>
+                    <span
+                      ><strong>Tip:</strong> Select the payment providers you want to make available to your customers.</span
+                    >
+                  </div>
+                  <div class="provider-section">
+                    <div class="provider-filter mb-2">
+                      <div class="search-box w-100">
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          id="provider-search"
+                          placeholder="Search providers..."
+                        />
+                      </div>
+                    </div>
+                    <div class="provider-group">
+                      <div class="row g-2">
+                        <div class="col-md-4 provider-item" data-currency="usd">
+                          <div class="provider-card">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              name="selected_providers"
+                              id="provider-wert"
+                              value="wert"
+                              checked
+                            />
+                            <label class="form-check-label" for="provider-wert">
+                              <span class="provider-name">wert.io</span>
+                              <span class="provider-tag">USD</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-md-4 provider-item" data-currency="eur">
+                          <div class="provider-card">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              name="selected_providers"
+                              id="provider-werteur"
+                              value="werteur"
+                              checked
+                            />
+                            <label class="form-check-label" for="provider-werteur">
+                              <span class="provider-name">wert.io</span>
+                              <span class="provider-tag">EUR</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-md-4 provider-item" data-currency="usd">
+                          <div class="provider-card">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              name="selected_providers"
+                              id="provider-stripe"
+                              value="stripe"
+                              checked
+                            />
+                            <label class="form-check-label" for="provider-stripe">
+                              <span class="provider-name">Stripe</span>
+                              <span class="provider-tag">USA Only</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-md-4 provider-item" data-currency="all">
+                          <div class="provider-card">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              name="selected_providers"
+                              id="provider-sardine"
+                              value="sardine"
+                              checked
+                            />
+                            <label class="form-check-label" for="provider-sardine">
+                              <span class="provider-name">Sardine.ai</span>
+                              <span class="provider-tag">Multi-currency</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-md-4 provider-item" data-currency="all">
+                          <div class="provider-card">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              name="selected_providers"
+                              id="provider-transfi"
+                              value="transfi"
+                              checked
+                            />
+                            <label class="form-check-label" for="provider-transfi">
+                              <span class="provider-name">TransFi</span>
+                              <span class="provider-tag">USD</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-md-4 provider-item" data-currency="usd">
+                          <div class="provider-card">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              name="selected_providers"
+                              id="provider-rampnetwork"
+                              value="rampnetwork"
+                              checked
+                            />
+                            <label class="form-check-label" for="provider-rampnetwork">
+                              <span class="provider-name">Ramp Network</span>
+                              <span class="provider-tag">USD</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-md-4 provider-item" data-currency="inr">
+                          <div class="provider-card">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              name="selected_providers"
+                              id="provider-upi"
+                              value="upi"
+                              checked
+                            />
+                            <label class="form-check-label" for="provider-upi">
+                              <span class="provider-name">UPI</span>
+                              <span class="provider-tag">INR</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-md-4 provider-item" data-currency="cad">
+                          <div class="provider-card">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              name="selected_providers"
+                              id="provider-interac"
+                              value="interac"
+                              checked
+                            />
+                            <label class="form-check-label" for="provider-interac">
+                              <span class="provider-name">Interac</span>
+                              <span class="provider-tag">CAD</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-md-4 provider-item" data-currency="usd">
+                          <div class="provider-card">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              name="selected_providers"
+                              id="provider-robinhood"
+                              value="robinhood"
+                              checked
+                            />
+                            <label class="form-check-label" for="provider-robinhood">
+                              <span class="provider-name">Robinhood</span>
+                              <span class="provider-tag">USD</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-2">
+                      <button type="button" id="select-all-providers" class="btn btn-sm btn-outline-primary me-2">Select All</button>
+                      <button type="button" id="deselect-all-providers" class="btn btn-sm btn-outline-secondary">Deselect All</button>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="mb-4">
                   <button type="submit" class="btn btn-primary" id="submit-btn">
                     <span id="submit-text">Generate Payment Page</span>

@@ -365,24 +365,99 @@ async function handleFormSubmission(e) {
 }
 async function processUrlParams() {
     try {
-        let e = new URLSearchParams(window.location.search).get("data");
-        if (!e) return showToast("No wallet data provided. Please use a valid payment link.", "danger"), !1;
-        let t = await decryptWalletAddress(e);
-        if (!t || !validateWalletAddress(t)) return showToast("Invalid or corrupted wallet data. Please use a valid payment link.", "danger"), !1;
-        document.getElementById(WALLET_ADDRESS_ID).value = t;
-        let a = document.getElementById("merchant-info");
-        return a && (a.innerHTML = "<strong>Merchant Payment:</strong> You are creating a payment link that will send funds to the merchant wallet address shown below. This address is locked and cannot be changed."), !0;
-    } catch (r) {
-        return console.error("Error processing URL parameters:", r), showToast("Error processing the payment link. Please try again with a valid link.", "danger"), !1;
+        // Get wallet data parameter
+        const data = new URLSearchParams(window.location.search).get("data");
+        if (!data) {
+            showToast("No wallet data provided. Please use a valid payment link.", "danger");
+            return false;
+        }
+        
+        // Decrypt wallet address
+        const walletAddress = await decryptWalletAddress(data);
+        if (!walletAddress || !validateWalletAddress(walletAddress)) return showToast("Invalid or corrupted wallet data. Please use a valid payment link.", "danger"), false;
+        
+        // Set wallet address in input field
+        document.getElementById(WALLET_ADDRESS_ID).value = walletAddress;
+        
+        // Update merchant info message
+        const merchantInfo = document.getElementById("merchant-info");
+        if (merchantInfo) {
+            merchantInfo.innerHTML = "<strong>Merchant Payment:</strong> You are creating a payment link that will send funds to the merchant wallet address shown below. This address is locked and cannot be changed.";
+        }
+        
+        // Process provider restrictions if present
+        const providersParam = new URLSearchParams(window.location.search).get("providers");
+        if (providersParam) {
+            const allowedProviders = providersParam.split(',');
+            
+            // Show info message about restricted providers
+            const providersInfo = document.getElementById("providers-info");
+            if (providersInfo) {
+                providersInfo.classList.remove("d-none");
+            }
+            
+            // Hide providers that aren't in the allowed list
+            document.querySelectorAll('.provider-item').forEach(item => {
+                const providerInput = item.querySelector('input[name="provider"]');
+                if (providerInput) {
+                    const providerValue = providerInput.value;
+                    
+                    if (!allowedProviders.includes(providerValue)) {
+                        item.style.display = 'none';
+                        providerInput.checked = false;
+                    } else {
+                        item.style.display = 'block';
+                    }
+                }
+            });
+            
+            // Select the first available provider
+            const firstAvailableProvider = document.querySelector(`.provider-item[style="display: block"] input[name="provider"]`);
+            if (firstAvailableProvider) {
+                firstAvailableProvider.checked = true;
+                
+                // Trigger change event to update UI
+                const changeEvent = new Event('change');
+                firstAvailableProvider.dispatchEvent(changeEvent);
+            }
+        }
+        
+        return true;
+    } catch (error) {
+        console.error("Error processing URL parameters:", error);
+        showToast("Error processing the payment link. Please try again with a valid link.", "danger");
+        return false;
     }
 }
-function filterProvidersByCurrency(e) {
-    let t = document.querySelectorAll(".provider-item"),
-        a = !1;
-    t.forEach((t) => {
-        let r = t.querySelector('input[name="provider"]'),
-            l = r.getAttribute("data-supported-currency");
-        "ALL" === l || l === e ? ((t.style.display = "block"), a || ((r.checked = !0), (a = !0))) : ((t.style.display = "none"), (r.checked = !1));
+function filterProvidersByCurrency(currency) {
+    const providerItems = document.querySelectorAll(".provider-item");
+    let foundChecked = false;
+    
+    // Get providers restriction from URL if present
+    const params = new URLSearchParams(window.location.search);
+    const providersParam = params.get("providers");
+    const allowedProviders = providersParam ? providersParam.split(',') : null;
+    
+    providerItems.forEach((item) => {
+        const providerInput = item.querySelector('input[name="provider"]');
+        const supportedCurrency = providerInput.getAttribute("data-supported-currency");
+        
+        // Check if provider is in the allowed list (if restriction exists)
+        const isAllowed = !allowedProviders || allowedProviders.includes(providerInput.value);
+        
+        // Show the provider if it supports the currency AND is in the allowed list
+        if ((supportedCurrency === "ALL" || supportedCurrency === currency) && isAllowed) {
+            item.style.display = "block";
+            
+            // Select the first visible provider if none is selected yet
+            if (!foundChecked) {
+                providerInput.checked = true;
+                foundChecked = true;
+            }
+        } else {
+            item.style.display = "none";
+            providerInput.checked = false;
+        }
     });
 }
 document.getElementById("currency").addEventListener("change", function () {

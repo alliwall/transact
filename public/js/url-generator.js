@@ -35,7 +35,67 @@ async function fetchExternalApi(url, options = {}) {
   }
 }
 
-async function generatePaymentLink(e){let t=`https://paygate.to/payment-link/invoice.php?payment=${Date.now()}_${Math.floor(9e6*Math.random())+1e6}`,a=encodeURIComponent(t),l=await fetchExternalApi(`https://api.transact.st/control/wallet.php?address=${decryptWalletAddress(e)}&callback=${a}`);if(!l.ok)throw Error(`Server response error: ${l.status}`);let n=await l.json(),r=window.location.origin;return{addressIn:n.address_in,paymentLink:`${r}/merchant-payment?data=${encodeURIComponent(e)}`,trackingUrl:`https://api.transact.st/control/track.php?address=${n.address_in}`}}function displayResult(e,t){let a=document.getElementById(RESULT_CONTAINER_ID),l=new URL(t),n=l.searchParams.get("data");a.innerHTML=`
+async function generatePaymentLink(encryptedAddress) {
+  // Get selected payment providers
+  const selectedProviders = Array.from(document.querySelectorAll('input[name="selected_providers"]:checked'))
+    .map(input => input.value);
+  
+  // Create callback URL
+  let callback = `https://paygate.to/payment-link/invoice.php?payment=${Date.now()}_${Math.floor(Math.random() * 9000000) + 1000000}`;
+  let encodedCallback = encodeURIComponent(callback);
+  
+  // Fetch data from API
+  let response = await fetchExternalApi(`https://api.transact.st/control/wallet.php?address=${decryptWalletAddress(encryptedAddress)}&callback=${encodedCallback}`);
+  
+  if (!response.ok) {
+    throw new Error(`Server response error: ${response.status}`);
+  }
+  
+  let data = await response.json();
+  let origin = window.location.origin;
+  
+  // Include selected providers in the URL
+  const providersParam = selectedProviders.length > 0 ? 
+    `&providers=${encodeURIComponent(selectedProviders.join(','))}` : '';
+  
+  return {
+    addressIn: data.address_in,
+    paymentLink: `${origin}/merchant-payment?data=${encodeURIComponent(encryptedAddress)}${providersParam}`,
+    trackingUrl: `https://api.transact.st/control/track.php?address=${data.address_in}`
+  };
+}
+
+function displayResult(e, t) {
+  let a = document.getElementById(RESULT_CONTAINER_ID),
+    l = new URL(t),
+    n = l.searchParams.get("data");
+  
+  // Get selected providers info to display
+  const selectedProviders = Array.from(document.querySelectorAll('input[name="selected_providers"]:checked'))
+    .map(input => {
+      const label = document.querySelector(`label[for="${input.id}"]`);
+      const name = label ? label.querySelector('.provider-name').textContent : input.value;
+      const tag = label && label.querySelector('.provider-tag') ? 
+        label.querySelector('.provider-tag').textContent : '';
+      
+      return {
+        id: input.value,
+        name: name,
+        tag: tag
+      };
+    });
+  
+  const providersHtml = selectedProviders.length > 0 ? 
+    `<div class="mb-3">
+      <span class="text-muted d-block">Available Payment Providers:</span>
+      <div class="provider-summary">
+        ${selectedProviders.map(p => 
+          `<span class="badge bg-light text-dark me-2 mb-1">${p.name} ${p.tag ? `<small class="ms-1">(${p.tag})</small>` : ''}</span>`
+        ).join('')}
+      </div>
+    </div>` : '';
+  
+  a.innerHTML = `
     <div class="card success-card animate-success">
       <div class="card-header text-white">
         <i class="fas fa-check-circle me-2"></i> Payment Page Generated Successfully
@@ -48,6 +108,8 @@ async function generatePaymentLink(e){let t=`https://paygate.to/payment-link/inv
                 <span class="text-muted d-block">Wallet Address:</span>
                 <span class="fw-bold">${e}</span>
               </div>
+              
+              ${providersHtml}
               
               <div class="alert alert-info mb-4">
                 <i class="fas fa-info-circle me-2"></i>
@@ -114,4 +176,65 @@ async function generatePaymentLink(e){let t=`https://paygate.to/payment-link/inv
         </div>
       </div>
     </div>
-  `,setupCopyButton(),setupTooltips()}function setupCopyButton(){let e=document.getElementById("copy-link");e&&e.addEventListener("click",()=>{let e=document.getElementById("payment-link");copyToClipboard(e.value)});let t=document.getElementById("copy-tracking-number");t&&t.addEventListener("click",()=>{let e=document.getElementById("tracking-number");copyToClipboard(e.value)});let a=document.getElementById("copy-tracking-url");a&&a.addEventListener("click",()=>{let e=document.getElementById("tracking-url");copyToClipboard(e.value)})}function copyToClipboard(e){let t=document.createElement("input");t.value=e,document.body.appendChild(t),t.select(),document.execCommand("copy"),document.body.removeChild(t);let a=event.currentTarget,l=bootstrap.Tooltip.getInstance(a);l&&(a.setAttribute("data-bs-original-title","Copied!"),l.update(),setTimeout(()=>{a.setAttribute("data-bs-original-title","Copy to Clipboard"),l.update()},2e3))}function setupTooltips(){let e=[].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));e.map(function(e){return new bootstrap.Tooltip(e)})}async function handleFormSubmission(e){e.preventDefault();let t=document.getElementById(FORM_ID);if(!t.checkValidity()){e.stopPropagation(),t.classList.add("was-validated");return}toggleLoading(!0);try{let a=document.getElementById("merchant_wallet_address"),l=a.value.trim();if(!validateWalletAddress(l)){showToast("Please enter a valid wallet address (0x followed by 40 hexadecimal characters).","danger"),toggleLoading(!1);return}let n=await encryptWalletAddress(l);if(!n){showToast("Error encrypting wallet address. Please try again.","danger"),toggleLoading(!1);return}let r=await generatePaymentLink(n);await displayResult(l,r.paymentLink);let s=document.getElementById(RESULT_CONTAINER_ID);s.scrollIntoView({behavior:"smooth"})}catch(i){console.error("Error:",i),showToast("An error occurred. Please try again.","danger")}finally{toggleLoading(!1)}}document.addEventListener("DOMContentLoaded",()=>{let e=document.getElementById(FORM_ID);e&&e.addEventListener("submit",handleFormSubmission);let t=document.getElementById("theme-toggle");if(t){let a=localStorage.getItem("theme")||"light";document.body.setAttribute("data-bs-theme",a),document.body.setAttribute("data-theme",a),"dark"===a?(t.innerHTML='<i class="fas fa-sun"></i>',t.classList.add("btn-outline-light"),t.classList.remove("btn-outline-dark")):(t.innerHTML='<i class="fas fa-moon"></i>',t.classList.add("btn-outline-dark"),t.classList.remove("btn-outline-light")),t.addEventListener("click",()=>{let e=document.body.getAttribute("data-bs-theme"),a="dark"===e?"light":"dark";document.body.setAttribute("data-bs-theme",a),document.body.setAttribute("data-theme",a),localStorage.setItem("theme",a),"dark"===a?(t.innerHTML='<i class="fas fa-sun"></i>',t.classList.add("btn-outline-light"),t.classList.remove("btn-outline-dark")):(t.innerHTML='<i class="fas fa-moon"></i>',t.classList.add("btn-outline-dark"),t.classList.remove("btn-outline-light"))})}});
+  `;
+  
+  setupCopyButton();
+  setupTooltips();
+}
+
+function setupCopyButton(){let e=document.getElementById("copy-link");e&&e.addEventListener("click",()=>{let e=document.getElementById("payment-link");copyToClipboard(e.value)});let t=document.getElementById("copy-tracking-number");t&&t.addEventListener("click",()=>{let e=document.getElementById("tracking-number");copyToClipboard(e.value)});let a=document.getElementById("copy-tracking-url");a&&a.addEventListener("click",()=>{let e=document.getElementById("tracking-url");copyToClipboard(e.value)})}function copyToClipboard(e){let t=document.createElement("input");t.value=e,document.body.appendChild(t),t.select(),document.execCommand("copy"),document.body.removeChild(t);let a=event.currentTarget,l=bootstrap.Tooltip.getInstance(a);l&&(a.setAttribute("data-bs-original-title","Copied!"),l.update(),setTimeout(()=>{a.setAttribute("data-bs-original-title","Copy to Clipboard"),l.update()},2e3))}function setupTooltips(){let e=[].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));e.map(function(e){return new bootstrap.Tooltip(e)})}async function handleFormSubmission(e){e.preventDefault();let t=document.getElementById(FORM_ID);if(!t.checkValidity()){e.stopPropagation(),t.classList.add("was-validated");return}toggleLoading(!0);try{let a=document.getElementById("merchant_wallet_address"),l=a.value.trim();if(!validateWalletAddress(l)){showToast("Please enter a valid wallet address (0x followed by 40 hexadecimal characters).","danger"),toggleLoading(!1);return}let n=await encryptWalletAddress(l);if(!n){showToast("Error encrypting wallet address. Please try again.","danger"),toggleLoading(!1);return}
+
+  // Check if at least one payment provider is selected
+  const selectedProviders = document.querySelectorAll('input[name="selected_providers"]:checked');
+  if (selectedProviders.length === 0) {
+    showToast("Please select at least one payment provider.", "warning");
+    toggleLoading(false);
+    return;
+  }
+
+  let r=await generatePaymentLink(n);await displayResult(l,r.paymentLink);let s=document.getElementById(RESULT_CONTAINER_ID);s.scrollIntoView({behavior:"smooth"})}catch(i){console.error("Error:",i),showToast("An error occurred. Please try again.","danger")}finally{toggleLoading(!1)}}document.addEventListener("DOMContentLoaded",()=>{let e=document.getElementById(FORM_ID);e&&e.addEventListener("submit",handleFormSubmission);
+
+  // Initialize provider functionality
+  handleProviderSearch();
+  setupProviderButtons();
+
+  let t=document.getElementById("theme-toggle");if(t){let a=localStorage.getItem("theme")||"light";document.body.setAttribute("data-bs-theme",a),document.body.setAttribute("data-theme",a),"dark"===a?(t.innerHTML='<i class="fas fa-sun"></i>',t.classList.add("btn-outline-light"),t.classList.remove("btn-outline-dark")):(t.innerHTML='<i class="fas fa-moon"></i>',t.classList.add("btn-outline-dark"),t.classList.remove("btn-outline-light")),t.addEventListener("click",()=>{let e=document.body.getAttribute("data-bs-theme"),a="dark"===e?"light":"dark";document.body.setAttribute("data-bs-theme",a),document.body.setAttribute("data-theme",a),localStorage.setItem("theme",a),"dark"===a?(t.innerHTML='<i class="fas fa-sun"></i>',t.classList.add("btn-outline-light"),t.classList.remove("btn-outline-dark")):(t.innerHTML='<i class="fas fa-moon"></i>',t.classList.add("btn-outline-dark"),t.classList.remove("btn-outline-light"))})}});
+
+// Add provider management functions
+function handleProviderSearch() {
+  const searchInput = document.getElementById('provider-search');
+  if (!searchInput) return;
+  
+  searchInput.addEventListener('input', () => {
+    const searchTerm = searchInput.value.toLowerCase();
+    document.querySelectorAll('.provider-item').forEach(item => {
+      const providerName = item.querySelector('.provider-name').textContent.toLowerCase();
+      if (providerName.includes(searchTerm)) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  });
+}
+
+function setupProviderButtons() {
+  const selectAllBtn = document.getElementById('select-all-providers');
+  const deselectAllBtn = document.getElementById('deselect-all-providers');
+  
+  if (selectAllBtn) {
+    selectAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('input[name="selected_providers"]').forEach(input => {
+        input.checked = true;
+      });
+    });
+  }
+  
+  if (deselectAllBtn) {
+    deselectAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('input[name="selected_providers"]').forEach(input => {
+        input.checked = false;
+      });
+    });
+  }
+}
