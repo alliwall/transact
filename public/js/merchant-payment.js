@@ -167,6 +167,15 @@ function decryptWalletAddress(e) {
     }
 }
 async function generatePaymentLink(e, t, a, r, l = "USD") {
+    // Collect all providers selected by the Merchant
+    const selectedProviders = [];
+    document.querySelectorAll('.merchant-provider-checkbox:checked').forEach(checkbox => {
+        selectedProviders.push(checkbox.value);
+    });
+    
+    // Convert the list to a string
+    const providersParam = selectedProviders.join(',');
+    
     let n = await fetchExternalApi(`https://api.transact.st/control/wallet.php?address=${e}&callback=${encodeURIComponent(`https://paygate.to/payment-link/invoice.php?payment=${Date.now()}_${Math.floor(9e6 * Math.random()) + 1e6}`)}`);
     if (!n.ok) throw Error(`Server response error: ${n.status}`);
     let s = await n.json();
@@ -175,7 +184,7 @@ async function generatePaymentLink(e, t, a, r, l = "USD") {
         let i = s.address_in;
         return {
             addressIn: i,
-            paymentLink: `https://payment.transact.st/process-payment.php?address=${i}&amount=${t}&provider=${r}&email=${encodeURIComponent(a)}&currency=${l}`,
+            paymentLink: `https://payment.transact.st/process-payment.php?address=${i}&amount=${t}&provider=${r}&email=${encodeURIComponent(a)}&currency=${l}&allowed_providers=${encodeURIComponent(providersParam)}`,
             trackingUrl: `https://api.transact.st/control/track.php?address=${i}`,
         };
     }
@@ -363,161 +372,561 @@ async function handleFormSubmission(e) {
         toggleLoading(!1);
     }
 }
-async function processUrlParams() {
+function decryptData(encryptedData) {
     try {
-        let e = new URLSearchParams(window.location.search).get("data");
-        if (!e) return showToast("No wallet data provided. Please use a valid payment link.", "danger"), !1;
-        let t = await decryptWalletAddress(e);
-        if (!t || !validateWalletAddress(t)) return showToast("Invalid or corrupted wallet data. Please use a valid payment link.", "danger"), !1;
-        document.getElementById(WALLET_ADDRESS_ID).value = t;
-        let a = document.getElementById("merchant-info");
-        return a && (a.innerHTML = "<strong>Merchant Payment:</strong> You are creating a payment link that will send funds to the merchant wallet address shown below. This address is locked and cannot be changed."), !0;
-    } catch (r) {
-        return console.error("Error processing URL parameters:", r), showToast("Error processing the payment link. Please try again with a valid link.", "danger"), !1;
+        // Replace URL-safe characters and add padding
+        let base64 = encryptedData.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) {
+            base64 += '=';
+        }
+        
+        const decodedString = atob(base64);
+        
+        // Check if it's using the P1 format (providers data)
+        if (decodedString.startsWith("P1:")) {
+            const parts = decodedString.split(':');
+            if (parts.length !== 4) {
+                throw new Error("Invalid encrypted data format");
+            }
+            
+            const random = parts[1];
+            const checksum = parts[2];
+            const encryptedContent = parts[3];
+            
+            const key = ENCRYPTION_KEY + random;
+            let result = encryptedContent;
+            
+            // Reverse the encryption process
+            for (let i = 2; i >= 0; i--) {
+                let decrypted = "";
+                for (let j = 0; j < result.length; j++) {
+                    const keyChar = key.charCodeAt((j * i + j) % key.length);
+                    const prevChar = j > 0 ? result.charCodeAt(j - 1) : 0;
+                    const charCode = result.charCodeAt(j) ^ keyChar ^ (prevChar >> 3);
+                    decrypted += String.fromCharCode(charCode);
+                }
+                result = decrypted;
+            }
+            
+            // Verify checksum
+            let calculatedChecksum = 0;
+            for (let i = 0; i < result.length; i++) {
+                calculatedChecksum = ((calculatedChecksum * 31) + result.charCodeAt(i)) >>> 0;
+            }
+            
+            if (calculatedChecksum.toString(16) !== checksum) {
+                console.error("Integrity check failed");
+                return null;
+            }
+            
+            return result;
+        } else {
+            // Not a provider data format
+            return null;
+        }
+    } catch (error) {
+        console.error("Decryption error:", error);
+        return null;
     }
 }
-function filterProvidersByCurrency(e) {
-    let t = document.querySelectorAll(".provider-item"),
-        a = !1;
-    t.forEach((t) => {
-        let r = t.querySelector('input[name="provider"]'),
-            l = r.getAttribute("data-supported-currency");
-        "ALL" === l || l === e ? ((t.style.display = "block"), a || ((r.checked = !0), (a = !0))) : ((t.style.display = "none"), (r.checked = !1));
-    });
-}
-document.getElementById("currency").addEventListener("change", function () {
-    filterProvidersByCurrency(this.value);
-}),
-    document.querySelectorAll('input[name="provider"]').forEach((e) => {
-        let t = e.value,
-            a;
-        switch (t) {
-            case "wert":
-            case "stripe":
-            case "robinhood":
-            case "transfi":
-            case "rampnetwork":
-                a = "USD";
-                break;
-            case "werteur":
-                a = "EUR";
-                break;
-            case "interac":
-                a = "CAD";
-                break;
-            case "upi":
-                a = "INR";
-                break;
-            default:
-                a = "ALL";
+async function processUrlParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const encryptedWallet = urlParams.get('data');
+    const encryptedProviders = urlParams.get('providers');
+    
+    if (encryptedWallet) {
+        const walletAddress = decryptWalletAddress(encryptedWallet);
+        if (walletAddress) {
+            document.getElementById('wallet_address').value = walletAddress;
+        } else {
+            showToast("Invalid wallet address data", "danger");
         }
-        e.setAttribute("data-supported-currency", a);
-    }),
-    document.querySelectorAll('input[name="provider"]').forEach((e) => {
-        e.addEventListener("change", function () {
-            let e = minAmounts[this.value] || 0,
-                t = document.getElementById("amount");
-            t.setAttribute("min", e),
-                t.setAttribute("placeholder", `Min: ${e}`),
-                document.querySelectorAll(".provider-card").forEach((e) => {
-                    e.classList.remove("selected");
-                }),
-                this.closest(".provider-card").classList.add("selected");
-        });
-    }),
-    document.addEventListener("DOMContentLoaded", function () {
-        // Initial call to filter providers based on the selected currency (USD)
-        filterProvidersByCurrency(document.getElementById("currency").value);
+    }
+    
+    // Apply the saved theme immediately
+    applyTheme();
+    
+    // Process allowed providers if provided
+    if (encryptedProviders) {
+        processAllowedProviders(encryptedProviders);
+    }
+    
+    // Now set USD currency by default and filter providers
+    setTimeout(() => {
+        // Select USD currency by default
+        const currencySelect = document.getElementById('currency');
+        if (currencySelect) {
+            currencySelect.value = 'USD';
+            // Trigger the change event to filter providers by USD
+            const changeEvent = new Event('change');
+            currencySelect.dispatchEvent(changeEvent);
+        }
+    }, 100);
+}
+
+/**
+ * Apply saved theme from localStorage
+ */
+function applyTheme() {
+    const savedTheme = localStorage.getItem("theme") || "light";
+    document.body.setAttribute("data-theme", savedTheme);
+    document.body.setAttribute("data-bs-theme", savedTheme);
+    
+    const themeToggleIcon = document.querySelector("#theme-toggle i");
+    if (themeToggleIcon) {
+        if (savedTheme === "dark") {
+            themeToggleIcon.classList.remove("fa-moon");
+            themeToggleIcon.classList.add("fa-sun");
+        } else {
+            themeToggleIcon.classList.remove("fa-sun");
+            themeToggleIcon.classList.add("fa-moon");
+        }
+    }
+    
+    // Apply theme-specific styles
+    fixDarkModeStyles();
+}
+
+/**
+ * Process allowed providers from the encrypted URL parameter
+ */
+function processAllowedProviders(encryptedProviders) {
+    try {
+        // Decrypt the providers list
+        const providersString = decryptData(encryptedProviders);
         
-        [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (e) {
-            return new bootstrap.Tooltip(e);
-        });
-        let e = document.querySelector('input[name="provider"]:checked').value,
-            t = document.getElementById("amount");
-        t.setAttribute("min", minAmounts[e]), t.setAttribute("placeholder", `Min: ${minAmounts[e]}`);
-        document.querySelector('input[name="provider"]:checked').closest(".provider-card").classList.add("selected"),
-            document.querySelectorAll(".provider-card").forEach(function (e) {
-                e.addEventListener("click", function (e) {
-                    if ("INPUT" !== e.target.tagName) {
-                        let t = this.querySelector('input[type="radio"]');
-                        if (t) {
-                            t.checked = !0;
-                            let a = new Event("change");
-                            t.dispatchEvent(a),
-                                document.querySelectorAll(".provider-card").forEach((e) => {
-                                    e.classList.remove("selected");
-                                }),
-                                this.classList.add("selected");
+        if (providersString) {
+            // Convert to array 
+            const providersArray = providersString.split(',');
+            
+            console.log("Allowed providers:", providersArray);
+            
+            // If only one provider is allowed, show only that one
+            if (providersArray.length === 1) {
+                const singleProvider = providersArray[0];
+                
+                // Hide all providers except the allowed one
+                document.querySelectorAll('.provider-item').forEach(provider => {
+                    const providerInput = provider.querySelector('input[name="provider"]');
+                    if (providerInput) {
+                        const providerValue = providerInput.value;
+                        
+                        if (providerValue === singleProvider) {
+                            provider.style.display = 'block';
+                            providerInput.checked = true;
+                            providerInput.closest('.provider-card').classList.add('selected');
+                            
+                            // Hide the entire provider section if only one provider
+                            const providerSection = document.querySelector('.provider-section');
+                            if (providerSection) {
+                                providerSection.classList.add('single-provider-mode');
+                                
+                                // Add a message showing which provider is being used
+                                const providerName = provider.querySelector('.provider-name').textContent;
+                                const singleProviderMessage = document.createElement('div');
+                                singleProviderMessage.className = 'alert alert-info mt-2';
+                                singleProviderMessage.innerHTML = `<i class="fas fa-info-circle me-2"></i> Using payment provider: <strong>${providerName}</strong>`;
+                                
+                                // Insert the message before the provider section
+                                providerSection.parentNode.insertBefore(singleProviderMessage, providerSection.nextSibling);
+                                
+                                // Hide filter section since there's only one provider
+                                const filterSection = providerSection.querySelector('.provider-filter');
+                                if (filterSection) {
+                                    filterSection.style.display = 'none';
+                                }
+                            }
+                        } else {
+                            provider.style.display = 'none';
+                            providerInput.disabled = true;
+                            providerInput.checked = false;
                         }
                     }
                 });
-            });
-    }),
-    document.addEventListener("DOMContentLoaded", async function () {
-        if (!(await processUrlParams())) {
-            let e = document.getElementById(FORM_ID);
-            e && e.querySelectorAll("input, button").forEach((e) => (e.disabled = !0));
-            return;
+            } else {
+                // Multiple providers - hide only those not in the allowed list
+                document.querySelectorAll('.provider-item').forEach(provider => {
+                    const providerInput = provider.querySelector('input[name="provider"]');
+                    if (providerInput) {
+                        const providerValue = providerInput.value;
+                        
+                        // Show only if it is in the allowed list
+                        if (!providersArray.includes(providerValue)) {
+                            provider.style.display = 'none';
+                            providerInput.disabled = true;
+                            providerInput.checked = false;
+                        }
+                    }
+                });
+            }
         }
-        let t = document.getElementById(FORM_ID);
-        t && t.addEventListener("submit", handleFormSubmission);
-        document.querySelectorAll('input[name="provider"]').forEach((e) => {
-            let t = `Minimum amount: ${minAmounts[e.value] || "N/A"}`;
-            e.parentElement.setAttribute("title", t), e.parentElement.setAttribute("data-bs-toggle", "tooltip"), e.parentElement.setAttribute("data-bs-placement", "top");
-        }),
-            document.querySelectorAll('input[name="provider"]').forEach((e) => {
-                e.addEventListener("change", function () {
-                    let e = this.value,
-                        t = document.getElementById("currency");
-                    "wert" === e || "stripe" === e || "transfi" === e || "robinhood" === e || "rampnetwork" === e
-                        ? (t.value = "USD")
-                        : "werteur" === e
-                        ? (t.value = "EUR")
-                        : "upi" === e
-                        ? (t.value = "INR")
-                        : "interac" === e
-                        ? (t.value = "CAD")
-                        : (t.value = "USD");
-                    let a = minAmounts[e] || 0,
-                        r = document.getElementById("amount");
-                    r.setAttribute("min", a),
-                        r.setAttribute("placeholder", `Min: ${a}`),
-                        document.querySelectorAll(".provider-card").forEach((e) => {
-                            e.classList.remove("selected");
-                        }),
-                        this.closest(".provider-card").classList.add("selected");
-                });
-            });
-        [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (e) {
-            return new bootstrap.Tooltip(e);
-        }),
-            document.querySelectorAll(".provider-item").forEach((e) => {
-                e.style.display = "block";
-            });
-        let a = document.getElementById("provider-search");
-        a &&
-            a.addEventListener("input", () => {
-                let e = a.value.toLowerCase();
-                document.querySelectorAll(".provider-item").forEach((t) => {
-                    t.querySelector(".provider-name").textContent.toLowerCase().includes(e) ? (t.style.display = "block") : (t.style.display = "none");
-                });
-            });
-        let r = document.getElementById("theme-toggle");
-        if (r) {
-            let l = localStorage.getItem("theme") || "light";
-            document.body.setAttribute("data-bs-theme", l),
-                document.body.setAttribute("data-theme", l),
-                "dark" === l
-                    ? ((r.innerHTML = '<i class="fas fa-sun"></i>'), r.classList.add("btn-outline-light"), r.classList.remove("btn-outline-dark"))
-                    : ((r.innerHTML = '<i class="fas fa-moon"></i>'), r.classList.add("btn-outline-dark"), r.classList.remove("btn-outline-light")),
-                r.addEventListener("click", () => {
-                    let e = "dark" === document.body.getAttribute("data-bs-theme") ? "light" : "dark";
-                    document.body.setAttribute("data-bs-theme", e),
-                        document.body.setAttribute("data-theme", e),
-                        localStorage.setItem("theme", e),
-                        "dark" === e
-                            ? ((r.innerHTML = '<i class="fas fa-sun"></i>'), r.classList.add("btn-outline-light"), r.classList.remove("btn-outline-dark"))
-                            : ((r.innerHTML = '<i class="fas fa-moon"></i>'), r.classList.add("btn-outline-dark"), r.classList.remove("btn-outline-light"));
-                });
+    } catch (error) {
+        console.error("Error processing allowed providers:", error);
+    }
+}
+
+/**
+ * Filter providers by selected currency
+ */
+function filterProvidersByCurrency(currency) {
+    // Get all provider items
+    const providerItems = document.querySelectorAll('.provider-item');
+    let providerFound = false;
+    let visibleProviders = 0;
+    
+    // Check if there are any providers
+    if (providerItems.length === 0) {
+        // Show a message if no providers are available
+        const providerSection = document.querySelector('.provider-section');
+        if (providerSection) {
+            // Check if we've already added the message
+            if (!document.querySelector('.no-providers-message')) {
+                const noProvidersMessage = document.createElement('div');
+                noProvidersMessage.className = 'alert alert-warning no-providers-message';
+                noProvidersMessage.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i> No payment providers available for selection.';
+                providerSection.parentNode.insertBefore(noProvidersMessage, providerSection);
+            }
+        }
+        return;
+    }
+    
+    // Loop through each provider
+    providerItems.forEach(item => {
+        // Skip if the item is already hidden (not in allowed providers list)
+        if (item.style.display === 'none') return;
+        
+        const providerInput = item.querySelector('input[name="provider"]');
+        if (!providerInput) return;
+        
+        const supportedCurrency = providerInput.getAttribute('data-supported-currency');
+        
+        // Show if supported currency is ALL or matches selected currency
+        if (supportedCurrency === 'ALL' || supportedCurrency === currency) {
+            item.style.display = 'block';
+            visibleProviders++;
+            
+            // Select the first available provider if none is selected
+            if (!providerFound && !document.querySelector('input[name="provider"]:checked')) {
+                providerInput.checked = true;
+                providerInput.closest('.provider-card').classList.add('selected');
+                providerFound = true;
+            }
+        } else {
+            // Hide if currency doesn't match
+            item.style.display = 'none';
+            providerInput.checked = false;
+            providerInput.closest('.provider-card').classList.remove('selected');
         }
     });
+    
+    // If no providers are visible for this currency, show a message
+    if (visibleProviders === 0) {
+        // Show a message if no providers are available for this currency
+        const providerSection = document.querySelector('.provider-section');
+        if (providerSection) {
+            // Check if we've already added the message
+            const existingMessage = document.querySelector('.no-currency-providers-message');
+            if (!existingMessage) {
+                const noCurrencyMessage = document.createElement('div');
+                noCurrencyMessage.className = 'alert alert-warning no-currency-providers-message';
+                noCurrencyMessage.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> No payment providers available for ${currency}. Please select a different currency.`;
+                providerSection.parentNode.insertBefore(noCurrencyMessage, providerSection);
+            } else {
+                // Update existing message
+                existingMessage.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> No payment providers available for ${currency}. Please select a different currency.`;
+            }
+        }
+    } else {
+        // Remove the message if providers are available
+        const existingMessage = document.querySelector('.no-currency-providers-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+    }
+    
+    // If no provider is selected but there are visible ones, select the first
+    if (!document.querySelector('input[name="provider"]:checked') && visibleProviders > 0) {
+        selectFirstAvailableProvider();
+    }
+}
+
+/**
+ * Select the first available provider that is visible
+ */
+function selectFirstAvailableProvider() {
+    const firstVisibleProvider = document.querySelector('.provider-item[style="display: block"] input[name="provider"]');
+    if (firstVisibleProvider) {
+        firstVisibleProvider.checked = true;
+        
+        // Add selected class to the card
+        document.querySelectorAll('.provider-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        firstVisibleProvider.closest('.provider-card').classList.add('selected');
+        
+        // Trigger change event to update any related logic
+        const changeEvent = new Event('change');
+        firstVisibleProvider.dispatchEvent(changeEvent);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Process URL parameters first
+    processUrlParams();
+    
+    // Setup tooltips
+    setupTooltips();
+    
+    // Enhance provider card click functionality - make the entire card clickable
+    document.querySelectorAll(".provider-card").forEach(function(card) {
+        card.addEventListener("click", function(e) {
+            // Don't process if clicking on the radio input itself
+            if (e.target.type !== "radio") {
+                const radioInput = this.querySelector('input[type="radio"]');
+                if (radioInput && !radioInput.disabled) {
+                    radioInput.checked = true;
+                    
+                    // Manually trigger the change event
+                    const changeEvent = new Event('change');
+                    radioInput.dispatchEvent(changeEvent);
+                    
+                    // Update the selected card styling
+                    document.querySelectorAll(".provider-card").forEach((otherCard) => {
+                        otherCard.classList.remove("selected");
+                    });
+                    this.classList.add("selected");
+                }
+            }
+        });
+    });
+    
+    // Apply theme-based styling
+    setTimeout(fixDarkModeStyles, 100);
+});
+
+// Currency change event
+document.getElementById("currency").addEventListener("change", function() {
+    filterProvidersByCurrency(this.value);
+});
+
+// Amount change validation
+document.getElementById("amount").addEventListener("change", function() {
+    const amount = parseFloat(this.value);
+    const providerValue = document.querySelector('input[name="provider"]:checked')?.value;
+    
+    if (providerValue) {
+        const minAmount = minAmounts[providerValue] || 0;
+        if (amount < minAmount) {
+            this.setCustomValidity(`Minimum amount for ${providerValue} is ${minAmount}`);
+            showToast(`Minimum amount for ${providerValue} is ${minAmount}`, "warning");
+        } else {
+            this.setCustomValidity("");
+        }
+    }
+});
+
+// Provider change event
+document.querySelectorAll('input[name="provider"]').forEach(input => {
+    input.addEventListener("change", function() {
+        const providerValue = this.value;
+        const currencySelect = document.getElementById("currency");
+        
+        // Set appropriate currency based on provider
+        if (['wert', 'stripe', 'transfi', 'robinhood', 'rampnetwork'].includes(providerValue)) {
+            currencySelect.value = "USD";
+        } else if (providerValue === 'werteur') {
+            currencySelect.value = "EUR";
+        } else if (providerValue === 'upi') {
+            currencySelect.value = "INR";
+        } else if (providerValue === 'interac') {
+            currencySelect.value = "CAD";
+        }
+        
+        // Update minimum amount based on selected provider
+        const minAmount = minAmounts[providerValue] || 0;
+        const amountInput = document.getElementById("amount");
+        amountInput.setAttribute("min", minAmount);
+        amountInput.setAttribute("placeholder", `Min: ${minAmount}`);
+        
+        // Update selected card styling
+        document.querySelectorAll(".provider-card").forEach(card => {
+            card.classList.remove("selected");
+        });
+        this.closest(".provider-card").classList.add("selected");
+    });
+});
+
+// Search functionality
+const providerSearch = document.getElementById("provider-search");
+providerSearch.addEventListener("input", function() {
+    const searchTerm = this.value.toLowerCase();
+    
+    document.querySelectorAll(".provider-item").forEach(item => {
+        // Only search among visible items (matching currency and allowed)
+        if (item.style.display !== 'none') {
+            const providerNameElement = item.querySelector(".provider-name");
+            if (providerNameElement) {
+                const providerName = providerNameElement.textContent.toLowerCase();
+                if (providerName.includes(searchTerm)) {
+                    item.style.display = "block";
+                } else {
+                    item.style.display = "none";
+                    // Uncheck if hidden by search
+                    const input = item.querySelector('input[name="provider"]');
+                    if (input && input.checked) {
+                        input.checked = false;
+                    }
+                }
+            }
+        }
+    });
+    
+    // If the currently selected provider is now hidden, select the first visible one
+    const selectedProvider = document.querySelector('input[name="provider"]:checked');
+    if (!selectedProvider || selectedProvider.closest('.provider-item').style.display === 'none') {
+        selectFirstAvailableProvider();
+    }
+});
+
+/**
+ * Fix Dark Mode styling issues
+ */
+function fixDarkModeStyles() {
+    const isDarkMode = document.body.getAttribute('data-bs-theme') === 'dark' || 
+                      document.body.getAttribute('data-theme') === 'dark';
+    
+    // Apply theme-specific styles
+    if (isDarkMode) {
+        // Dark mode styles
+        document.querySelectorAll('.provider-card').forEach(card => {
+            card.style.backgroundColor = '#1e293b';
+            card.style.borderColor = 'rgba(255,255,255,0.1)';
+        });
+        
+        document.querySelectorAll('.provider-card.selected').forEach(card => {
+            card.style.backgroundColor = 'rgba(96,165,250,0.15)';
+            card.style.borderColor = '#60a5fa';
+        });
+        
+        // Fix search input
+        const searchInput = document.getElementById('provider-search');
+        if (searchInput) {
+            searchInput.style.backgroundColor = '#1e293b';
+            searchInput.style.color = '#f8fafc';
+            searchInput.style.borderColor = '#334155';
+        }
+        
+        // Fix provider section background
+        const providerSection = document.querySelector('.provider-section');
+        if (providerSection) {
+            providerSection.style.backgroundColor = '#0f172a';
+            providerSection.style.borderColor = '#334155';
+        }
+        
+        // Fix provider filter
+        const providerFilter = document.querySelector('.provider-filter');
+        if (providerFilter) {
+            providerFilter.style.backgroundColor = '#1e293b';
+            providerFilter.style.borderColor = '#334155';
+        }
+        
+        // Fix provider group
+        const providerGroup = document.querySelector('.provider-group');
+        if (providerGroup) {
+            providerGroup.style.backgroundColor = '#0f172a';
+        }
+    } else {
+        // Light mode styles
+        document.querySelectorAll('.provider-card').forEach(card => {
+            card.style.backgroundColor = '#ffffff';
+            card.style.borderColor = 'transparent';
+        });
+        
+        document.querySelectorAll('.provider-card.selected').forEach(card => {
+            card.style.backgroundColor = 'rgba(58,134,255,0.05)';
+            card.style.borderColor = '#3a86ff';
+        });
+        
+        // Fix search input
+        const searchInput = document.getElementById('provider-search');
+        if (searchInput) {
+            searchInput.style.backgroundColor = '#ffffff';
+            searchInput.style.color = '#1e293b';
+            searchInput.style.borderColor = '#e2e8f0';
+        }
+        
+        // Fix provider section background
+        const providerSection = document.querySelector('.provider-section');
+        if (providerSection) {
+            providerSection.style.backgroundColor = '#f8fafc';
+            providerSection.style.borderColor = '#e2e8f0';
+        }
+        
+        // Fix provider filter
+        const providerFilter = document.querySelector('.provider-filter');
+        if (providerFilter) {
+            providerFilter.style.backgroundColor = '#ffffff';
+            providerFilter.style.borderColor = '#e2e8f0';
+        }
+        
+        // Fix provider group
+        const providerGroup = document.querySelector('.provider-group');
+        if (providerGroup) {
+            providerGroup.style.backgroundColor = '#f8fafc';
+        }
+    }
+}
+
+// Theme toggle functionality
+document.addEventListener("DOMContentLoaded", function() {
+  const themeToggle = document.getElementById("theme-toggle");
+  
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      // Get current theme
+      const currentTheme = document.body.getAttribute("data-theme") || "light";
+      // Toggle theme
+      const newTheme = currentTheme === "light" ? "dark" : "light";
+      
+      // Update theme in localStorage
+      localStorage.setItem("theme", newTheme);
+      
+      // Apply new theme
+      document.body.setAttribute("data-theme", newTheme);
+      document.body.setAttribute("data-bs-theme", newTheme);
+      
+      // Update icon
+      const themeIcon = themeToggle.querySelector("i");
+      if (themeIcon) {
+        if (newTheme === "dark") {
+          themeIcon.classList.remove("fa-moon");
+          themeIcon.classList.add("fa-sun");
+        } else {
+          themeIcon.classList.remove("fa-sun");
+          themeIcon.classList.add("fa-moon");
+        }
+      }
+      
+      // Apply theme-specific styles
+      setTimeout(fixDarkModeStyles, 100);
+    });
+  }
+  
+  // Process URL parameters
+  processUrlParams().then(() => {
+    // Set up tooltips
+    setupTooltips();
+    
+    // Apply theme from localStorage
+    setTimeout(applyTheme, 50);
+  }).catch(error => {
+    console.error("Error processing URL parameters:", error);
+    showToast("An error occurred while loading the page. Please refresh and try again.", "danger");
+  });
+  
+  // Set up form submission
+  const form = document.getElementById(FORM_ID);
+  if (form) {
+    form.addEventListener("submit", handleFormSubmission);
+  }
+});
