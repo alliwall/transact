@@ -365,7 +365,7 @@ async function generatePaymentLink(encryptedAddress) {
 
   return {
     addressIn: data.address_in,
-    paymentLink: `${origin}/merchant-payment?data=${encodeURIComponent(
+    paymentLink: `${origin}/merchant-payment?waddr=${encodeURIComponent(
       encryptedAddress
     )}${providersParam}`,
     trackingUrl: `https://api.transact.st/control/track.php?address=${data.address_in}`,
@@ -484,7 +484,7 @@ function displayResult(walletAddress, merchantUrl) {
       : "";
 
   // Create a tracking fallback URL that works without relying on external APIs
-  const trackingFallbackUrl = `${window.location.origin}/tracking.html?ref=${encodeURIComponent(n)}`;
+  const trackingFallbackUrl = `${window.location.origin}/tracking?ref=${encodeURIComponent(n)}`;
 
   a.innerHTML = `
     <div class="card success-card animate-success">
@@ -683,7 +683,7 @@ async function handleFormSubmission(e) {
     params.append("waddr", encryptedWallet);
     params.append("providers", selectedProviders.join(","));
     
-    const merchantUrl = `${window.location.origin}/merchant-payment.html?${params.toString()}`;
+    const merchantUrl = `${window.location.origin}/merchant-payment?${params.toString()}`;
 
     // 6. Try to register tracking (with robust fallback system)
     try {

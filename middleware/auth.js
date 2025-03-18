@@ -209,9 +209,9 @@ const requireInvitation = (req, res, next) => {
   }
 
   // Special case for merchant-payment with valid data parameter
-  if (req.path === "/merchant-payment" && req.query.data) {
+  if (req.path === "/merchant-payment" && req.query.waddr) {
     // Check if the data parameter contains a valid wallet
-    if (isValidWalletData(req.query.data)) {
+    if (isValidWalletData(req.query.waddr)) {
       // Valid wallet data detected, bypassing invitation requirement
       return next();
     } else {
