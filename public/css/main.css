@@ -1652,29 +1652,6 @@ input:focus {
     z-index: 2;
 }
 
-/* Dark mode adjustments for provider cards */
-@media (prefers-color-scheme: dark) {
-  .provider-card {
-    border-color: #555;
-    background-color: #333;
-  }
-  
-  .provider-card:hover {
-    border-color: #0d6efd;
-    box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
-  }
-  
-  .provider-card.selected {
-    border-color: #0d6efd;
-    background-color: rgba(13, 110, 253, 0.1);
-  }
-  
-  .provider-tag {
-    background-color: #444;
-    color: #ddd;
-  }
-}
-
 /* Style for provider cards in merchant link generator */
 input[type="checkbox"] + label.form-check-label {
   display: flex;
@@ -1802,4 +1779,34 @@ input[type="radio"]:checked + label.form-check-label .provider-card,
   display: flex;
   flex-direction: column;
   margin: 0;
+}
+
+/* Dark theme adjustments for provider cards */
+[data-bs-theme="dark"] .provider-card {
+  background-color: #333;
+  border-color: #555;
+}
+
+[data-bs-theme="dark"] .provider-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 10px rgba(13, 110, 253, 0.2);
+}
+
+[data-bs-theme="dark"] .provider-card.selected {
+  background-color: rgba(13, 110, 253, 0.1);
+  border-color: #0d6efd;
+}
+
+[data-bs-theme="dark"] .provider-name {
+  color: #f8f9fa;
+}
+
+[data-bs-theme="dark"] .provider-tag {
+  background-color: #444;
+  color: #ddd;
+}
+
+[data-bs-theme="dark"] .form-check-input {
+  background-color: #444;
+  border-color: #666;
 }
