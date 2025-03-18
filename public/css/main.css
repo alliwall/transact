@@ -959,7 +959,6 @@ body:not([data-theme="dark"]) .theme-switcher button {
 }
 .provider-name {
     font-weight: 500;
-    max-width: 120px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1777,7 +1776,6 @@ input[type="radio"]:checked + label.form-check-label .provider-card,
   cursor: pointer;
   width: 100%;
   display: flex;
-  flex-direction: column;
   margin: 0;
 }
 
