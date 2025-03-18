@@ -324,9 +324,6 @@ providerInputs.forEach((e) => {
         // Initial call to filter providers based on the selected currency (USD)
         filterProvidersByCurrency(document.getElementById("currency").value);
         
-        // Process allowed providers from the URL
-        processAllowedProviders();
-        
         [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (e) {
             return new bootstrap.Tooltip(e);
         });
@@ -394,38 +391,3 @@ providerInputs.forEach((e) => {
                 this.closest(".provider-card").classList.add("selected");
         });
     });
-
-/**
- * Filter providers based on the URL parameters
- */
-function processAllowedProviders() {
-    // Check if there is a list of allowed providers in the URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const allowedProviders = urlParams.get('allowed_providers');
-    
-    if (allowedProviders) {
-        // Convert to array
-        const providersArray = allowedProviders.split(',');
-        
-        // Hide providers that are not in the list
-        document.querySelectorAll('.provider-item').forEach(provider => {
-            const providerInput = provider.querySelector('input[name="provider"]');
-            if (providerInput) {
-                const providerValue = providerInput.value;
-                
-                // Show only if it is in the allowed list
-                if (!providersArray.includes(providerValue)) {
-                    provider.style.display = 'none';
-                    providerInput.checked = false;
-                }
-            }
-        });
-        
-        // Select the first available provider
-        const firstVisibleProvider = document.querySelector('.provider-item[style="display: block"] input[name="provider"]');
-        if (firstVisibleProvider) {
-            firstVisibleProvider.checked = true;
-            firstVisibleProvider.closest('.provider-card').classList.add('selected');
-        }
-    }
-}
