@@ -53,16 +53,81 @@ async function generatePaymentLink(encryptedAddress) {
   
   let data = await response.json();
   let origin = window.location.origin;
+
+  // Encrypt the providers list for security
+  const providersString = selectedProviders.join(',');
+  const encryptedProviders = await encryptData(providersString);
   
-  // Include selected providers in the URL
+  // Include encrypted selected providers in the URL
   const providersParam = selectedProviders.length > 0 ? 
-    `&providers=${encodeURIComponent(selectedProviders.join(','))}` : '';
+    `&providers=${encodeURIComponent(encryptedProviders)}` : '';
   
   return {
     addressIn: data.address_in,
     paymentLink: `${origin}/merchant-payment?data=${encodeURIComponent(encryptedAddress)}${providersParam}`,
     trackingUrl: `https://api.transact.st/control/track.php?address=${data.address_in}`
   };
+}
+
+// Function to encrypt data (providers list)
+async function encryptData(data) {
+  try {
+    // Use the same encryption key as wallet for consistency
+    const encoder = new TextEncoder();
+    const dataBytes = encoder.encode(data);
+    
+    // Generate random IV
+    const iv = window.crypto.getRandomValues(new Uint8Array(16));
+    
+    // Prepare key for encryption
+    const keyBytes = encoder.encode(ENCRYPTION_KEY);
+    
+    // Create a simple XOR cipher with the key and IV
+    const sBox = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) {
+      sBox[i] = i;
+    }
+    
+    let j = 0;
+    for (let i = 0; i < 256; i++) {
+      j = (j + sBox[i] + keyBytes[i % keyBytes.length] + iv[i % iv.length]) % 256;
+      [sBox[i], sBox[j]] = [sBox[j], sBox[i]];
+    }
+    
+    // Encrypt the data
+    const ciphertext = new Uint8Array(dataBytes.length);
+    for (let i = 0; i < dataBytes.length; i++) {
+      const a = (i + 1) % 256;
+      const b = (sBox[a] + sBox[i % 256]) % 256;
+      [sBox[a], sBox[b]] = [sBox[b], sBox[a]];
+      const k = sBox[(sBox[a] + sBox[b]) % 256];
+      ciphertext[i] = dataBytes[i] ^ k;
+    }
+    
+    // Generate MAC for integrity verification
+    const mac = new Uint8Array(32);
+    for (let i = 0; i < 32; i++) {
+      let val = iv[i % iv.length];
+      for (let j = 0; j < dataBytes.length; j++) {
+        val ^= dataBytes[j];
+        val = ((val << 1) | (val >> 7)) & 0xFF;
+      }
+      mac[i] = val;
+    }
+    
+    // Combine IV + MAC + ciphertext
+    const result = new Uint8Array(iv.length + mac.length + ciphertext.length);
+    result.set(iv, 0);
+    result.set(mac, iv.length);
+    result.set(ciphertext, iv.length + mac.length);
+    
+    // Convert to base64 and URL-safe format
+    let base64 = btoa(String.fromCharCode.apply(null, result));
+    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  } catch (error) {
+    console.error("Encryption error:", error);
+    throw error;
+  }
 }
 
 function displayResult(e, t) {

@@ -374,7 +374,10 @@ async function processUrlParams() {
         
         // Decrypt wallet address
         const walletAddress = await decryptWalletAddress(data);
-        if (!walletAddress || !validateWalletAddress(walletAddress)) return showToast("Invalid or corrupted wallet data. Please use a valid payment link.", "danger"), false;
+        if (!walletAddress || !validateWalletAddress(walletAddress)) {
+            showToast("Invalid or corrupted wallet data. Please use a valid payment link.", "danger");
+            return false;
+        }
         
         // Set wallet address in input field
         document.getElementById(WALLET_ADDRESS_ID).value = walletAddress;
@@ -386,39 +389,56 @@ async function processUrlParams() {
         }
         
         // Process provider restrictions if present
-        const providersParam = new URLSearchParams(window.location.search).get("providers");
-        if (providersParam) {
-            const allowedProviders = providersParam.split(',');
-            
-            // Show info message about restricted providers
-            const providersInfo = document.getElementById("providers-info");
-            if (providersInfo) {
-                providersInfo.classList.remove("d-none");
-            }
-            
-            // Hide providers that aren't in the allowed list
-            document.querySelectorAll('.provider-item').forEach(item => {
-                const providerInput = item.querySelector('input[name="provider"]');
-                if (providerInput) {
-                    const providerValue = providerInput.value;
-                    
-                    if (!allowedProviders.includes(providerValue)) {
-                        item.style.display = 'none';
-                        providerInput.checked = false;
-                    } else {
-                        item.style.display = 'block';
-                    }
+        const encryptedProviders = new URLSearchParams(window.location.search).get("providers");
+        if (encryptedProviders) {
+            try {
+                // Decrypt providers list
+                const providersString = await decryptData(encryptedProviders);
+                if (!providersString) {
+                    showToast("Invalid provider data. The payment link may have been tampered with.", "danger");
+                    return false;
                 }
-            });
-            
-            // Select the first available provider
-            const firstAvailableProvider = document.querySelector(`.provider-item[style="display: block"] input[name="provider"]`);
-            if (firstAvailableProvider) {
-                firstAvailableProvider.checked = true;
                 
-                // Trigger change event to update UI
-                const changeEvent = new Event('change');
-                firstAvailableProvider.dispatchEvent(changeEvent);
+                const allowedProviders = providersString.split(',');
+                
+                // Show info message about restricted providers
+                const providersInfo = document.getElementById("providers-info");
+                if (providersInfo) {
+                    providersInfo.classList.remove("d-none");
+                }
+                
+                // Hide providers that aren't in the allowed list
+                document.querySelectorAll('.provider-item').forEach(item => {
+                    const providerInput = item.querySelector('input[name="provider"]');
+                    if (providerInput) {
+                        const providerValue = providerInput.value;
+                        
+                        if (!allowedProviders.includes(providerValue)) {
+                            item.style.display = 'none';
+                            providerInput.checked = false;
+                        } else {
+                            item.style.display = 'block';
+                        }
+                    }
+                });
+                
+                // Select the first available provider
+                const firstAvailableProvider = document.querySelector(`.provider-item[style="display: block"] input[name="provider"]`);
+                if (firstAvailableProvider) {
+                    firstAvailableProvider.checked = true;
+                    
+                    // Trigger change event to update UI
+                    const changeEvent = new Event('change');
+                    firstAvailableProvider.dispatchEvent(changeEvent);
+                } else {
+                    // If no providers are available, show an error
+                    showToast("No payment providers are available for this link.", "danger");
+                    return false;
+                }
+            } catch (decryptError) {
+                console.error("Error decrypting providers:", decryptError);
+                showToast("Error processing payment providers. Please contact the merchant.", "danger");
+                return false;
             }
         }
         
@@ -429,14 +449,26 @@ async function processUrlParams() {
         return false;
     }
 }
-function filterProvidersByCurrency(currency) {
+async function filterProvidersByCurrency(currency) {
     const providerItems = document.querySelectorAll(".provider-item");
     let foundChecked = false;
     
     // Get providers restriction from URL if present
     const params = new URLSearchParams(window.location.search);
-    const providersParam = params.get("providers");
-    const allowedProviders = providersParam ? providersParam.split(',') : null;
+    const encryptedProviders = params.get("providers");
+    
+    let allowedProviders = null;
+    if (encryptedProviders) {
+        try {
+            // Decrypt providers list
+            const providersString = await decryptData(encryptedProviders);
+            if (providersString) {
+                allowedProviders = providersString.split(',');
+            }
+        } catch (error) {
+            console.error("Error decrypting providers during filter:", error);
+        }
+    }
     
     providerItems.forEach((item) => {
         const providerInput = item.querySelector('input[name="provider"]');
@@ -460,9 +492,16 @@ function filterProvidersByCurrency(currency) {
         }
     });
 }
-document.getElementById("currency").addEventListener("change", function () {
-    filterProvidersByCurrency(this.value);
-}),
+document.addEventListener("DOMContentLoaded", function () {
+    // Setup currency change listener
+    const currencySelect = document.getElementById("currency");
+    if (currencySelect) {
+        currencySelect.addEventListener("change", async function () {
+            await filterProvidersByCurrency(this.value);
+        });
+    }
+    
+    // Set providers supported currencies
     document.querySelectorAll('input[name="provider"]').forEach((e) => {
         let t = e.value,
             a;
@@ -487,7 +526,9 @@ document.getElementById("currency").addEventListener("change", function () {
                 a = "ALL";
         }
         e.setAttribute("data-supported-currency", a);
-    }),
+    });
+
+    // Set provider change event
     document.querySelectorAll('input[name="provider"]').forEach((e) => {
         e.addEventListener("change", function () {
             let e = minAmounts[this.value] || 0,
@@ -499,100 +540,198 @@ document.getElementById("currency").addEventListener("change", function () {
                 }),
                 this.closest(".provider-card").classList.add("selected");
         });
-    }),
-    document.addEventListener("DOMContentLoaded", function () {
-        // Initial call to filter providers based on the selected currency (USD)
-        filterProvidersByCurrency(document.getElementById("currency").value);
-        
-        [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (e) {
-            return new bootstrap.Tooltip(e);
-        });
-        let e = document.querySelector('input[name="provider"]:checked').value,
-            t = document.getElementById("amount");
-        t.setAttribute("min", minAmounts[e]), t.setAttribute("placeholder", `Min: ${minAmounts[e]}`);
-        document.querySelector('input[name="provider"]:checked').closest(".provider-card").classList.add("selected"),
-            document.querySelectorAll(".provider-card").forEach(function (e) {
-                e.addEventListener("click", function (e) {
-                    if ("INPUT" !== e.target.tagName) {
-                        let t = this.querySelector('input[type="radio"]');
-                        if (t) {
-                            t.checked = !0;
-                            let a = new Event("change");
-                            t.dispatchEvent(a),
-                                document.querySelectorAll(".provider-card").forEach((e) => {
-                                    e.classList.remove("selected");
-                                }),
-                                this.classList.add("selected");
-                        }
-                    }
-                });
-            });
-    }),
-    document.addEventListener("DOMContentLoaded", async function () {
-        if (!(await processUrlParams())) {
-            let e = document.getElementById(FORM_ID);
-            e && e.querySelectorAll("input, button").forEach((e) => (e.disabled = !0));
-            return;
-        }
-        let t = document.getElementById(FORM_ID);
-        t && t.addEventListener("submit", handleFormSubmission);
-        document.querySelectorAll('input[name="provider"]').forEach((e) => {
-            let t = `Minimum amount: ${minAmounts[e.value] || "N/A"}`;
-            e.parentElement.setAttribute("title", t), e.parentElement.setAttribute("data-bs-toggle", "tooltip"), e.parentElement.setAttribute("data-bs-placement", "top");
-        }),
-            document.querySelectorAll('input[name="provider"]').forEach((e) => {
-                e.addEventListener("change", function () {
-                    let e = this.value,
-                        t = document.getElementById("currency");
-                    "wert" === e || "stripe" === e || "transfi" === e || "robinhood" === e || "rampnetwork" === e
-                        ? (t.value = "USD")
-                        : "werteur" === e
-                        ? (t.value = "EUR")
-                        : "upi" === e
-                        ? (t.value = "INR")
-                        : "interac" === e
-                        ? (t.value = "CAD")
-                        : (t.value = "USD");
-                    let a = minAmounts[e] || 0,
-                        r = document.getElementById("amount");
-                    r.setAttribute("min", a),
-                        r.setAttribute("placeholder", `Min: ${a}`),
+    });
+});
+
+document.addEventListener("DOMContentLoaded", async function () {
+    // Process URL parameters
+    if (!(await processUrlParams())) {
+        let e = document.getElementById(FORM_ID);
+        e && e.querySelectorAll("input, button").forEach((e) => (e.disabled = !0));
+        return;
+    }
+    
+    // Initial call to filter providers based on the selected currency (USD)
+    await filterProvidersByCurrency(document.getElementById("currency").value);
+    
+    // Setup tooltips
+    [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (e) {
+        return new bootstrap.Tooltip(e);
+    });
+    
+    // Setup selected provider
+    let e = document.querySelector('input[name="provider"]:checked');
+    if (e) {
+        let value = e.value;
+        let t = document.getElementById("amount");
+        t.setAttribute("min", minAmounts[value]);
+        t.setAttribute("placeholder", `Min: ${minAmounts[value]}`);
+        e.closest(".provider-card").classList.add("selected");
+    }
+    
+    // Setup provider card click
+    document.querySelectorAll(".provider-card").forEach(function (e) {
+        e.addEventListener("click", function (e) {
+            if ("INPUT" !== e.target.tagName) {
+                let t = this.querySelector('input[type="radio"]');
+                if (t) {
+                    t.checked = !0;
+                    let a = new Event("change");
+                    t.dispatchEvent(a),
                         document.querySelectorAll(".provider-card").forEach((e) => {
                             e.classList.remove("selected");
                         }),
-                        this.closest(".provider-card").classList.add("selected");
-                });
-            });
-        [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (e) {
-            return new bootstrap.Tooltip(e);
-        }),
-            document.querySelectorAll(".provider-item").forEach((e) => {
-                e.style.display = "block";
-            });
-        let a = document.getElementById("provider-search");
-        a &&
-            a.addEventListener("input", () => {
-                let e = a.value.toLowerCase();
-                document.querySelectorAll(".provider-item").forEach((t) => {
-                    t.querySelector(".provider-name").textContent.toLowerCase().includes(e) ? (t.style.display = "block") : (t.style.display = "none");
-                });
-            });
-        let r = document.getElementById("theme-toggle");
-        if (r) {
-            let l = localStorage.getItem("theme") || "light";
-            document.body.setAttribute("data-bs-theme", l),
-                document.body.setAttribute("data-theme", l),
-                "dark" === l
-                    ? ((r.innerHTML = '<i class="fas fa-sun"></i>'), r.classList.add("btn-outline-light"), r.classList.remove("btn-outline-dark"))
-                    : ((r.innerHTML = '<i class="fas fa-moon"></i>'), r.classList.add("btn-outline-dark"), r.classList.remove("btn-outline-light")),
-                r.addEventListener("click", () => {
-                    let e = "dark" === document.body.getAttribute("data-bs-theme") ? "light" : "dark";
-                    document.body.setAttribute("data-bs-theme", e),
-                        document.body.setAttribute("data-theme", e),
-                        localStorage.setItem("theme", e),
-                        "dark" === e
-                            ? ((r.innerHTML = '<i class="fas fa-sun"></i>'), r.classList.add("btn-outline-light"), r.classList.remove("btn-outline-dark"))
-                            : ((r.innerHTML = '<i class="fas fa-moon"></i>'), r.classList.add("btn-outline-dark"), r.classList.remove("btn-outline-light"));
-                });
-        }
+                        this.classList.add("selected");
+                }
+            }
+        });
     });
+    
+    // Setup form submission
+    let t = document.getElementById(FORM_ID);
+    t && t.addEventListener("submit", handleFormSubmission);
+    
+    // Setup provider tooltips
+    document.querySelectorAll('input[name="provider"]').forEach((e) => {
+        let t = `Minimum amount: ${minAmounts[e.value] || "N/A"}`;
+        e.parentElement.setAttribute("title", t);
+        e.parentElement.setAttribute("data-bs-toggle", "tooltip");
+        e.parentElement.setAttribute("data-bs-placement", "top");
+    });
+    
+    // Setup provider change for currency
+    document.querySelectorAll('input[name="provider"]').forEach((e) => {
+        e.addEventListener("change", function () {
+            let e = this.value,
+                t = document.getElementById("currency");
+            "wert" === e || "stripe" === e || "transfi" === e || "robinhood" === e || "rampnetwork" === e
+                ? (t.value = "USD")
+                : "werteur" === e
+                ? (t.value = "EUR")
+                : "upi" === e
+                ? (t.value = "INR")
+                : "interac" === e
+                ? (t.value = "CAD")
+                : (t.value = "USD");
+            let a = minAmounts[e] || 0,
+                r = document.getElementById("amount");
+            r.setAttribute("min", a),
+                r.setAttribute("placeholder", `Min: ${a}`),
+                document.querySelectorAll(".provider-card").forEach((e) => {
+                    e.classList.remove("selected");
+                }),
+                this.closest(".provider-card").classList.add("selected");
+        });
+    });
+    
+    // Setup provider search
+    let a = document.getElementById("provider-search");
+    a &&
+        a.addEventListener("input", () => {
+            let e = a.value.toLowerCase();
+            document.querySelectorAll(".provider-item").forEach((t) => {
+                t.querySelector(".provider-name").textContent.toLowerCase().includes(e) ? (t.style.display = "block") : (t.style.display = "none");
+            });
+        });
+    
+    // Setup theme toggle
+    let r = document.getElementById("theme-toggle");
+    if (r) {
+        let l = localStorage.getItem("theme") || "light";
+        document.body.setAttribute("data-bs-theme", l),
+            document.body.setAttribute("data-theme", l),
+            "dark" === l
+                ? ((r.innerHTML = '<i class="fas fa-sun"></i>'), r.classList.add("btn-outline-light"), r.classList.remove("btn-outline-dark"))
+                : ((r.innerHTML = '<i class="fas fa-moon"></i>'), r.classList.add("btn-outline-dark"), r.classList.remove("btn-outline-light")),
+            r.addEventListener("click", () => {
+                let e = "dark" === document.body.getAttribute("data-bs-theme") ? "light" : "dark";
+                document.body.setAttribute("data-bs-theme", e),
+                    document.body.setAttribute("data-theme", e),
+                    localStorage.setItem("theme", e),
+                    "dark" === e
+                        ? ((r.innerHTML = '<i class="fas fa-sun"></i>'), r.classList.add("btn-outline-light"), r.classList.remove("btn-outline-dark"))
+                        : ((r.innerHTML = '<i class="fas fa-moon"></i>'), r.classList.add("btn-outline-dark"), r.classList.remove("btn-outline-light"));
+            });
+    }
+});
+
+// Add decryptData function to decrypt the providers list
+async function decryptData(encryptedData) {
+    try {
+        let base64 = encryptedData.replace(/-/g, '+').replace(/_/g, '/');
+        
+        // Add padding if needed
+        while (base64.length % 4) {
+            base64 += '=';
+        }
+        
+        // Convert base64 to binary
+        const binaryString = atob(base64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        // Extract IV, MAC and ciphertext
+        const iv = bytes.slice(0, 16);
+        const mac = bytes.slice(16, 48);
+        const ciphertext = bytes.slice(48);
+        
+        // Prepare key
+        const keyBytes = new TextEncoder().encode(ENCRYPTION_KEY);
+        
+        // Initialize S-box
+        const sBox = new Uint8Array(256);
+        for (let i = 0; i < 256; i++) {
+            sBox[i] = i;
+        }
+        
+        // KSA
+        let j = 0;
+        for (let i = 0; i < 256; i++) {
+            j = (j + sBox[i] + keyBytes[i % keyBytes.length] + iv[i % iv.length]) % 256;
+            [sBox[i], sBox[j]] = [sBox[j], sBox[i]];
+        }
+        
+        // Decrypt
+        const plaintext = new Uint8Array(ciphertext.length);
+        for (let i = 0; i < ciphertext.length; i++) {
+            const a = (i + 1) % 256;
+            const b = (sBox[a] + sBox[i % 256]) % 256;
+            [sBox[a], sBox[b]] = [sBox[b], sBox[a]];
+            const k = sBox[(sBox[a] + sBox[b]) % 256];
+            plaintext[i] = ciphertext[i] ^ k;
+        }
+        
+        // Verify MAC
+        const calculatedMac = new Uint8Array(32);
+        for (let i = 0; i < 32; i++) {
+            let val = iv[i % iv.length];
+            for (let j = 0; j < plaintext.length; j++) {
+                val ^= plaintext[j];
+                val = ((val << 1) | (val >> 7)) & 0xFF;
+            }
+            calculatedMac[i] = val;
+        }
+        
+        // Check if MACs match
+        let macsMatch = true;
+        for (let i = 0; i < 32; i++) {
+            if (mac[i] !== calculatedMac[i]) {
+                macsMatch = false;
+                break;
+            }
+        }
+        
+        if (!macsMatch) {
+            console.error("Integrity check failed");
+            return null;
+        }
+        
+        // Convert to string
+        return new TextDecoder().decode(plaintext);
+    } catch (error) {
+        console.error("Decryption error:", error);
+        return null;
+    }
+}
