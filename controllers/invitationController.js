@@ -24,7 +24,9 @@ const submitInvitationRequest = async (req, res) => {
     name: name ? escapeHtml(name.trim()) : null,
     country: country ? escapeHtml(country.trim()) : null,
     daily_volume: daily_volume ? escapeHtml(daily_volume.trim()) : null,
-    referral_source: referral_source ? escapeHtml(referral_source.trim()) : null,
+    referral_source: referral_source
+      ? escapeHtml(referral_source.trim())
+      : null,
   };
 
   // Validate required fields
@@ -38,23 +40,22 @@ const submitInvitationRequest = async (req, res) => {
   }
 
   // Validate Telegram format if provided
-  if (sanitizedInputs.telegram_handle && !/^[a-zA-Z0-9_]{5,32}$/.test(sanitizedInputs.telegram_handle)) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "Telegram handle must be 5-32 characters and contain only letters, numbers, and underscores",
-      });
+  if (
+    sanitizedInputs.telegram_handle &&
+    !/^[a-zA-Z0-9_]{5,32}$/.test(sanitizedInputs.telegram_handle)
+  ) {
+    return res.status(400).json({
+      error:
+        "Telegram handle must be 5-32 characters and contain only letters, numbers, and underscores",
+    });
   }
 
   // Validate WhatsApp format if provided
   if (sanitizedInputs.whatsapp && !/^[+0-9]+$/.test(sanitizedInputs.whatsapp)) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "WhatsApp number must contain only numbers and optionally a + sign",
-      });
+    return res.status(400).json({
+      error:
+        "WhatsApp number must contain only numbers and optionally a + sign",
+    });
   }
 
   try {
@@ -66,9 +67,9 @@ const submitInvitationRequest = async (req, res) => {
     );
 
     if (existingRequest.rows.length > 0) {
-      return res.status(409).json({ 
+      return res.status(409).json({
         error: "You already have a pending invitation request",
-        request_id: existingRequest.rows[0].id
+        request_id: existingRequest.rows[0].id,
       });
     }
 
@@ -107,7 +108,7 @@ const submitInvitationRequest = async (req, res) => {
 const verifyInvitationCode = async (req, res) => {
   const { code } = req.body;
 
-  if (!code || typeof code !== 'string') {
+  if (!code || typeof code !== "string") {
     return res.status(400).json({ error: "Valid invitation code is required" });
   }
 
@@ -144,7 +145,7 @@ const verifyInvitationCode = async (req, res) => {
     }
 
     // Begin transaction to update code usage
-    await db.query('BEGIN');
+    await db.query("BEGIN");
 
     try {
       // Update last used timestamp and increment used count
@@ -175,9 +176,11 @@ const verifyInvitationCode = async (req, res) => {
       // Regenerate session to prevent session fixation attacks
       req.session.regenerate((err) => {
         if (err) {
-          db.query('ROLLBACK');
+          db.query("ROLLBACK");
           console.error("Error regenerating session:", err);
-          return res.status(500).json({ error: "Failed to regenerate session" });
+          return res
+            .status(500)
+            .json({ error: "Failed to regenerate session" });
         }
 
         // Set the invitation data in the new session
@@ -185,34 +188,36 @@ const verifyInvitationCode = async (req, res) => {
           code: invitationCode.code,
           type: invitationCode.type,
           features,
-          verified_at: new Date().toISOString()
+          verified_at: new Date().toISOString(),
         };
 
         // Generate a CSRF token for the session
-        req.session.csrfToken = require('crypto').randomBytes(32).toString('hex');
+        req.session.csrfToken = require("crypto")
+          .randomBytes(32)
+          .toString("hex");
 
         // Ensure the session is saved before responding
         req.session.save((err) => {
           if (err) {
-            db.query('ROLLBACK');
+            db.query("ROLLBACK");
             console.error("Error saving session:", err);
             return res.status(500).json({ error: "Failed to save session" });
           }
 
           // Commit the transaction
-          db.query('COMMIT');
+          db.query("COMMIT");
 
           res.status(200).json({
             message: "Invitation code verified successfully",
             type: invitationCode.type,
             features,
-            csrfToken: req.session.csrfToken
+            csrfToken: req.session.csrfToken,
           });
         });
       });
     } catch (error) {
       // Rollback transaction on error
-      await db.query('ROLLBACK');
+      await db.query("ROLLBACK");
       throw error;
     }
   } catch (error) {
