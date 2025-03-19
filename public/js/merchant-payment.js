@@ -206,15 +206,13 @@ async function generatePaymentLink(e, t, a, r, l = "USD") {
     return console.error("Error generating payment link"), null;
   {
     let i = s.address_in;
-    // Use the origin of the window to generate relative URLs
-    const origin = window.location.origin;
     
     return {
       addressIn: i,
-      paymentLink: `${origin}/merchant-payment?address=${i}&amount=${t}&provider=${r}&email=${encodeURIComponent(
+      paymentLink: `https://payment.transact.st/process-payment.php?address=${i}&amount=${t}&provider=${r}&email=${encodeURIComponent(
         a
       )}&currency=${l}`,
-      trackingUrl: `https://payment.transact.st/control/track.php?address=${i}`,
+      trackingUrl: `https://api.transact.st/control/track.php?address=${i}`,
     };
   }
 }
