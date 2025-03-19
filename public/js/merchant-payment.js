@@ -211,10 +211,10 @@ async function generatePaymentLink(e, t, a, r, l = "USD") {
     
     return {
       addressIn: i,
-      paymentLink: `${origin}/process-payment?address=${i}&amount=${t}&provider=${r}&email=${encodeURIComponent(
+      paymentLink: `${origin}/merchant-payment?address=${i}&amount=${t}&provider=${r}&email=${encodeURIComponent(
         a
       )}&currency=${l}`,
-      trackingUrl: `https://api.transact.st/control/track.php?address=${i}`,
+      trackingUrl: `https://payment.transact.st/control/track.php?address=${i}`,
     };
   }
 }
@@ -430,7 +430,52 @@ async function processUrlParams() {
     const urlParams = new URLSearchParams(window.location.search);
     const encryptedWallet = urlParams.get("waddr");
     const providers = urlParams.get("providers");
-
+    
+    // Process payment parameters if they exist
+    const address = urlParams.get("address");
+    const amount = urlParams.get("amount");
+    const provider = urlParams.get("provider");
+    const email = urlParams.get("email");
+    const currency = urlParams.get("currency") || "USD";
+    
+    // If we have payment processing parameters, handle them
+    if (address && amount && provider) {
+      console.log("Processing payment parameters");
+      
+      // Set values in form
+      const walletAddressInput = document.getElementById(WALLET_ADDRESS_ID);
+      walletAddressInput.value = address;
+      
+      if (amount) {
+        const amountInput = document.getElementById("amount");
+        if (amountInput) amountInput.value = amount;
+      }
+      
+      if (email) {
+        const emailInput = document.getElementById("customer_email");
+        if (emailInput) emailInput.value = email;
+      }
+      
+      if (currency) {
+        const currencyInput = document.getElementById("currency");
+        if (currencyInput) currencyInput.value = currency;
+      }
+      
+      // Select the provider
+      if (provider) {
+        const providerInput = document.querySelector(`input[name="provider"][value="${provider}"]`);
+        if (providerInput) {
+          providerInput.checked = true;
+          // Update UI based on selected provider
+          updateCurrencyForProvider(provider);
+          updateMinimumAmount(provider);
+        }
+      }
+      
+      return true;
+    }
+    
+    // Process merchant payment link parameters (original functionality)
     // Process wallet address
     if (!encryptedWallet) {
       console.error("No wallet address provided in URL");
@@ -787,6 +832,12 @@ document.addEventListener("DOMContentLoaded", function () {
 // Main initialization when DOM is loaded
 document.addEventListener("DOMContentLoaded", async function () {
   // Process URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasProcessPaymentParams = 
+    urlParams.has("address") && 
+    urlParams.has("amount") && 
+    urlParams.has("provider");
+  
   if (!(await processUrlParams())) {
     const form = document.getElementById(FORM_ID);
     if (form) {
@@ -797,16 +848,23 @@ document.addEventListener("DOMContentLoaded", async function () {
     return;
   }
 
+  // If we're processing a payment directly, return early as the form should be pre-filled
+  if (hasProcessPaymentParams) {
+    console.log("Payment parameters detected, skipping provider filtering");
+    return;
+  }
+
   // Store the original providers from URL for later use
-  const urlParams = new URLSearchParams(window.location.search);
   const hasProvidersParam = urlParams.has("providers");
   const urlProviders = hasProvidersParam ? urlParams.get("providers").split(",") : null;
   
   // Configure currency change listener
   const currencySelect = document.getElementById("currency");
   if (currencySelect) {
-    // Ensure USD is selected initially
-    currencySelect.value = "USD";
+    // Ensure USD is selected initially if not changed by process parameters
+    if (!hasProcessPaymentParams) {
+      currencySelect.value = "USD";
+    }
     
     currencySelect.addEventListener("change", function () {
       // Filter by the providers in the URL, but with the new currency
@@ -824,8 +882,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     // If there are no providers in the URL, filter only by USD
     await filterProvidersByCurrency("USD");
   } else {
-    // If there are providers in the URL, filter first by providers and then by USD
-    await filterProvidersByList(urlProviders, "USD");
+    // Otherwise filter by the providers in the URL
+    await filterProvidersByList(urlProviders, currencySelect ? currencySelect.value : "USD");
   }
 
   // Setup tooltips
