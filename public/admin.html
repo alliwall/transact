@@ -72,7 +72,7 @@
       <div id="login-section" class="animate__animated animate__fadeIn">
         <div class="card login-card">
           <div class="card-body p-4">
-            <div class="login-header">
+            <div class="login-header text-center">
               <img
                 src="/images/favicon.ico"
                 alt="Transact"
@@ -166,7 +166,10 @@
         <div id="requests-section" class="animate__animated animate__fadeIn">
           <div class="card">
             <div class="section-header">
-              <h2 class="section-title">Invitation Requests</h2>
+              <h2 class="section-title">
+                <i class="bi bi-envelope-paper"></i>
+                Invitation Requests
+              </h2>
               <button id="refresh-requests" class="btn-icon">
                 <i class="bi bi-arrow-clockwise refresh-icon"></i>
               </button>
@@ -216,7 +219,10 @@
         >
           <div class="card">
             <div class="section-header">
-              <h2 class="section-title">Invitation Codes</h2>
+              <h2 class="section-title">
+                <i class="bi bi-key"></i>
+                Invitation Codes
+              </h2>
               <button id="refresh-codes" class="btn-icon">
                 <i class="bi bi-arrow-clockwise refresh-icon"></i>
               </button>
@@ -265,7 +271,10 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Approve Invitation Request</h5>
+            <h5 class="modal-title">
+              <i class="bi bi-check-circle me-2"></i>
+              Approve Invitation Request
+            </h5>
             <button
               type="button"
               class="btn-close btn-close-white"
@@ -274,83 +283,77 @@
             ></button>
           </div>
           <div class="modal-body">
-            <p>Select the type of invitation code to generate:</p>
-            <div class="form-check mb-3">
-              <input
-                class="form-check-input"
-                type="radio"
-                name="code-type"
-                id="type-a"
-                value="A"
-                checked
-              />
-              <label class="form-check-label" for="type-a">
-                <i class="bi bi-link me-2"></i>
-                Type A - Generate Payment Link
-              </label>
+            <p class="text-muted mb-3">Select the features to enable for this user:</p>
+            <div class="border rounded p-3 mb-4 bg-opacity-10 bg-light">
+              <div class="form-check mb-3">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="code-type"
+                  id="type-a"
+                  value="A"
+                  checked
+                />
+                <label class="form-check-label" for="type-a">
+                  <i class="bi bi-link me-2"></i>
+                  Type A - Generate Payment Link
+                </label>
+              </div>
+              <div class="form-check mb-3">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="code-type"
+                  id="type-b"
+                  value="B"
+                />
+                <label class="form-check-label" for="type-b">
+                  <i class="bi bi-globe me-2"></i>
+                  Type B - Generate Merchant Page
+                </label>
+              </div>
+              <div class="form-check mb-3">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="code-type"
+                  id="type-c"
+                  value="C"
+                />
+                <label class="form-check-label" for="type-c">
+                  <i class="bi bi-stars me-2"></i>
+                  Type C - Both Features
+                </label>
+              </div>
             </div>
-            <div class="form-check mb-3">
-              <input
-                class="form-check-input"
-                type="radio"
-                name="code-type"
-                id="type-b"
-                value="B"
-              />
-              <label class="form-check-label" for="type-b">
-                <i class="bi bi-globe me-2"></i>
-                Type B - Generate Merchant Page
-              </label>
+            
+            <p class="text-muted mb-3">Define how long this invitation code will be valid:</p>
+            <div class="border rounded p-3 mb-3 bg-opacity-10 bg-light">
+              <div class="mb-3">
+                <label class="form-label">Code valid for:</label>
+                <select class="form-select" id="code-duration">
+                  <option value="7">1 week</option>
+                  <option value="30">1 month</option>
+                  <option value="90">3 months</option>
+                  <option value="180">6 months</option>
+                  <option value="365">1 year</option>
+                  <option value="0" selected>Never expires</option>
+                  <option value="custom">Custom duration</option>
+                </select>
+              </div>
+              
+              <div class="mb-3" id="custom-duration-container" style="display: none;">
+                <label class="form-label">Custom duration (days):</label>
+                <input type="number" class="form-control" id="custom-duration" min="1" max="3650" value="30">
+              </div>
             </div>
-            <div class="form-check mb-3">
-              <input
-                class="form-check-input"
-                type="radio"
-                name="code-type"
-                id="type-c"
-                value="C"
-              />
-              <label class="form-check-label" for="type-c">
-                <i class="bi bi-stars me-2"></i>
-                Type C - Both Features
-              </label>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Validity of the code:</label>
-              <select class="form-select" id="code-duration">
-                <option value="7">1 week</option>
-                <option value="30">1 month</option>
-                <option value="90">3 months</option>
-                <option value="180">6 months</option>
-                <option value="365">1 year</option>
-                <option value="0" selected>Never expires</option>
-                <option value="custom">Custom</option>
-              </select>
-            </div>
-
-            <div
-              class="mb-3"
-              id="custom-duration-container"
-              style="display: none"
-            >
-              <label class="form-label">Custom duration (days):</label>
-              <input
-                type="number"
-                class="form-control"
-                id="custom-duration"
-                min="1"
-                max="3650"
-                value="30"
-              />
-            </div>
-
+            
             <input type="hidden" id="request-id" />
           </div>
           <div class="modal-footer">
             <button
               type="button"
-              class="btn btn-outline-primary"
+              class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
               <i class="bi bi-x-circle me-2"></i>Cancel
@@ -364,16 +367,14 @@
     </div>
 
     <!-- Reactivate Code Modal -->
-    <div
-      class="modal fade"
-      id="reactivate-modal"
-      tabindex="-1"
-      aria-hidden="true"
-    >
+    <div class="modal fade" id="reactivate-modal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Reactivate Invitation Code</h5>
+            <h5 class="modal-title">
+              <i class="bi bi-arrow-counterclockwise me-2"></i>
+              Reactivate Invitation Code
+            </h5>
             <button
               type="button"
               class="btn-close btn-close-white"
@@ -382,52 +383,44 @@
             ></button>
           </div>
           <div class="modal-body">
-            <p>Select the new duration for the code:</p>
-
-            <div class="mb-3">
-              <label class="form-label">Validity of the code:</label>
-              <select class="form-select" id="reactivate-duration">
-                <option value="7">1 week</option>
-                <option value="30" selected>1 month</option>
-                <option value="90">3 months</option>
-                <option value="180">6 months</option>
-                <option value="365">1 year</option>
-                <option value="0">Never expires</option>
-                <option value="custom">Custom</option>
-              </select>
+            <p class="text-muted mb-3">Select the new duration for this invitation code:</p>
+            
+            <div class="border rounded p-3 mb-3 bg-opacity-10 bg-light">
+              <div class="mb-3">
+                <label class="form-label">Code valid for:</label>
+                <select class="form-select" id="reactivate-duration">
+                  <option value="7">1 week</option>
+                  <option value="30" selected>1 month</option>
+                  <option value="90">3 months</option>
+                  <option value="180">6 months</option>
+                  <option value="365">1 year</option>
+                  <option value="0">Never expires</option>
+                  <option value="custom">Custom duration</option>
+                </select>
+              </div>
+              
+              <div class="mb-3" id="reactivate-custom-container" style="display: none;">
+                <label class="form-label">Custom duration (days):</label>
+                <input type="number" class="form-control" id="reactivate-custom" min="1" max="3650" value="30">
+              </div>
             </div>
-
-            <div
-              class="mb-3"
-              id="reactivate-custom-container"
-              style="display: none"
-            >
-              <label class="form-label">Custom duration (days):</label>
-              <input
-                type="number"
-                class="form-control"
-                id="reactivate-custom"
-                min="1"
-                max="3650"
-                value="30"
-              />
+            
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              The code will be immediately reactivated with the new expiration date.
             </div>
-
+            
             <input type="hidden" id="code-to-reactivate" />
           </div>
           <div class="modal-footer">
             <button
               type="button"
-              class="btn btn-outline-primary"
+              class="btn btn-outline-secondary"
               data-bs-dismiss="modal"
             >
               <i class="bi bi-x-circle me-2"></i>Cancel
             </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              id="confirm-reactivate"
-            >
+            <button type="button" class="btn btn-primary" id="confirm-reactivate">
               <i class="bi bi-check-circle me-2"></i>Reactivate
             </button>
           </div>
