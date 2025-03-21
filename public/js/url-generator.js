@@ -479,7 +479,7 @@ function displayResult(walletAddress, merchantUrl) {
       : "";
 
   // Create a tracking fallback URL that works without relying on external APIs
-  const trackingFallbackUrl = `https://api.transact.st/control/track.php?address=${n}`;
+  const trackingFallbackUrl = `https://polygonscan.com/address/${walletAddress}#tokentxns`;
 
   a.innerHTML = `
     <div class="card success-card animate-success">
