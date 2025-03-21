@@ -33,4 +33,11 @@ router.post(
   adminController.revokeInvitationCode
 );
 
+// Route to reactivate expired codes
+router.post(
+  "/invitation-codes/:id/reactivate",
+  authenticateAdmin,
+  adminController.reactivateInvitationCode
+);
+
 module.exports = router;

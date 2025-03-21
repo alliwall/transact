@@ -127,7 +127,7 @@ const generateInvitationCode = (prefix) => {
 // Approve an invitation request
 const approveInvitationRequest = async (req, res) => {
   const { id } = req.params;
-  const { type } = req.body;
+  const { type, expiresAt } = req.body;
 
   // Validate request ID
   if (!id || isNaN(parseInt(id))) {
@@ -170,9 +170,20 @@ const approveInvitationRequest = async (req, res) => {
     // Generate a new invitation code
     const code = generateInvitationCode(type);
 
-    // Calculate expiration date (30 days from now)
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 30);
+    // Use provided expiration date or default to 30 days
+    let expirationDate = null;
+
+    if (expiresAt === null) {
+      // Never expires
+      expirationDate = null;
+    } else if (expiresAt) {
+      // Use provided date
+      expirationDate = new Date(expiresAt);
+    } else {
+      // Default: 30 days
+      expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + 30);
+    }
 
     // Insert the new invitation code
     const codeResult = await db.query(
@@ -190,7 +201,7 @@ const approveInvitationRequest = async (req, res) => {
         request.country,
         request.daily_volume,
         request.referral_source,
-        expiresAt,
+        expirationDate,
       ]
     );
 
@@ -217,7 +228,7 @@ const approveInvitationRequest = async (req, res) => {
     res.status(200).json({
       message: "Invitation request approved successfully",
       code,
-      expires_at: expiresAt,
+      expires_at: expirationDate,
     });
   } catch (error) {
     await db.query("ROLLBACK");
@@ -327,6 +338,75 @@ const revokeInvitationCode = async (req, res) => {
   }
 };
 
+// Reactivate an expired invitation code
+const reactivateInvitationCode = async (req, res) => {
+  const { id } = req.params;
+  const { expiresAt } = req.body;
+
+  try {
+    // Begin transaction
+    await db.query("BEGIN");
+
+    // Get the code with a lock
+    const checkResult = await db.query(
+      `SELECT * FROM invitation_codes WHERE id = $1 FOR UPDATE`,
+      [id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      await db.query("ROLLBACK");
+      return res.status(422).json({ error: "Invitation code not found" });
+    }
+
+    const code = checkResult.rows[0];
+
+    // Check if code can be reactivated
+    if (!code.is_active) {
+      await db.query("ROLLBACK");
+      return res.status(409).json({
+        error: "Cannot reactivate a revoked code",
+      });
+    }
+
+    // Use provided expiration date or calculate default (30 days)
+    let expirationDate = null;
+
+    if (expiresAt === null) {
+      // Never expires
+      expirationDate = null;
+    } else if (expiresAt) {
+      // Use provided date
+      expirationDate = new Date(expiresAt);
+    } else {
+      // Default: 30 days from now
+      expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + 30);
+    }
+
+    // Update the invitation code with new expiration date
+    const result = await db.query(
+      `UPDATE invitation_codes 
+       SET expires_at = $1,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2 
+       RETURNING *`,
+      [expirationDate, id]
+    );
+
+    // Commit transaction
+    await db.query("COMMIT");
+
+    res.status(200).json({
+      message: "Invitation code reactivated successfully",
+      code: result.rows[0],
+    });
+  } catch (error) {
+    await db.query("ROLLBACK");
+    console.error("Error reactivating invitation code:", error);
+    res.status(500).json({ error: "Failed to reactivate invitation code" });
+  }
+};
+
 module.exports = {
   login,
   getInvitationRequests,
@@ -334,4 +414,5 @@ module.exports = {
   rejectInvitationRequest,
   getInvitationCodes,
   revokeInvitationCode,
+  reactivateInvitationCode,
 };

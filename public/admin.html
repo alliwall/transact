@@ -315,6 +315,36 @@
                 Type C - Both Features
               </label>
             </div>
+
+            <div class="mb-3">
+              <label class="form-label">Validity of the code:</label>
+              <select class="form-select" id="code-duration">
+                <option value="7">1 week</option>
+                <option value="30">1 month</option>
+                <option value="90">3 months</option>
+                <option value="180">6 months</option>
+                <option value="365">1 year</option>
+                <option value="0" selected>Never expires</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+
+            <div
+              class="mb-3"
+              id="custom-duration-container"
+              style="display: none"
+            >
+              <label class="form-label">Custom duration (days):</label>
+              <input
+                type="number"
+                class="form-control"
+                id="custom-duration"
+                min="1"
+                max="3650"
+                value="30"
+              />
+            </div>
+
             <input type="hidden" id="request-id" />
           </div>
           <div class="modal-footer">
@@ -327,6 +357,78 @@
             </button>
             <button type="button" class="btn btn-primary" id="confirm-approve">
               <i class="bi bi-check-circle me-2"></i>Approve
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reactivate Code Modal -->
+    <div
+      class="modal fade"
+      id="reactivate-modal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Reactivate Invitation Code</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>Select the new duration for the code:</p>
+
+            <div class="mb-3">
+              <label class="form-label">Validity of the code:</label>
+              <select class="form-select" id="reactivate-duration">
+                <option value="7">1 week</option>
+                <option value="30" selected>1 month</option>
+                <option value="90">3 months</option>
+                <option value="180">6 months</option>
+                <option value="365">1 year</option>
+                <option value="0">Never expires</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+
+            <div
+              class="mb-3"
+              id="reactivate-custom-container"
+              style="display: none"
+            >
+              <label class="form-label">Custom duration (days):</label>
+              <input
+                type="number"
+                class="form-control"
+                id="reactivate-custom"
+                min="1"
+                max="3650"
+                value="30"
+              />
+            </div>
+
+            <input type="hidden" id="code-to-reactivate" />
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              data-bs-dismiss="modal"
+            >
+              <i class="bi bi-x-circle me-2"></i>Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="confirm-reactivate"
+            >
+              <i class="bi bi-check-circle me-2"></i>Reactivate
             </button>
           </div>
         </div>

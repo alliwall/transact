@@ -273,6 +273,12 @@ document.addEventListener("DOMContentLoaded", function () {
           <i class="bi bi-x-circle"></i> Revoke
         </button>
       `
+              : a.is_active && new Date(a.expires_at) < new Date()
+              ? `
+        <button class="btn btn-sm btn-primary reactivate-btn" data-id="${a.id}">
+          <i class="bi bi-arrow-counterclockwise"></i> Reativar
+        </button>
+      `
               : "-"
             : (console.warn("Code is undefined or null"), "-"))
         }</td>
@@ -308,6 +314,16 @@ document.addEventListener("DOMContentLoaded", function () {
                       }
                     });
                   });
+
+                  // Add event listeners for reactivate buttons
+                  document
+                    .querySelectorAll(".reactivate-btn")
+                    .forEach((btn) => {
+                      btn.addEventListener("click", function () {
+                        const codeId = this.dataset.id;
+                        showReactivateModal(codeId);
+                      });
+                    });
                 })();
             })(t)),
         setTimeout(() => {
@@ -318,6 +334,117 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("Failed to load invitation codes");
     }
   }
+
+  // Function to calculate expiration date based on duration
+  function calculateExpiresAt(durationDays) {
+    if (durationDays === 0) return null; // Never expires
+
+    const date = new Date();
+    date.setDate(date.getDate() + parseInt(durationDays));
+    return date.toISOString();
+  }
+
+  // Setup duration selector logic
+  function setupDurationSelector() {
+    const durationSelect = document.getElementById("code-duration");
+    const customDurationContainer = document.getElementById(
+      "custom-duration-container"
+    );
+
+    if (durationSelect) {
+      durationSelect.addEventListener("change", function () {
+        if (this.value === "custom") {
+          customDurationContainer.style.display = "block";
+        } else {
+          customDurationContainer.style.display = "none";
+        }
+      });
+    }
+  }
+
+  // Setup reactivation modal
+  function setupReactivateModal() {
+    const reactivateSelect = document.getElementById("reactivate-duration");
+    const reactivateCustomContainer = document.getElementById(
+      "reactivate-custom-container"
+    );
+
+    if (reactivateSelect) {
+      reactivateSelect.addEventListener("change", function () {
+        if (this.value === "custom") {
+          reactivateCustomContainer.style.display = "block";
+        } else {
+          reactivateCustomContainer.style.display = "none";
+        }
+      });
+    }
+
+    const confirmReactivateBtn = document.getElementById("confirm-reactivate");
+    if (confirmReactivateBtn) {
+      confirmReactivateBtn.addEventListener("click", async function () {
+        const codeId = document.getElementById("code-to-reactivate").value;
+        const durationSelect = document.getElementById("reactivate-duration");
+
+        let duration = durationSelect.value;
+        if (duration === "custom") {
+          duration = document.getElementById("reactivate-custom").value;
+        }
+
+        const expiresAt = calculateExpiresAt(duration);
+
+        try {
+          const response = await fetch(
+            `/api/admin/invitation-codes/${codeId}/reactivate`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${L}`,
+              },
+              body: JSON.stringify({
+                expiresAt: expiresAt,
+              }),
+            }
+          );
+
+          if (response.ok) {
+            // Hide modal and refresh codes table
+            const modal = bootstrap.Modal.getInstance(
+              document.getElementById("reactivate-modal")
+            );
+            modal.hide();
+            S();
+          } else {
+            const data = await response.json();
+            alert(data.error || "Failed to reactivate code");
+          }
+        } catch (error) {
+          alert("An error occurred. Please try again.");
+        }
+      });
+    }
+  }
+
+  // Function to show reactivate modal
+  function showReactivateModal(codeId) {
+    document.getElementById("code-to-reactivate").value = codeId;
+
+    // Reset custom duration field
+    document.getElementById("reactivate-duration").value = "30";
+    document.getElementById("reactivate-custom-container").style.display =
+      "none";
+
+    // Show modal
+    const reactivateModal = new bootstrap.Modal(
+      document.getElementById("reactivate-modal")
+    );
+    reactivateModal.show();
+  }
+
+  // Initialize all custom modals and selectors
+  setupDurationSelector();
+  setupReactivateModal();
+
   v.setAttribute("data-bs-theme", w),
     "light" === w && b.classList.add("light"),
     b.addEventListener("click", function () {
@@ -371,6 +498,17 @@ document.addEventListener("DOMContentLoaded", function () {
     h.addEventListener("click", async function () {
       let e = document.getElementById("request-id").value,
         t = document.querySelector('input[name="code-type"]:checked').value;
+
+      // Get duration
+      const durationSelect = document.getElementById("code-duration");
+      let duration = durationSelect.value;
+
+      if (duration === "custom") {
+        duration = document.getElementById("custom-duration").value;
+      }
+
+      const expiresAt = calculateExpiresAt(duration);
+
       try {
         let n = await fetch(`/api/admin/invitation-requests/${e}/approve`, {
           method: "POST",
@@ -378,7 +516,10 @@ document.addEventListener("DOMContentLoaded", function () {
             "Content-Type": "application/json",
             Authorization: `Bearer ${L}`,
           },
-          body: JSON.stringify({ type: t }),
+          body: JSON.stringify({
+            type: t,
+            expiresAt: expiresAt,
+          }),
         });
         if (n.ok) p.hide(), C(), S();
         else {
