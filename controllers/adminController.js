@@ -172,8 +172,8 @@ const approveInvitationRequest = async (req, res) => {
 
     // Use provided expiration date or default to 30 days
     let expirationDate = null;
-
-    if (expiresAt === null) {
+    
+    if (expiresAt === null || expiresAt === "null") {
       // Never expires
       expirationDate = null;
     } else if (expiresAt) {
@@ -370,15 +370,15 @@ const reactivateInvitationCode = async (req, res) => {
 
     // Use provided expiration date or calculate default (30 days)
     let expirationDate = null;
-
-    if (expiresAt === null) {
+    
+    if (expiresAt === null || expiresAt === "null") {
       // Never expires
       expirationDate = null;
     } else if (expiresAt) {
       // Use provided date
       expirationDate = new Date(expiresAt);
     } else {
-      // Default: 30 days from now
+      // Default: 30 days
       expirationDate = new Date();
       expirationDate.setDate(expirationDate.getDate() + 30);
     }

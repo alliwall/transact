@@ -222,9 +222,11 @@ document.addEventListener("DOMContentLoaded", function () {
                       s.classList.add("table-warning")
                     : s.classList.add("table-danger");
                   let l = e.is_active
-                    ? new Date(e.expires_at) < new Date()
-                      ? "Expired"
-                      : "Active"
+                    ? e.expires_at 
+                      ? new Date(e.expires_at) < new Date()
+                        ? "Expired"
+                        : "Active" 
+                      : "Active (Never Expires)"
                     : "Revoked";
                   (s.innerHTML = `
         <td>${e.id || "-"}</td>
@@ -267,16 +269,19 @@ document.addEventListener("DOMContentLoaded", function () {
         <td class="actions-column">${
           ((a = e),
           a
-            ? a.is_active && new Date(a.expires_at) >= new Date()
+            ? a.is_active && (e.expires_at ? new Date(e.expires_at) >= new Date() : true)
               ? `
         <button class="btn btn-sm btn-danger revoke-btn" data-id="${a.id}">
           <i class="bi bi-x-circle"></i> Revoke
         </button>
       `
-              : a.is_active && new Date(a.expires_at) < new Date()
+              : a.is_active && e.expires_at && new Date(e.expires_at) < new Date()
               ? `
         <button class="btn btn-sm btn-primary reactivate-btn" data-id="${a.id}">
-          <i class="bi bi-arrow-counterclockwise"></i> Reativar
+          <i class="bi bi-arrow-counterclockwise"></i> Reactivate
+        </button>
+        <button class="btn btn-sm btn-danger revoke-btn" data-id="${a.id}">
+          <i class="bi bi-x-circle"></i> Revoke
         </button>
       `
               : "-"
@@ -337,8 +342,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to calculate expiration date based on duration
   function calculateExpiresAt(durationDays) {
-    if (durationDays === 0) return null; // Never expires
-
+    if (durationDays === 0 || durationDays === '0') return null; // Never expires
+    
     const date = new Date();
     date.setDate(date.getDate() + parseInt(durationDays));
     return date.toISOString();
